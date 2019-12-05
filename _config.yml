@@ -9,8 +9,8 @@
 locale                   : "en-US"
 title                    : "Jean-Christophe Loiseau"
 title_separator          : "-"
-name                     : &name "Jean-Christophe Loiseau"
-description              : &description "Maître de Conférences at Arts et Métiers Institute of Technology, Paris, France"
+name                     : &name ""
+description              : &description "Jean-Christophe Loiseau"
 url                      : https://loiseaujc.github.io # the base hostname & protocol for your site e.g. "https://mmistakes.github.io"
 baseurl                  : "" # the subpath of your site, e.g. "/blog"
 repository               : "loiseaujc.github.io"
@@ -87,7 +87,7 @@ author:
   employer         :
   pubmed           : #"https://www.ncbi.nlm.nih.gov/pubmed/?term=john+snow"
   googlescholar    : "https://scholar.google.fr/citations?hl=fr&user=4rvzkMEAAAAJ&view_op=list_works&sortby=pubdate"
-  email            :
+  email            : "loiseau.jc@gmail.com"
   researchgate     : "https://www.researchgate.net/profile/Jean_Christophe_Loiseau"
   uri              :
   bitbucket        :
