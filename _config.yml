@@ -82,7 +82,7 @@ analytics:
 author:
   name             : "Jean-Christophe Loiseau"
   avatar           : "profile.png"
-  bio              : "Your biography for the left-hand sidebar"
+  bio              : "Maître de Conférences at Arts et Métiers Institute of Technology"
   location         : "Paris, France"
   employer         :
   pubmed           : #"https://www.ncbi.nlm.nih.gov/pubmed/?term=john+snow"
@@ -102,7 +102,7 @@ author:
   instagram        :
   impactstory      : #"https://profiles.impactstory.org/u/xxxx-xxxx-xxxx-xxxx"
   lastfm           :
-  linkedin         :
+  linkedin         : "https://fr.linkedin.com/in/jean-christophe-loiseau-05832727"
   orcid            : "https://orcid.org/0000-0002-7244-8416"
   pinterest        :
   soundcloud       :
