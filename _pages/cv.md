@@ -11,9 +11,9 @@ redirect_from:
 
 Education
 ======
-* B.S. in GitHub, GitHub University, 2012
-* M.S. in Jekyll, GitHub University, 2014
-* Ph.D in Version Control Theory, GitHub University, 2018 (expected)
+* Licence de Physique Fondamentale et Appliquée, Université d'Orléans-La Source, Orléans, France, 2005-2008
+* Master Program in Fluid Dynamics, Université Pierre et Marie Curie -- Ecole Polytechnique, Paris, France, 2008-2010
+* Ph.D in Fluid Dynamics, Ecole Nationale Supérieure d'Arts et Métiers, Paris, France, 2010-2014.
 
 Work experience
 ======
@@ -26,7 +26,7 @@ Work experience
   * Github University
   * Duties included: Merging pull requests
   * Supervisor: Professor Hub
-  
+
 Skills
 ======
 * Skill 1
@@ -41,19 +41,19 @@ Publications
   <ul>{% for post in site.publications %}
     {% include archive-single-cv.html %}
   {% endfor %}</ul>
-  
+
 Talks
 ======
   <ul>{% for post in site.talks %}
     {% include archive-single-talk-cv.html %}
   {% endfor %}</ul>
-  
+
 Teaching
 ======
   <ul>{% for post in site.teaching %}
     {% include archive-single-cv.html %}
   {% endfor %}</ul>
-  
+
 Service and leadership
 ======
 * Currently signed in to 43 different slack teams
