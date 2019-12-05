@@ -1,0 +1,12 @@
+---
+title: "Two-dimensional numerical simulation of the behavior of a circular capsule subject to an inclined centrifugal force near a plate in a fluid"
+collection: publications
+permalink: /publication/2017-01-01-Two-dimensional-numerical-simulation-of-the-behavior-of-a-circular-capsule-subject-to-an-inclined-centrifugal-force-near-a-plate-in-a-fluid
+date: 2017-01-01
+venue: 'Journal of Fluid Science and Technology'
+citation: ' S. Miyauchi,  T. Hayase,  A. Banaei,  J.-Ch. loiseau,  L. Brandt,  F. Lundell, &quot;Two-dimensional numerical simulation of the behavior of a circular capsule subject to an inclined centrifugal force near a plate in a fluid.&quot; Journal of Fluid Science and Technology, 2017.'
+---
+Use [Google Scholar](https://scholar.google.com/scholar?q=Two+dimensional+numerical+simulation+of+the+behavior+of+a+circular+capsule+subject+to+an+inclined+centrifugal+force+near+a+plate+in+a+fluid){:target="_blank"} for full citation
+
+**Abstract :**
+In order to examine mechanical interactions between erythrocytes and a blood vessel surface, the frictional characteristics between erythrocytes and plates in plasma have been measured by an inclined centrifuge microscope. The frictional characteristics have been properly reproduced by a numerical simulation of a rigid erythrocyte model assuming a flat bottom surface. However, validity of the assumption has not been confirmed. The purpose of this fundamental study, therefore, was to clarify the behavior of a two-dimensional circular capsule subjected to inclined centrifugal force near a plate in a fluid. An unsteady simulation was performed for various values of the angles of the inclined centrifugal force and membrane elasticity. In equilibrium states, a lubrication domain with high pressure and a large shear stress is formed between the capsule and the base plate, and the bottom surface of the capsule becomes flat with a positive attack angle. The gap distance and translational and rotational velocities increase with decreasing membrane elasticity or increasing centrifugal force angle. The attack angle increases with increasing membrane elasticity or centrifugal force angle. The results in this study qualitatively justified the assumption of the former numerical study that erythrocytes in an inclined centrifuge microscope have a flat bottom surface and its result that they have a positive attack angle in equilibrium state.
