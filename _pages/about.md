@@ -16,7 +16,7 @@ The aim is to identify low-order models from data which can provide new insights
 
 <center><h2> Latest Events </center></h2>
 
-| -:- | ----- |
+| ----- | ----- |
 | **Seminar** | Nov. 26th 2019 : I have been invited by Steven Brunton to give a seminar entitled *A brief overview of SINDy* at the University of Washington in Seattle (USA). |
 | **Workshop** | Sept. 4th - Dec. 8th 2019 : ... |
 
