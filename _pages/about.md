@@ -14,9 +14,9 @@ The aim is to identify low-order models from data which can provide new insights
 
 ---
 
-<center><h2> Latest Events </center></h2>
+<center><h2> Latest Events </h2></center>
 
-| ----- | ----- |
+| --:-- | ----- |
 | **Seminar** | <ins>Nov. 26th 2019</ins> : I have been invited by Steven Brunton to give a seminar entitled *A brief overview of SINDy* at the University of Washington in Seattle (USA). |
 | **Workshop** | Sept. 4th - Dec. 8th 2019 : I have been invited to give a talk at the IPAM's long program [Machine Learning for Physics and the Physics of Learning](https://www.ipam.ucla.edu/programs/long-programs/machine-learning-for-physics-and-the-physics-of-learning/?tab=activities). |
 
