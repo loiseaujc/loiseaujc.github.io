@@ -8,7 +8,7 @@ date: 2019-09-01
 location: "Paris, France"
 ---
 
-<img align="right" width="200" height="109" src="../images/fourier_analysis.png"> This short course is part of the international master program [Factory of the future](https://artsetmetiers.fr/en/mecanique-energie-et-ingenierie) proposed by *Arts et Métiers Institute of Technology*.
+<img align="left" width="275" height="150" src="../images/fourier_analysis.png"> This short course is part of the international master program [Factory of the future](https://artsetmetiers.fr/en/mecanique-energie-et-ingenierie) proposed by *Arts et Métiers Institute of Technology*.
 Note that students enrolling in this program may come from very different backgrounds.
 As such, the aim of this course is to teach them the basics of Fourier analysis and signal processing.
 One or two small numerical projects in `python` or `octave` are also proposed.
