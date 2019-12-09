@@ -112,4 +112,106 @@
   publisher = {Cambridge University Press},
 }
 
+@Article{jcp:ge:2018,
+  author   = {Ge, Z. and Loiseau, J.-Ch. and Tammisola, O. and Brandt, L.},
+  title    = {An efficient mass-preserving interface-correction level set/ghost fluid method for droplet suspensions under depletion forces},
+  journal  = {J. Comput. Phys.},
+  year     = {2018},
+  volume   = {353},
+  pages    = {435 - 459},
+  issn     = {0021-9991},
+  abstract = {Aiming for the simulation of colloidal droplets in microfluidic devices, we present here a numerical method for two-fluid systems subject to surface tension and depletion forces among the suspended droplets. The algorithm is based on an efficient solver for the incompressible two-phase Navier–Stokes equations, and uses a mass-conserving level set method to capture the fluid interface. The four novel ingredients proposed here are, firstly, an interface-correction level set (ICLS) method; global mass conservation is achieved by performing an additional advection near the interface, with a correction velocity obtained by locally solving an algebraic equation, which is easy to implement in both 2D and 3D. Secondly, we report a second-order accurate geometric estimation of the curvature at the interface and, thirdly, the combination of the ghost fluid method with the fast pressure-correction approach enabling an accurate and fast computation even for large density contrasts. Finally, we derive a hydrodynamic model for the interaction forces induced by depletion of surfactant micelles and combine it with a multiple level set approach to study short-range interactions among droplets in the presence of attracting forces.},
+  doi      = {https://doi.org/10.1016/j.jcp.2017.10.046},
+  keywords = {Multiphase flow, Level set method, Ghost fluid method, Colloidal droplet, Depletion force},
+  url      = {http://www.sciencedirect.com/science/article/pii/S0021999117308136},
+}
+
+@Article{jfst:miyauchi:2017,
+  author  = {Miyauchi, S. and Hayase, T. and Banaei, A. A. and loiseau, J.-Ch. and Brandt, L. and Lundell, F.},
+  title   = {Two-dimensional numerical simulation of the behavior of a circular capsule subject to an inclined centrifugal force near a plate in a fluid},
+  journal = {Journal of Fluid Science and Technology},
+  year    = {2017},
+  volume  = {12},
+  number  = {2},
+  pages   = {JFST0015-JFST0015},
+  doi     = {10.1299/jfst.2017jfst0015},
+}
+
+@Article{prf:tammisola:2017,
+  author    = {Tammisola, O. and Loiseau, J.-Ch. and Brandt, L.},
+  title     = {Effect of viscosity ratio on the self-sustained instabilities in planar immiscible jets},
+  journal   = {Phys. Rev. Fluids},
+  year      = {2017},
+  volume    = {2},
+  pages     = {033903},
+  month     = {Mar},
+  doi       = {10.1103/PhysRevFluids.2.033903},
+  issue     = {3},
+  numpages  = {36},
+  publisher = {American Physical Society},
+  url       = {https://link.aps.org/doi/10.1103/PhysRevFluids.2.033903},
+}
+
+@Article{ejcm:banaei:2017,
+  author    = {Banaei, A. A. and Loiseau, J.-Ch. and Lashgari, I. and Brandt, L.},
+  title     = {Numerical simulations of elastic capsules with nucleus in shear flow},
+  journal   = {European Journal of Computational Mechanics},
+  year      = {2017},
+  volume    = {26},
+  number    = {1-2},
+  pages     = {131-153},
+  doi       = {10.1080/17797179.2017.1294828},
+  eprint    = {https://doi.org/10.1080/17797179.2017.1294828},
+  publisher = {Taylor \& Francis},
+  url       = { 
+        https://doi.org/10.1080/17797179.2017.1294828
+    
+},
+}
+
+@Article{ejp:fannon:2016,
+  author    = {Fannon, J. and Loiseau, J.-Ch. and Valluri, P. and Bethune, I. and \'{O} N{\'{a}}raigh, L.},
+  title     = {High-performance computational fluid dynamics: a custom-code approach},
+  journal   = {Eur. J. Phys.},
+  year      = {2016},
+  volume    = {37},
+  number    = {4},
+  pages     = {045001},
+  month     = {apr},
+  abstract  = {We introduce a modified and simplified version of the pre-existing fully parallelized three-dimensional Navier–Stokes flow solver known as TPLS. We demonstrate how the simplified version can be used as a pedagogical tool for the study of computational fluid dynamics (CFDs) and parallel computing. TPLS is at its heart a two-phase flow solver, and uses calls to a range of external libraries to accelerate its performance. However, in the present context we narrow the focus of the study to basic hydrodynamics and parallel computing techniques, and the code is therefore simplified and modified to simulate pressure-driven single-phase flow in a channel, using only relatively simple Fortran 90 code with MPI parallelization, but no calls to any other external libraries. The modified code is analysed in order to both validate its accuracy and investigate its scalability up to 1000 CPU cores. Simulations are performed for several benchmark cases in pressure-driven channel flow, including a turbulent simulation, wherein the turbulence is incorporated via the large-eddy simulation technique. The work may be of use to advanced undergraduate and graduate students as an introductory study in CFDs, while also providing insight for those interested in more general aspects of high-performance computing.},
+  doi       = {10.1088/0143-0807/37/4/045001},
+  publisher = {{IOP} Publishing},
+  url       = {https://doi.org/10.1088%2F0143-0807%2F37%2F4%2F045001},
+}
+
+@Article{fdr:loiseau:2016,
+  author    = {Loiseau, J.-Ch and Robinet, J.-Ch and Leriche, E.},
+  title     = {Intermittency and transition to chaos in the cubical lid-driven cavity flow},
+  journal   = {Fluid Dyn. Res.},
+  year      = {2016},
+  volume    = {48},
+  number    = {6},
+  pages     = {061421},
+  month     = {nov},
+  abstract  = {Transition from steady state to intermittent chaos in the cubical lid-driven cavity flow is investigated numerically. Fully three-dimensional stability analyses have revealed that the flow experiences an Andronov–Poincaré–Hopf bifurcation at a critical Reynolds number Re
+c = 1914. As for the 2D-periodic lid-driven cavity flows, the unstable mode originates from a centrifugal instability of the primary vortex core. A Reynolds–Orr analysis reveals that the unstable perturbation relies on a combination of the lift-up and anti lift-up mechanisms to extract its energy from the base flow. Once linearly unstable, direct numerical simulations show that the flow is driven toward a primary limit cycle before eventually exhibiting intermittent chaotic dynamics. Though only one eigenpair of the linearized Navier–Stokes operator is unstable, the dynamics during the intermittencies are surprisingly well characterized by one of the stable eigenpairs.},
+  doi       = {10.1088/0169-5983/48/6/061421},
+  publisher = {{IOP} Publishing},
+  url       = {https://doi.org/10.1088%2F0169-5983%2F48%2F6%2F061421},
+}
+
+@Article{ejmbf:ducoin:2016,
+  author   = {Ducoin, A. and Loiseau, J.-Ch. and Robinet, J.-Ch.},
+  title    = {Numerical investigation of the interaction between laminar to turbulent transition and the wake of an airfoil},
+  journal  = {Eur. J. Mech. B. Fluids},
+  year     = {2016},
+  volume   = {57},
+  pages    = {231 - 248},
+  issn     = {0997-7546},
+  abstract = {The objective of this work is to investigate numerically the different physical mechanisms of the transition to turbulence of a separated boundary-layer flow over an airfoil at low angle of attack. In this study, the spectral elements code Nek5000 is used to simulate the flow over a SD7003 wing section at an angle of attack of α=4∘. Several laminar cases are first studied from Re=2000 to Re=10000, and a gradual increase of the Reynolds number is then performed in order to investigate one transitional case at Re=20000. Computations are compared with measurements where the instability mechanisms in the separated zone and near wake zone have been analyzed. The mechanism of transition is investigated, where the DMD (Dynamic Mode Decomposition) is used in order to extract the main physical modes of the flow and to highlight the interaction between the transition and the wake flow. The results suggest that the transition process appears to be physically independent of the wake flow, while the LSB shedding process is locked-in with the von Kármán instability and acts as a sub-harmonic.},
+  doi      = {https://doi.org/10.1016/j.euromechflu.2016.01.005},
+  keywords = {Transition, Laminar separation bubble, Wing section, Instability, Dynamic Mode Decomposition},
+  url      = {http://www.sciencedirect.com/science/article/pii/S0997754615302685},
+}
+
 @Comment{jabref-meta: databaseType:bibtex;}
