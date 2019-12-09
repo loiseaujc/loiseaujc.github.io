@@ -4,7 +4,7 @@ collection: teaching
 type: "Master Program"
 permalink: /teaching/nonlinear_physics
 venue: "Arts et Métiers - UPMC"
-date: 2019-2020
+date: 2019-09-01
 location: "Paris, France"
 ---
 
