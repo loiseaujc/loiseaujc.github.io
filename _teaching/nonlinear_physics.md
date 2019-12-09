@@ -8,9 +8,9 @@ date: 2019-09-01
 location: "Paris, France"
 ---
 
-<img align="left" width="300" height="150" src="../images/lorenz_system.png"> This course is part of the master program [M2 Aérodynamique et Aéroacoustique](http://master.spi.sorbonne-universite.fr/fr/mecanique-des-fluides/m2-aerodynamique-et-aeroacoustique/liste_des_ue.html) proposed jointly by *Université Pierre et Marie Curie* and *Arts et Métiers Institute of Technology*.
+<img align="left" width="200" height="100" src="../images/lorenz_system.png"> This course is part of the master program [M2 Aérodynamique et Aéroacoustique](http://master.spi.sorbonne-universite.fr/fr/mecanique-des-fluides/m2-aerodynamique-et-aeroacoustique/liste_des_ue.html) proposed jointly by *Université Pierre et Marie Curie* and *Arts et Métiers Institute of Technology*.
 Its aim is to give students an overview of the typical behaviours dynamical systems can exhibit (i.e. fixed points, periodic orbits, quasi-periodic dynamics and temporal chaos) and how to study them (e.g. fixed point computation, linear stability, bifurcation and normal form theory, Takens embedding theorem, etc).
-Most of course consists in sessions of two-hour long lectures with a few exercises.
+Most of the course consists in sessions of two-hour long lectures with a few exercises.
 A small numerical project in `python` or `julia` on realistic systems from fluid dynamics or classical mechanics is also proposed.
 
 ## Prerequisite
