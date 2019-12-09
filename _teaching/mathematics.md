@@ -2,21 +2,13 @@
 title: "Basics of linear algebra and differential equations"
 collection: teaching
 type: "Master Program"
-<<<<<<< HEAD
 permalink: /teaching/mathematics
-=======
-permalink: /teaching/nonlinear_physics
->>>>>>> e9d407329a30df47734d383dce3eda174e600adf
 venue: "Arts et Métiers"
 date: 2019-09-01
 location: "Paris, France"
 ---
 
-<<<<<<< HEAD
 <img align="right" width="275" height="150" src="../images/mathematics.jpg"> This course is part of the international master program [Factory of the future](https://artsetmetiers.fr/en/mecanique-energie-et-ingenierie) proposed by *Arts et Métiers Institute of Technology*.
-=======
-<img align="right" width="275" height="150" src="imgs/mathematics.jpg"> This course is part of the international master program [Factory of the future](https://artsetmetiers.fr/en/mecanique-energie-et-ingenierie) proposed by *Arts et Métiers Institute of Technology*.
->>>>>>> e9d407329a30df47734d383dce3eda174e600adf
 Note that students enrolling in this program may come from very different backgrounds.
 As such, the aim of this course is to teach them the basic tools from linear algebra (linear systems of equations, vector spaces, eigenvalues and eigenvectors) and differential equations (linear time-invariant first-order and second order ODEs) they may need for other courses in this program.
 One or two small numerical projects in `python` or `octave` are also proposed.
