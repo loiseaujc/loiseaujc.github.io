@@ -24,8 +24,8 @@ The course is divided in 10ish 2-hour long lectures and a few exercises.
 The tentative lesson plan below may be subject to modifications as the course evolves pretty much every year when interacting with students.
 I will try to keep this page up to date every time the course is modified.
 
-- Lecture 1: What are dynamical systems and how do we study them? [[Jupyter Notebook]](https://github.com/loiseaujc/Teaching/blob/master/Nonlinear_physics/Lecture_1/Notebook/A%20few%20examples%20of%20dynamical%20systems.ipynb)
-- Lecture 2: First-order and second-order systems. [[Slides]](https://github.com/loiseaujc/Teaching/blob/master/Nonlinear_physics/Lecture_2/Slides/slides.pdf) [[Jupyter Notebook]](https://github.com/loiseaujc/Teaching/blob/master/Nonlinear_physics/Lecture_2/Notebook/Fixed%20points%20and%20linear%20stability.ipynb) [[Exersices]](https://github.com/loiseaujc/Teaching/blob/master/Nonlinear_physics/Lecture_2/Exercises/main.pdf)
+- Lecture 1: What are dynamical systems and how do we study them? [[Slides]](https://github.com/loiseaujc/Teaching/blob/master/Nonlinear_physics/Lecture_1/Slides/slides.pdf), [[Jupyter Notebook]](https://github.com/loiseaujc/Teaching/blob/master/Nonlinear_physics/Lecture_1/Notebook/A%20few%20examples%20of%20dynamical%20systems.ipynb)
+- Lecture 2: First-order and second-order systems. [[Slides]](https://github.com/loiseaujc/Teaching/blob/master/Nonlinear_physics/Lecture_2/Slides/slides.pdf), [[Jupyter Notebook]](https://github.com/loiseaujc/Teaching/blob/master/Nonlinear_physics/Lecture_2/Notebook/Fixed%20points%20and%20linear%20stability.ipynb), [[Exersices]](https://github.com/loiseaujc/Teaching/blob/master/Nonlinear_physics/Lecture_2/Exercises/main.pdf)
 - Lecture 3: ...
 
 ## Recommended reading
