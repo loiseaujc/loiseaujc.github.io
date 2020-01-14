@@ -11,7 +11,7 @@ location: "Paris, France"
 This short course is part of the program FIP (no idea what it stands for) proposed by *Arts et Métiers Institute of Technology*.
 Its aim is to introduce students to scientific computing with `python`.
 Because the audience consists mostly of engineering students spending half of their time in industry, the idea is to have some "fun" time rather than a lengthy course about scientific computing.
-To do so, the course consists in a single project during which students have to implement a basic algorithm for image classification.
+To do so, the course consists in a series of small projects oriented toward pratical applications.
 In the process, they will learn the basics of data manipulation with `numpy`, visualization with `matplotlib` and optimization with `scipy`.
 Another proper course on scientific computing using `matlab` is also proposed in this program wherein students will learn the basics of numerical differentiation and data analysis.
 
@@ -20,12 +20,7 @@ Another proper course on scientific computing using `matlab` is also proposed in
 
 ### Lesson plan
 The course consists in five computer sessions of 1.5 hours.
-We will make extensive use of `Jupyter notebooks` to implement a simple logistic regression algorithm to classify images of cats and dogs.
-- Tutorial 1: Setting up the problem and preliminary data exploration.
-- Tutorial 2: Defining and implementing the objective function to be minimized.
-- Tutorial 3: Convex optimization with `scipy.optimize`.
-- Tutorial 4: Trying to interpret the algorithm's predictions and explain how it works to a non-tech audience.
-- Tutorial 5: Improving the training algorithm for limited computation resources environments (e.g. 2D sparse Fourier analysis and sensor placement).
+- Tutorial 1: Introduction to Scientific Computing. [TP 1](https://github.com/loiseaujc/loiseaujc.github.io/blob/master/files/Teaching/Scientific_Computing/TP1.ipynb)
 
 ### Recommended reading
 - J. Nathan Kutz. [Data-driven modeling & scientific computing: methods for complex systems and big data](https://www.amazon.com/Data-Driven-Modeling-Scientific-Computation-Methods/dp/0199660344).
