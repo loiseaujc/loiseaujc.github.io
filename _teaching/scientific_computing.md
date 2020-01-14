@@ -20,7 +20,7 @@ Another proper course on scientific computing using `matlab` is also proposed in
 
 ### Lesson plan
 The course consists in five computer sessions of 1.5 hours.
-- Tutorial 1: Introduction to Scientific Computing. [TP 1](https://github.com/loiseaujc/loiseaujc.github.io/blob/master/files/Teaching/Scientific_Computing/TP1.ipynb)
+- Tutorial 1: Introduction to Scientific Computing. [[TP 1]](https://github.com/loiseaujc/loiseaujc.github.io/blob/master/files/Teaching/Scientific_Computing/TP1.ipynb)
 
 ### Recommended reading
 - J. Nathan Kutz. [Data-driven modeling & scientific computing: methods for complex systems and big data](https://www.amazon.com/Data-Driven-Modeling-Scientific-Computation-Methods/dp/0199660344).
