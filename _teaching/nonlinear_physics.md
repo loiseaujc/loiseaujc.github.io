@@ -30,6 +30,11 @@ I will try to keep this page up to date every time the course is modified.
 - Lecture 4: Elements of bifurcation theory. [[Slides]](https://github.com/loiseaujc/Teaching/blob/master/Nonlinear_physics/Lecture_4/Slides/slides.pdf)
 - Lecture 5: Introduction to discrete-time systems. [[Slides]](https://github.com/loiseaujc/Teaching/blob/master/Nonlinear_physics/Lecture_5/Slides/slides.pdf)
 - Lecture 6: From Rayleigh-Bénard to Lorenz. [[Slides]](https://github.com/loiseaujc/Teaching/blob/master/Nonlinear_physics/Lecture_6/Slides/slides.pdf)
+- Lecture 7 : One-dimensional maps. [[Slides]](https://github.com/loiseaujc/Teaching/blob/master/Nonlinear_physics/One_dimensional_maps/Slides/slides.pdf)
+- Lecture 8 : Applied dynamical system -- system identification. [[Slides]](https://github.com/loiseaujc/Nonlinear_Physics/blob/master/Lecture_8/Slides/slides.pdf)
+- Lecture 9 : Applied dynamical system -- POD and DMD analysis. [[Slides]](https://github.com/loiseaujc/Nonlinear_Physics/blob/master/Lecture_9/Slides/slides.pdf)
+- Lecture 10 : A quick dive into fractal geometry. [[Slides]](https://github.com/loiseaujc/Nonlinear_Physics/blob/master/Lecture_10/Slides/slides.pdf)
+- Lecture 11 : An overview of stochastic systems. [[Slides]](https://github.com/loiseaujc/Nonlinear_Physics/blob/master/Lecture_11/Slides/slides.pdf)
 
 ## Recommended reading
 - Steven Strogatz. [*Nonlinear dynamics and chaos*](http://www.stevenstrogatz.com/books/nonlinear-dynamics-and-chaos-with-applications-to-physics-biology-chemistry-and-engineering) (English only).
