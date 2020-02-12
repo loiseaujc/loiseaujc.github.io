@@ -16,6 +16,7 @@ The aim is to identify low-order models from data which can provide new insights
 <center><h2> Latest Events </h2></center>
 
 | --:-- | ----- |
+| **Seminar** | <ins>Mar. 6th 2020</ins> : I have been invited by Alessandro Bucci to give a seminar entitled *Dimensionality reduction and system identification of physical systems : chaotic convection, a case study* at INRIA. |
 | **Seminar** | <ins>Nov. 26th 2019</ins> : I have been invited by Steven Brunton to give a seminar entitled *A brief overview of SINDy* at the University of Washington in Seattle (USA). |
 | **Workshop** | <ins>Sept. 4th - Dec. 8th 2019</ins> : I have been invited to give a talk at the IPAM's long program [Machine Learning for Physics and the Physics of Learning](https://www.ipam.ucla.edu/programs/long-programs/machine-learning-for-physics-and-the-physics-of-learning/?tab=activities). My intervention will be part of the third workshop on [Validation and guarantees in learning physical models: from patterns to governing equations to laws of nature](https://www.ipam.ucla.edu/programs/workshops/workshop-iii-validation-and-guarantees-in-learning-physical-models-from-patterns-to-governing-equations-to-laws-of-nature/) taking place from Oct. 28th to Nov. 1st. The talk and slides can be found online [here](https://www.ipam.ucla.edu/programs/workshops/workshop-iii-validation-and-guarantees-in-learning-physical-models-from-patterns-to-governing-equations-to-laws-of-nature/). |
 
