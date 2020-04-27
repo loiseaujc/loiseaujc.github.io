@@ -2,8 +2,10 @@
 title: "Roughness-induced transition in boudary layer flow"
 collection: projects
 permalink: /projects/roughness_induced_transition
-status: "Finished"
-grant: "ANR"
+type: "Finished"
+venue: "ANR"
+date: 2019-09-01
+location: "Paris, France"
 ---
 
 
