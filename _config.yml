@@ -187,6 +187,9 @@ collections:
   projects:
     output: true
     permalink: /:collection/:path/ 
+  softwares:
+    output: true
+    permalink: /:collection/:path/ 
   talks:
     output: true
     permalink: /:collection/:path/
@@ -241,8 +244,17 @@ defaults:
       comment: true
   # _projects
   - scope:
-       path:
-       type: pages
+       path: ""
+       type: projects
+       values:
+         layout: single
+         author_profile: true
+         share: true
+         comment: true
+  # _softwares
+  - scope:
+       path: ""
+       type: softwares
        values:
          layout: single
          author_profile: true
