@@ -8,6 +8,9 @@ image : "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Fortran_acs_c
 #css: /custom.css
 draft: false
 format: html
+comments:
+  giscus: 
+    repo: loiseaujc/loiseau.github.io
 ---
 
 
