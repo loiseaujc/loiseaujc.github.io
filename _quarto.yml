@@ -10,6 +10,7 @@ website:
   title: "Dr. Jean-Christophe Loiseau"
   image: "https://quarto.org/quarto.png"
   description: "Quarto Academic Website Template adapted by Dr. Gang He"
+  google-analytics: "G-1GNWFLTF2M"
  
   navbar:
     background: dark  # You can change the background color here
