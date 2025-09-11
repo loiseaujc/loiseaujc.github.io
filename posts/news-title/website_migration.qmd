@@ -1,0 +1,17 @@
+---
+title: "Migrating from Jekyll & AcademicPages to Quarto"
+author: "Jean-Christophe Loiseau"
+date: "2025-09-09"
+categories: [news]
+image: "https://upload.wikimedia.org/wikipedia/commons/2/2b/Waders_in_flight_Roebuck_Bay.jpg"
+#css: /custom.css
+draft: true
+---
+
+## Summary
+
+This is a test. 
+
+<!--Include social share buttons-->
+
+{{< include /files/includes/_socialshare.qmd >}}

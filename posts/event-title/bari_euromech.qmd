@@ -1,0 +1,14 @@
+---
+title: "Euromech Colloquium in Bari, Italy"
+author: "Event"
+date: "2024-09-20"
+categories: [event, presentation]
+image: "https://upload.wikimedia.org/wikipedia/commons/4/44/Bari_-_Lungomare_Imperatore_Augusto_%26_Mare.jpg"
+#css: /custom.css
+draft: true
+---
+
+
+<!--Include social share buttons-->
+
+{{< include /files/includes/_socialshare.qmd >}}

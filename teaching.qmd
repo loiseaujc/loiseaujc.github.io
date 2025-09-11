@@ -1,11 +1,14 @@
 ---
 title: "Teaching"
-subtitle: "I teach."
+subtitle: "I teach (a lot)."
 title-block-banner: false
 ---
 
+## **Arts et Métiers**
 
-## Class 1
+### Mathematics for Engineers
+
+<hr width=50% /hr>
 
 ::: {.grid}
 
@@ -16,16 +19,73 @@ title-block-banner: false
 
 ::: {.g-col-12 .g-col-md-10}
 
-[Fall 2024](https://www.google.com), &nbsp; [Fall 2023](https://www.google.com)
+| Program | Period | Language |
+| :---: | :---: | :---: |
+| International Master Program [Factory of the Future](https://artsetmetiers.fr/en/mecanique-energie-et-ingenierie) | Fall | English |
 
-Class 1 introduction.
+**Description --**
+
+
+**Pre-requisites --**
+
+:::
+
+:::
+
+### Statistics and Data Processing
+
+<hr width=50% /hr>
+
+::: {.grid}
+
+::: {.g-col-12 .g-col-md-2}
+![](files/images/placeholder1.jpg)
+
+:::
+
+::: {.g-col-12 .g-col-md-10}
+
+| Program | Period | Language |
+| :---: | :---: | :---: |
+| International Master Program [Factory of the Future](https://artsetmetiers.fr/en/mecanique-energie-et-ingenierie) | Fall | English |
+
+**Description --**
+
+**Pre-requisites --**
+
+:::
+
+:::
+
+### Introduction to Machine Learning
+
+<hr width=50% /hr>
+
+::: {.grid}
+
+::: {.g-col-12 .g-col-md-2}
+![](files/images/placeholder1.jpg)
+
+:::
+
+::: {.g-col-12 .g-col-md-10}
+
+| Program | Period | Language |
+| :---: | :---: | :---: |
+| International Master Program [Factory of the Future](https://artsetmetiers.fr/en/mecanique-energie-et-ingenierie) | Fall | English |
+
+**Description --**
+
+**Pre-requisites --**
 
 :::
 
 :::
 
 
-## Class 2
+### Control theory
+
+<hr width=50% /hr>
 
 ::: {.grid}
 
@@ -36,16 +96,22 @@ Class 1 introduction.
 
 ::: {.g-col-12 .g-col-md-10}
 
-[Spring 2025](https://www.google.com), &nbsp; [Fall 2023](https://www.google.com)
+| Program | Period | Language |
+| :---: | :---: | :---: |
+| Master 2 [MFFA](https://artsetmetiers.fr/fr/master-2-mecanique-des-fluides-fondements-et-applications-mffa) | Fall | English |
 
-Class 2 introduction.
+**Description --**
+
+**Pre-requisites --**
 
 :::
 
 :::
 
 
-## Class 3
+### Introduction to scientific computing with `Python`
+
+<hr width=50% /hr>
 
 ::: {.grid}
 
@@ -56,12 +122,79 @@ Class 2 introduction.
 
 ::: {.g-col-12 .g-col-md-10}
 
-[Spring 2025](https://www.google.com), &nbsp; [Spring 2024](https://www.google.com)
+| Program | Period | Language |
+| :---: | :---: | :---: |
+| [Programme Ingénieur de Spécialité](https://artsetmetiers.fr/fr/formation/ingenieur-de-specialite) | Spring | French |
 
-Class 3 introduction. 
+**Description --**
+
+**Pre-requisites --**
 
 :::
 
 :::
 
+---
+
+---
+
+## Sorbonne Université
+
+### Introduction to Machine Learning
+
+<hr width=50% /hr>
+
+::: {.grid}
+
+::: {.g-col-12 .g-col-md-2}
+![](files/images/placeholder3.JPG)
+
+:::
+
+::: {.g-col-12 .g-col-md-10}
+
+| Program | Period | Language |
+| :---: | :---: | :---: |
+| Master 2 [MFFA](https://artsetmetiers.fr/fr/master-2-mecanique-des-fluides-fondements-et-applications-mffa)   | Fall | French |
+
+**Description --**
+
+**Pre-requisites --**
+
+:::
+
+:::
+
+---
+
+---
+
+## Université de La Rochelle
+
+
+### Physics Informed Neural Networks and System Identification
+
+<hr width=50% /hr>
+
+::: {.grid}
+
+::: {.g-col-12 .g-col-md-2}
+![](files/images/placeholder3.JPG)
+
+:::
+
+::: {.g-col-12 .g-col-md-10}
+
+
+| Program | Period | Language |
+| :---: | :---: | :---: |
+| Master 2 [MIX](https://master-mix.univ-larochelle.fr/)   | Fall | French |
+
+**Description --**
+
+**Pre-requisites --**
+
+:::
+
+:::
 

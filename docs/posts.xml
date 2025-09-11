@@ -5,36 +5,1233 @@
       xmlns:dc="http://purl.org/dc/elements/1.1/" 
       version="2.0">
 <channel>
-<title>Quarto Academic</title>
-<link>https://drganghe.github.io/quarto-academic-website-template/posts.html</link>
-<atom:link href="https://drganghe.github.io/quarto-academic-website-template/posts.xml" rel="self" type="application/rss+xml"/>
+<title>Dr. Jean-Christophe Loiseau</title>
+<link>https://loiseaujc.github.io/posts.html</link>
+<atom:link href="https://loiseaujc.github.io/posts.xml" rel="self" type="application/rss+xml"/>
 <description>Quarto Academic Website Template adapted by Dr. Gang He</description>
 <image>
 <url>https://quarto.org/quarto.png</url>
-<title>Quarto Academic</title>
-<link>https://drganghe.github.io/quarto-academic-website-template/posts.html</link>
+<title>Dr. Jean-Christophe Loiseau</title>
+<link>https://loiseaujc.github.io/posts.html</link>
 </image>
-<generator>quarto-1.7.22</generator>
-<lastBuildDate>Tue, 15 Oct 2024 04:00:00 GMT</lastBuildDate>
+<generator>quarto-1.7.34</generator>
+<lastBuildDate>Mon, 08 Sep 2025 22:00:00 GMT</lastBuildDate>
 <item>
-  <title>Quarto Academic Website Examples and Tips</title>
-  <link>https://drganghe.github.io/quarto-academic-website-template/</link>
-  <description>Examples and tips for Quarto Academic Website</description>
-  <category>news</category>
-  <guid>https://drganghe.github.io/quarto-academic-website-template/</guid>
-  <pubDate>Tue, 15 Oct 2024 04:00:00 GMT</pubDate>
-  <media:content url="https://drganghe.github.io/quarto-academic-website-template/files/images/placeholder1.jpg" medium="image" type="image/jpeg"/>
-</item>
-<item>
-  <title>Event item</title>
-  <dc:creator>Event </dc:creator>
-  <link>https://drganghe.github.io/quarto-academic-website-template/posts/event-title/</link>
+  <title>Is Fortran better than Python for teaching the basics of numerical linear algebra?</title>
+  <dc:creator>Jean-Christophe Loiseau</dc:creator>
+  <link>https://loiseaujc.github.io/posts/blog-title/fortran_vs_python.html</link>
   <description><![CDATA[ 
 
 
 
 
-<p><a href="https://drganghe.github.io/quarto-academic-website-template/"><img src="https://drganghe.github.io/quarto-academic-website-template/files/images/placeholder2.JPG" class="img-fluid" style="width:90.0%"></a></p>
+<p><u><strong>Disclaimer</strong></u> – This is <strong>not</strong> a post about which language is the most elegant or which implementation is the fastest (we all know it’s <code>Fortran</code>). It’s about <strong>teaching</strong> the basics of scientific computing to engineering students with a limited programming experience. Yes, the <code>Numpy</code>/<code>Scipy</code>/<code>matplotlib</code> stack is awesome. Yes, you can use <code>numba</code> or <code>jax</code> to speed up your code, or <code>Cython</code>, or even <code>Mojo</code> the latest kid in the block. Or you know what? Use <code>Julia</code> or <code>Rust</code> instead. But that’s not the <em>basics</em> and it’s beyond the point.</p>
+<center>
+<hr width="50%" hr="">
+</center>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://upload.wikimedia.org/wikipedia/commons/d/de/Lochkarte_FORTRAN.jpg" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption>Punched card in 80-column format according to the IBM standard. Printed for use with one line of FORTRAN source code (used in the example as a declaration of six float variables). Source: <a href="https://commons.wikimedia.org/wiki/File:Lochkarte_FORTRAN.jpg">Wikimedia Commons</a></figcaption>
+</figure>
+</div>
+<center>
+<hr width="50%" hr="">
+</center>
+<p>I’ve been teaching an <em>Intro to Scientific Computing</em> class for nearly 10+ years. This class is intended for second year engineering students and, as such, places a large emphasis on numerical linear algebra. Like the rest of Academia, I’m using a combination of <code>Python</code> and <code>numpy</code> arrays for this. Yet, after all these years, I start to believe it ain’t necessarily the right choice for a first encounter with numerical linear algebra. Obvisouly everything is not black and white and I’ll try to be nuanced. But, in my opinion, a strongly typed language such as <code>Fortran</code> might lead to an overall better <u>learning</u> experience. And that’s what it’s all about when you start Uni: learning the principles of scientific programming, not the quirks of a particular language (unless you’re a CS student, which is a different crowd).</p>
+<p>Don’t get me wrong though. Being proficient with <code>numpy</code>, <code>scipy</code> and <code>matplotlib</code> is an absolute necessity for STEM students today, and that’s a good thing. Even from an educational perspective, the scientific <code>Python</code> ecosystem enables students to do really cool projects, putting the fun back in learning. It would be completely non-sensical to deny this. But using <code>x = np.linalg.solve(A, b)</code> ain’t the same thing as having a basic understanding of how these algorithms work. And to be clear: the goal of these classes is not to transform a student into a numerical linear algebra expert who could write the next generation LAPACK. It is to teach them just enough of numerical computing so that, when they’ll transition to an engineering position, they’ll be able to make an informed decision regarding which solver or algorithm to use when writing a simulation or data analysis tool to tackle whatever business problem they’re working on.</p>
+<p>If you liked and aced your numerical methods class, then what I’ll discuss might not necessary be relatable. You’re one of a kind. More often than not, students struggle with such courses. This could be due to genuine comprehension difficulties, or lazyness and lack of motivation simply because they don’t see the point. While both issues are equally important to address, I’ll focus on the first one: students who are willing to put the effort into learning the subject but have difficulties transforming the mathematical algorithm into an actionnable piece of code. Note however that initially motivated but struggling students might easily drift to the second type, hence my focus there first.</p>
+<p>In the rest of this post, I’ll go through two examples. For each, I’ll show a typical <code>Python</code> code such a student might write and discuss all of the classical problems they’ve encountered to get there. A large part of these are syntax issues or result from the permissiveness of an interpreted language like <code>Python</code> which is a double edged sword. Then I’ll show an equivalent <code>Fortran</code> implementation and explain why I believe it can solve part of these problems. But first, I need to address the two elephants in the room:</p>
+<ol type="1">
+<li>My research is on applied mathematics and numerical linear algebra for the physical sciences. I am <strong>not</strong> doing research on Education. Everything that follows comes from my reflection about my interactions with students I taught to or mentored. If you have scientific evidence (pertaining to scientific computing in particular) proving me wrong, please tell me.</li>
+<li>When I write <code>Fortran</code>, what I really mean is modern <code>Fortran</code>, not <code>FORTRAN</code>. Anything pre-dating the <code>Fortran 90</code> standard (or even better, the <code>Fortran 2018</code> one) is not even an option (yes, I’m looking at you <code>FORTRAN 77</code> and your incomprehensible <code>goto</code>, error-prone <code>common</code>, artithmetic <code>if</code> and what not).</li>
+</ol>
+<p>With that being said, let’s get started with a concrete, yet classical, example to illustrate my point.</p>
+<section id="the-hello-world-of-iterative-solvers" class="level2">
+<h2 class="anchored" data-anchor-id="the-hello-world-of-iterative-solvers">The <code>Hello World</code> of iterative solvers</h2>
+<p>You’ve started University a year ago and are taking your first class on scientific computing. Maybe you already went through the hassle of Gaussian elimination and the LU factorization. During the last class, Professor X discussed about <a href="https://en.wikipedia.org/wiki/Iterative_method">iterative solvers</a> for linear systems. It is now the hands-on session and today’s goal is to implement the <a href="https://en.wikipedia.org/wiki/Jacobi_method">Jacobi method</a>. Why Jacobi? Because it is simple enough to implement in an hour or so.</p>
+<p>The exact problem you’re given is the following:</p>
+<blockquote class="blockquote">
+<p>Consider the Poisson equation with homogeneous Dirichlet boundary conditions on the unit-square. Assume the Laplace operator has been discretized using a second-order accurate central finite-difference scheme. The discretized equation reads <img src="https://latex.codecogs.com/png.latex?%5Cdfrac%7Bu_%7Bi+1,%20j%7D%20-%202u_%7Bi,%20j%7D%20+%20u_%7Bi-1,%20j%7D%7D%7B%5CDelta%20x%5E2%7D%20+%20%5Cdfrac%7Bu_%7Bi,%20j+1%7D%20-%202u_%7Bi,%20j%7D%20+%20u_%7Bi,%20j-1%7D%7D%7B%5CDelta%20y%5E2%7D%20=%20b_%7Bi,%20j%7D."> For the sake of simplicity, take <img src="https://latex.codecogs.com/png.latex?%5CDelta%20x%20=%20%5CDelta%20y">. Write a function implementing the Jacobi method to solve the resulting linear system to a user-prescribed tolerance.</p>
+</blockquote>
+<p>We can all agree this is a simple enough yet somewhat realistic example. More importantly, it is sufficient to illustrate my point. Here is what the average student might write in <code>Python</code>.</p>
+<div class="sourceCode" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> numpy <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> np</span>
+<span id="cb1-2"></span>
+<span id="cb1-3"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> jacobi(b , dx, tol, maxiter):</span>
+<span id="cb1-4">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Initialize variables.</span></span>
+<span id="cb1-5">    nx, ny <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> b.shape</span>
+<span id="cb1-6">    residual <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1.0</span></span>
+<span id="cb1-7">    u <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> np.zeros((nx, ny))</span>
+<span id="cb1-8">    tmp <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> np.zeros((nx, ny))</span>
+<span id="cb1-9"></span>
+<span id="cb1-10">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Jacobi solver.</span></span>
+<span id="cb1-11">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> iteration <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">range</span>(maxiter):</span>
+<span id="cb1-12">        <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Jacobi iteration.</span></span>
+<span id="cb1-13">        <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> i <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">range</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, nx<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>):</span>
+<span id="cb1-14">            <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> j <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">range</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, ny<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>):</span>
+<span id="cb1-15">                tmp[i, j] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.25</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span>(b[i, j]<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span>dx<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">**</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span> u[i<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, j] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span> u[i<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, j] </span>
+<span id="cb1-16">                                                <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span> u[i, j<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span> u[i, j<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>])</span>
+<span id="cb1-17"></span>
+<span id="cb1-18">        <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Compute residual</span></span>
+<span id="cb1-19">        residual <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> np.linalg.norm(u<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span>tmp)</span>
+<span id="cb1-20">        <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Update solution.</span></span>
+<span id="cb1-21">        u <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> tmp</span>
+<span id="cb1-22">        <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># If converged, exit the loop.</span></span>
+<span id="cb1-23">        <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> residual <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&lt;=</span> tol:</span>
+<span id="cb1-24">            <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">break</span></span>
+<span id="cb1-25"></span>
+<span id="cb1-26">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> u</span></code></pre></div>
+<p>Yes, you shouldn’t do <code>for</code> loops in <code>Python</code>. But remember, you are not a seasoned programmer. You’re taking your first class on scientific computing and that’s how the Jacobi method is typically presented. Be forgiving.</p>
+<section id="where-do-students-struggle" class="level3">
+<h3 class="anchored" data-anchor-id="where-do-students-struggle">Where do students struggle?</h3>
+<p>Admittidely, the code is quite readable and look very similar to the pseudocode you’d use to describe the Jacobi method. But if you’re reading this blog post, there probably are a handful of things you’ve internalized and don’t even think about anymore (true for both <code>Python</code> and <code>Fortran</code>). And that’s precisely what the students (at least mine) struggle with, starting with the very first line.</p>
+<p><strong>What the hell is <code>numpy</code> and why do I need it? Also, why import it as <code>np</code>? –</strong> These questions come back every year. Yet, I don’t have satisfying answers. I always hesitate between</p>
+<blockquote class="blockquote">
+<p>Trust me kid, you don’t want to use nested lists in <code>Python</code> to do any serious numerical computing.</p>
+</blockquote>
+<p>which naturally begs the question of why, or</p>
+<blockquote class="blockquote">
+<p>When I said we’ll use <code>Python</code> for this scientific computing class, what I really meant is we’ll use <code>numpy</code> which is a package written for numerical computing because <code>Python</code> doesn’t naturally have good capabilities for number crunching. As for the import as <code>np</code>, that’s just a convention.</p>
+</blockquote>
+<p>And this naturally leads to the question of “<em>why Python in the first place then?</em>” for which the only valid answer I have is</p>
+<blockquote class="blockquote">
+<p>Well, because <code>Python</code> is supposed to be easy to learn and everybody uses it.</p>
+</blockquote>
+<p>Clearly, <code>import numpy as np</code> is an innocent-looking line of code. It has nothing to do with the subject being taught though, and everything with the choice of the language, only diverting the students from the learning process.</p>
+<p><strong>I coded everything correctly, 100% sure, but I get this weird error message about indentation –</strong> Oh boy! What a classic! The error message varies between</p>
+<pre><code>IndentationError: expected an indented block</code></pre>
+<p>and</p>
+<pre><code>TabError: inconsistent use of tabs and spaces in indentation</code></pre>
+<p><code>&lt;TAB&gt;</code> versus <code>SPACE</code> is a surprisingly hot topic in programming which I don’t want to engage in. A seasoned programmer might say “<em>simply configure your IDE properly</em>” which is fair. But we’re talking about your average student (who’s not a CS one remember) and they might use IDLE or even just notepad. As for the <code>IndentationError</code>, it is a relatively easy error to catch. Yet, the fact that <code>for</code>, <code>if</code> or <code>while</code> constructs are not clearly delineated in <code>Python</code> other than visually is surprisingly hard for students. I find that it puts an additional cognitive burden on top of a subject which is already demanding enough.</p>
+<p>It could also be more subtle. The code might run but the results are garbage because the student wrote something like</p>
+<div class="sourceCode" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb4-1">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> iteration <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">range</span>(maxiter):</span>
+<span id="cb4-2">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Jacobi iteration.</span></span>
+<span id="cb4-3">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> i <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">range</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, nx<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>):</span>
+<span id="cb4-4">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> j <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">range</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, ny<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>):</span>
+<span id="cb4-5">    tmp[i, j] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.25</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span>(b[i, j]<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span>dx<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">**</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span> u[i<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, j] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span> u[i<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, j] </span>
+<span id="cb4-6">                                                <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span> u[i, j<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span> u[i, j<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>])</span></code></pre></div>
+<p>You might argue that this perfectly understandable, though if you want to be picky, there is no dealineation of where the different loops end. Which the whole point of indentation in <code>Python</code>. But students do not necessarily get that.</p>
+<p><strong>Why <code>range(1, nx-1)</code> and not <code>range(2, nx-1)</code>? The first column/row is my boundary. –</strong> Another classic related to 0-based vs 1-based indexing. And another very hot debate I don’t want to engage in. The fact however is that linear algebra (and a lot of scientific computing for that matter) use 1-based indexing. Think about vectors or matrices. Almost every single maths books write them as</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0A%5Cbegin%7Bbmatrix%7D%0A%20%20%20%20a_%7B11%7D%20&amp;%20a_%7B12%7D%20&amp;%20a_%7B13%7D%20%5C%5C%0A%20%20%20%20a_%7B21%7D%20&amp;%20a_%7B22%7D%20&amp;%20a_%7B23%7D%20%5C%5C%0A%20%20%20%20a_%7B31%7D%20&amp;%20a_%7B32%7D%20&amp;%20a_%7B33%7D%0A%5Cend%7Bbmatrix%7D.%0A"></p>
+<p>The upper left element has the (1, 1) index, not (0, 0). Why use a language with 0-based indexing for linear algebra other than putting an additional cognitive burden on the students learning the subject? This is a recipe for the nefarious off-by-one error. And these errors are sneaky. The code might run but produce incorrect results and it’s a nightmare for the students (or the poor TA helping them) to figure out why.</p>
+<p><strong>Why <code>np.linalg.norm</code> and not just <code>norm</code> or <code>np.norm</code>? –</strong> This is one is related to my first point. When you’re used to it, you no longer question it. But you don’t know students then and, once more, I don’t have a really clear answer other than</p>
+<blockquote class="blockquote">
+<p>Well, <code>linalg</code> stand for linear algebra, and <code>np.linalg</code> is a collection of linear algebra related function. It is a submodule of <code>numpy</code>, the package I told you about before.</p>
+</blockquote>
+<p>Grouping like-minded functionalities into a dedicated submodule is definitely good practice, no question there. Discussing the architecture of <code>numpy</code> makes a lot of sense when students have to do a big project involving numerical computing but not strictly speaking about numerical computing. On the other hand, when it is their first numerical computing class (and possibly first with <code>Python</code>) I find it distracting. Again, it’s not a big thing really but still. And then you have to explain why <code>np.det</code> and <code>np.trace</code> are not part of <code>np.linalg</code>…</p>
+<p><strong>Other common problems –</strong> There are other very common problems like using the wrong function or inconsistent use of lower- or upper-case for variables. Once you know <code>Python</code> is case-sensitive, this is mainly a concentration problem. No big deal there. But there is one last thing that tends to cause problems to distracted students and that has to do with the dynamic nature of <code>Python</code>. Nowhere in the code snippet is it clearly specified that <code>b</code> needs to be a two-dimensional <code>np.array</code> of real numbers nor that it shouldn’t be modified by the function. It is only implicit. And that can be a big problem for students when working with marginally more complicated algorithms. Sure enough, type annotation is a thing now in <code>Python</code>, but it still is pretty new and comparatively few people actually use them.</p>
+</section>
+<section id="what-about-fortran" class="level3">
+<h3 class="anchored" data-anchor-id="what-about-fortran">What about <code>Fortran</code>?</h3>
+<p>Alright, I’ve spent the last five minutes talking shit about <code>Python</code> but how does <code>Fortran</code> compare with it? Here is a typical implementation of the same function. I’ve actually digged it from my own set of archived homeworks I did 15+ years ago and hardly modified it.</p>
+<div class="sourceCode" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode numberSource fortran number-lines code-with-copy"><code class="sourceCode fortranfixed"><span id="cb5-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">function</span> jacobi(b, dx, tol, maxiter) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">result</span>(u)</span>
+<span id="cb5-2">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">implicit</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">none</span></span>
+<span id="cb5-3">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">real</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">dimension(:, :)</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">intent(in)</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">::</span> b</span>
+<span id="cb5-4">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">real</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">intent(in)</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">::</span> dx, tol</span>
+<span id="cb5-5">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">integer</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">intent(in)</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">::</span> maxiter</span>
+<span id="cb5-6">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">real</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">dimension(:, :)</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">allocatable</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">::</span> u</span>
+<span id="cb5-7">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">! Internal variables.</span></span>
+<span id="cb5-8">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">real</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">dimension(:, :)</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">allocatable</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">::</span> tmp</span>
+<span id="cb5-9">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">integer</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">::</span> nx, ny, i, j, iteration</span>
+<span id="cb5-10"></span>
+<span id="cb5-11">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">! Initialize variables.</span></span>
+<span id="cb5-12">    nx <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">size</span>(b, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>) ; ny <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">size</span>(b, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>)</span>
+<span id="cb5-13">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">allocate</span>(u(nx, ny), source <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.0</span>)</span>
+<span id="cb5-14">    residual <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1.0</span></span>
+<span id="cb5-15"></span>
+<span id="cb5-16">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">! Jacobi solver.</span></span>
+<span id="cb5-17">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">do</span> iteration <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, maxiter</span>
+<span id="cb5-18">        <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">! Jacobi iteration.</span></span>
+<span id="cb5-19">        <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">do</span> j <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>, ny<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span></span>
+<span id="cb5-20">            <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">do</span> i <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>, nx<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span></span>
+<span id="cb5-21">                tmp(i, j) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.25</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span>(b(i, j)<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span>dx<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">**</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span> u(i<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, j) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span> u(i<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, j) <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&amp;</span></span>
+<span id="cb5-22">                                                <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span> u(i, j<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span> u(i, j<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>))</span>
+<span id="cb5-23">            <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">enddo</span></span>
+<span id="cb5-24">        <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">enddo</span></span>
+<span id="cb5-25"></span>
+<span id="cb5-26">        <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">! Compute residual.</span></span>
+<span id="cb5-27">        residual <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> norm2(u <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span> tmp)</span>
+<span id="cb5-28">        <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">! Update solution.</span></span>
+<span id="cb5-29">        u <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> tmp</span>
+<span id="cb5-30">        <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">! If convered, exit the loop.</span></span>
+<span id="cb5-31">        <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> (residual <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&lt;=</span> tol) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">exit</span></span>
+<span id="cb5-32">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">enddo</span></span>
+<span id="cb5-33"></span>
+<span id="cb5-34"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">end function</span></span></code></pre></div>
+<p>No surprise there. The task is sufficiently simple that both implementations are equally readable. If anything, the <code>Fortran</code> one is a bit more verbose. But in view of what I’ve just said about the <code>Python</code> code, I think it actually a good thing. Let me explain.</p>
+<p><strong>Definition of the variables –</strong> <code>Fortran</code> is a strongly typed language. Lines 2 to 8 are nothing but the definitions of the different variables used in the routine. While you might argue it’s a pain in the a** to write these, I think it can actually be very beneficial for students. Before even implementing the method, they have to clearly think about which variables are input, which are ouput, what are their types and dimensions. And to do so, they have to have at least a minimal understanding of the algorithm itself. Once it’s done, there are no more surprises (hopefully), and the contract between the code and the user is crystal clear. And more importantly, the effort put in clearly identifying the input and output of numerical algorithm usually pays off and leads to less error-prone process.</p>
+<p><strong>Begining and end of the constructs –</strong> <code>Fortran</code> uses the <code>do</code>/<code>end do</code> (or <code>enddo</code>) construct, clearly specifying where the loop starts where it ends. The indentation used in the code snippet really is just a matter of style. In constrast to <code>Python</code>, writing</p>
+<div class="sourceCode" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode numberSource fortran number-lines code-with-copy"><code class="sourceCode fortranfixed"><span id="cb6-1">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">do</span> j <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>, ny<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span></span>
+<span id="cb6-2">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">do</span> i <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>, nx<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span></span>
+<span id="cb6-3">    tmp(i, j) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.25</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span>(b(i, j)<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span>dx<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">**</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span> u(i<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, j) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span> u(i<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, j) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">&amp;</span></span>
+<span id="cb6-4">                                    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span> u(i, j<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span> u(i, j<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>))</span>
+<span id="cb6-5">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">enddo</span></span>
+<span id="cb6-6">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">enddo</span></span></code></pre></div>
+<p>does not make the code any less readable and wouldn’t change a dime in terms of computations. It’s a minor thing, fair enough. But it instantly get rid of the <code>IndentationError</code> or <code>TabError</code> which are puzzling students. I may be wrong, but I believe it actually reduces the cognitive load associated with the programming language and let the students focus on the actual numerical linear algebra task.</p>
+<p><strong>No off-by-one error –</strong> By default, <code>Fortran</code> uses a 1-based indexing. No off-by-one errors, period.</p>
+<p><strong>Intrinsic functions for basic scientific computations –</strong> While you have to use <code>np.linalg.norm</code> in <code>Python</code> to compute the norm of a vector, <code>Fortran</code> natively has the <code>norm2</code> function for that. No external library required. If you want to be picky, you may say that <code>norm2</code> is a weird name and that <code>norm</code> might be just fine.</p>
+<p><strong>Some quirks of <code>Fortran</code> –</strong> All is not perfect though, starting with Line 2 and the <code>implicit none</code> statement. This is a historical remnant which is considered good practice by modern <code>Fortran</code> standards but not actually needed. Students being students, they will more likely than not ask questions about it although it has nothing to do with the subject of the class itself. Admittidely, it can be a bit cumbersome to explicitely define all the integers you use even if it’s just for a one-time loop. Likewise, there is the question of <code>real</code> vs <code>double precision</code> vs <code>real(wp)</code> (where <code>wp</code> is yet another variable you’ve defined somewhere). I don’t think it matters too much though when learning the basics of numerical linear algebra algorithms, although it certainly does when you start discussing about precision and performances.</p>
+</section>
+</section>
+<section id="linear-least-squares-your-first-step-into-machine-learning" class="level2">
+<h2 class="anchored" data-anchor-id="linear-least-squares-your-first-step-into-machine-learning">Linear least-squares, your first step into Machine Learning</h2>
+<p>Alright, let’s look at another example. Same class, later in the semester. Professor X now discusses over-determined linear systems and how it relates to least-squares, regression and basic machine learning applications. During the hands-on session, you’re given the following problem</p>
+<blockquote class="blockquote">
+<p>Consider the following unconstrained quadratic program <img src="https://latex.codecogs.com/png.latex?%5Cmathrm%7Bminimize%7D%20%5Cquad%20%5C%7C%20Ax%20-%20b%20%5C%7C_2%5E2."> Write a least-squares solver based on the QR factorization of the matrix <img src="https://latex.codecogs.com/png.latex?A">. You can safely assume that <img src="https://latex.codecogs.com/png.latex?A"> is a tall matrix (i.e.&nbsp;<img src="https://latex.codecogs.com/png.latex?m%20%3E%20n">).</p>
+</blockquote>
+<p>Here is what the typical <code>Python</code> code written by the students might look like.</p>
+<div class="sourceCode" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb7-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> numpy <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> np</span>
+<span id="cb7-2"></span>
+<span id="cb7-3"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> qr(A):</span>
+<span id="cb7-4">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Initialize variables.</span></span>
+<span id="cb7-5">    m, n <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> A.shape</span>
+<span id="cb7-6">    Q <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> np.zeros((m, n))</span>
+<span id="cb7-7">    R <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> np.zeros((n, n))</span>
+<span id="cb7-8"></span>
+<span id="cb7-9">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># QR factorization based on the Gram-Schmidt orthogonalization process.</span></span>
+<span id="cb7-10">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> i <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">range</span>(n):</span>
+<span id="cb7-11">        q <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> A[:, i]</span>
+<span id="cb7-12">        <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Orthogonalization w.r.t. to the previous basis vectors.</span></span>
+<span id="cb7-13">        <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> j <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">range</span>(i):</span>
+<span id="cb7-14">            R[j, i] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> np.vdot(q, Q[:, j])</span>
+<span id="cb7-15">            q <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> q <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span> R[j, i]<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span>Q[:, j]</span>
+<span id="cb7-16"></span>
+<span id="cb7-17">        <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Normalize and store the new vector.</span></span>
+<span id="cb7-18">        R[i, i] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> np.linalg.norm(q)</span>
+<span id="cb7-19">        Q[:, i] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> q <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span> R[i, i]</span>
+<span id="cb7-20"></span>
+<span id="cb7-21">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> Q, R</span>
+<span id="cb7-22"></span>
+<span id="cb7-23"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> upper_triangular_solve(R, b):</span>
+<span id="cb7-24">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Initialize variables.</span></span>
+<span id="cb7-25">    n <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> R.shape[<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>]</span>
+<span id="cb7-26">    x <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> np.zeros((n))</span>
+<span id="cb7-27"></span>
+<span id="cb7-28">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Backsubstitution.</span></span>
+<span id="cb7-29">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> i <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">range</span>(n<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>):</span>
+<span id="cb7-30">        x[i] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> b[i]</span>
+<span id="cb7-31">        <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> j <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">range</span>(n<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, i, <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>):</span>
+<span id="cb7-32">            x[i] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> x[i] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span> R[i, j]<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span>x[j]</span>
+<span id="cb7-33">        x[i] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> x[i] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span> R[i, i]</span>
+<span id="cb7-34"></span>
+<span id="cb7-35">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> x</span>
+<span id="cb7-36"></span>
+<span id="cb7-37"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> lstsq(A, b):</span>
+<span id="cb7-38">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># QR factorization.</span></span>
+<span id="cb7-39">    Q, R <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> qr(A)</span>
+<span id="cb7-40">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Solve R @ x = Q.T @ b.</span></span>
+<span id="cb7-41">    x <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> upper_triangular_solve(R, Q.T <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">@</span> b)</span>
+<span id="cb7-42">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> x</span></code></pre></div>
+<p>This one was adapted from an exercise I gave last year. In reality, students lumped everything into one big function unless told otherwise, but nevermind. For comparison, here is the equivalent <code>Fortran</code> code.</p>
+<div class="sourceCode" id="cb8" style="background: #f1f3f5;"><pre class="sourceCode numberSource fortran number-lines code-with-copy"><code class="sourceCode fortranfixed"><span id="cb8-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">subroutine</span> qr(A, Q, R)</span>
+<span id="cb8-2">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">implicit</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">none</span></span>
+<span id="cb8-3">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">real</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">dimension(:, :)</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">intent(in)</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">::</span> A</span>
+<span id="cb8-4">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">real</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">dimension(:, :)</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">allocatable</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">intent(out)</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">::</span> Q, R</span>
+<span id="cb8-5">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">! Internal variables.</span></span>
+<span id="cb8-6">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">integer</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">::</span> i, j, m, n</span>
+<span id="cb8-7">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">real</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">dimension(:)</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">allocatable</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">::</span> q_hat</span>
+<span id="cb8-8"></span>
+<span id="cb8-9">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">! Initialize variables.</span></span>
+<span id="cb8-10">    m <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">size</span>(A, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>); n <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">size</span>(A, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>)</span>
+<span id="cb8-11">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">allocate</span>(Q(m, n), source<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.0</span>)</span>
+<span id="cb8-12">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">allocate</span>(R(n, n), source<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.0</span>)</span>
+<span id="cb8-13">    </span>
+<span id="cb8-14">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">! QR factorization based on the Gram-Schmidt orthogonalization process.</span></span>
+<span id="cb8-15">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">do</span> i <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, n</span>
+<span id="cb8-16">        q_hat <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> A(:, i)</span>
+<span id="cb8-17">        <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">! Orthogonalize w.r.t. the previous basis vectors.</span></span>
+<span id="cb8-18">        <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">do</span> j <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, i<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span></span>
+<span id="cb8-19">            R(j, i) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">dot_product</span>(q_hat, Q(:, j))</span>
+<span id="cb8-20">            q_hat <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> q_hat <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span> R(j, i)<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span>Q(:, j)</span>
+<span id="cb8-21">        <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">end do</span></span>
+<span id="cb8-22"></span>
+<span id="cb8-23">        <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">! Normalize and store the new vector.</span></span>
+<span id="cb8-24">        R(i, i) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> norm2(q_hat)</span>
+<span id="cb8-25">        Q(:, i) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> q_hat <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">/</span> R(i, i)</span>
+<span id="cb8-26">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">end do</span></span>
+<span id="cb8-27"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">end subroutine</span></span>
+<span id="cb8-28"></span>
+<span id="cb8-29"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">function</span> upper_triangular_solve(R, b) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">result</span>(x)</span>
+<span id="cb8-30">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">implicit</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">none</span></span>
+<span id="cb8-31">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">real</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">dimension(:, :)</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">intent(in)</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">::</span> R</span>
+<span id="cb8-32">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">real</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">dimension(:)</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">intent(in)</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">::</span> b</span>
+<span id="cb8-33">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">real</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">dimension(:)</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">allocatable</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">::</span> x</span>
+<span id="cb8-34">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">! Internal variables.</span></span>
+<span id="cb8-35">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">integer</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">::</span> n, i, j</span>
+<span id="cb8-36"></span>
+<span id="cb8-37">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">! Initialize variables.</span></span>
+<span id="cb8-38">    n <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">size</span>(R, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)</span>
+<span id="cb8-39">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">allocate</span>(x(n), source<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.0</span>)</span>
+<span id="cb8-40"></span>
+<span id="cb8-41">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">! Backsubstitution.</span></span>
+<span id="cb8-42">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">do</span> i <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> n, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span></span>
+<span id="cb8-43">        x(i) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> b(i)</span>
+<span id="cb8-44">        <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">do</span> j <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> n<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, i, <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span></span>
+<span id="cb8-45">            x(i) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> x(i) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span> R(i, j)<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span>x(j)</span>
+<span id="cb8-46">        <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">enddo</span></span>
+<span id="cb8-47">        x(i) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> x(i) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">/</span> R(i, i)</span>
+<span id="cb8-48">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">end do</span></span>
+<span id="cb8-49"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">end function</span></span>
+<span id="cb8-50"></span>
+<span id="cb8-51"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">function</span> lstsq(A, b) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">result</span>(x)</span>
+<span id="cb8-52">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">implicit</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">none</span></span>
+<span id="cb8-53">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">real</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">dimension(:, :)</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">intent(in)</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">::</span> A</span>
+<span id="cb8-54">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">real</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">dimension(:)</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">intent(in)</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">::</span> b</span>
+<span id="cb8-55">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">real</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">dimension(:)</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">allocatable</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">::</span> x</span>
+<span id="cb8-56">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">! Internal variables.</span></span>
+<span id="cb8-57">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">real</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">dimension(:, :)</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">allocatable</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">::</span> Q, R</span>
+<span id="cb8-58"></span>
+<span id="cb8-59">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">! QR factorization.</span></span>
+<span id="cb8-60">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">call</span> qr(A, Q, R)</span>
+<span id="cb8-61">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">! Solve R @ x = Q.T @ b.</span></span>
+<span id="cb8-62">    x <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> upper_triangular_solve(R, <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">matmul</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">transpose</span>(Q), b))</span>
+<span id="cb8-63"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">end function</span></span></code></pre></div>
+<p>Just like the Jacobi example, both implementations are equally readable. At this point in the semester, the students got somewhat more comfortable with <code>Python</code>. The classical indentation problems were not so much of a problem anymore. The off-by-one errors due to 0-based indexing for the Gram-Schmidt orthogonalization in <code>qr</code> or in the backsubstitution algorithm on the other hand… That was painful. In a 90-minutes class, it took almost a whole hour simply for them to debug these errors.</p>
+<p>But there was another thing that confused students. A lot. And that has to do with computing dot products in <code>numpy</code>. There’s so many different ways: <code>np.vdot(x, y)</code>, <code>np.dot(x.T, y)</code>, <code>np.dot(np.transpose(x), y)</code>, or <code>x.transpose().dot(y)</code> to list just the ones I have seen in their codes. Again, this has nothing to do with linear algebra, but everything with the language. Not only do they need to learn the math, but they simultaneously need to learn the not-quite-necessarily-math-standard syntax used in the language (yes, I’m looking at you <code>@</code>). It’s just a question of habits, sure enough, but again it can be impeding the learning process.</p>
+<p>On the other hand, the <code>Fortran</code> implementation is even closer to the standard mathematical description of the algorithm: 1-based indexing, intrinsic <code>dot_product</code> function, etc. But beside the <code>implicit none</code>, there is the need to use a <code>subroutine</code> rather than a <code>function</code> construct for the QR decomposition because it has two output variables. Not a big deal again, but to be fair, it does add another minor layer of abstraction due to the language semantics rather than that of the subject being studied.</p>
+</section>
+<section id="fortran-may-have-a-slight-edge-but-i-swept-some-things-under-the-rug" class="level2">
+<h2 class="anchored" data-anchor-id="fortran-may-have-a-slight-edge-but-i-swept-some-things-under-the-rug"><code>Fortran</code> may have a slight edge, but I swept some things under the rug…</h2>
+<p>In the end, when it comes to teaching the basics of numerical linear algebra, <code>Python</code> and <code>Fortran</code> are not that different. And in that regard, neither is <code>Julia</code> which I really like as well. The main advantages I see of using <code>Fortran</code> for this task however are:</p>
+<ul>
+<li><strong>1-based indexing</strong> : in my experience, the 0-based indexing in <code>Python</code> leads to so many off-by-one erros driving the students crazy. Because linear algebra textbooks naturally use 1-based indexing, having to translate everything in your head to 0-based indices is a huge cognitive burden on top of a subject already demanding enough. You might get used to it eventually, but it’s a painful process impeding the learning outcomes.</li>
+<li><strong>Strong typing</strong> : combined with <code>implicit none</code>, having to declare the type, dimension and input or output nature of every variable you use might seem cumbersome at first. But it forces students to pause and ponder to identify which is which. Sure this is an effort, but it is worth it. Learning is not effortless and this effort forces you to have a somewhat better understanding of a numerical algorithm before even starting to implement it. Which I think is a good thing.</li>
+<li><strong>Clear delineation of the constructs</strong> : at least during the first few weeks, having to rely only on visual clues to identify where does a loop ends in <code>Python</code> seems to be quite complicated for a non-negligible fraction of the students I have. In that respect, the <code>do</code>/<code>enddo</code> construct in <code>Fortran</code> is much more explicit and probably easier to grasp.</li>
+</ul>
+<p>Obvisouly, I’m not expecting educators worldwide to switch back to <code>Fortran</code> overnight, nor is it necessarily desirable. The advantages I see are non-negligible from my perspective but certainly not enough by themselves. There are many other things that need to be taken into account. <code>Python</code> is a very generalist language. You can do so much more than just numerical computing so it makes complete sense to have it in the classroom. The ecosystem is incredibly vast and the interactive nature definitely has its pros. Notebooks such as <code>Jupyter</code> can be incredible teaching tools (although they come with their own problems in term good coding practices). So are the <code>Pluto</code> notebooks in <code>Julia</code>.</p>
+<p><code>Fortran</code> is good at one thing: enabling computational scientists and engineers to write high-performing mathematical models without all the intricacies of equally peformant but more CS-oriented languages such as <code>C</code> or <code>C++</code>. Sure enough, the modern <code>Fortran</code> ecosystem is orders of magnitude smaller than <code>Python</code>, and targetted toward numerical computing almost exclusively. And the <code>Julia</code> one is fairly impressive. But the community is working on it (see the <a href="https://fortran-lang.org/">fortran-lang website</a> or the <a href="https://fortran-lang.discourse.group/">Fortran discourse</a> if you don’t trust me). The bad rep of <code>Fortran</code> is unjustified, particularly for teaching purposes. Many of its detractors have hardly been exposed to anything else than <code>FORTRAN 77</code>. And it’s true that, by current standards, most of <code>FORTRAN 77</code> codes are terrible sphagetti codes making extensive use of implicit typing and incomprehensible <code>goto</code> statements. Even I, as a <code>Fortran</code> programmer, acknowledge it. But that’s no longer what <code>Fortran</code> is since the 1990’s, and certainly not today!</p>
 <!--Include social share buttons-->
 <!-- 
 AddToAny check more: https://www.addtoany.com/buttons/for/website 
@@ -47,107 +1244,13 @@ https://quarto.org/docs/authoring/includes.html
 <script async="" src="https://static.addtoany.com/menu/page.js"></script>
 
 
-
- ]]></description>
-  <category>event</category>
-  <category>presentation</category>
-  <guid>https://drganghe.github.io/quarto-academic-website-template/posts/event-title/</guid>
-  <pubDate>Tue, 03 Sep 2024 04:00:00 GMT</pubDate>
-  <media:content url="https://drganghe.github.io/quarto-academic-website-template/files/images/placeholder2.JPG" medium="image"/>
-</item>
-<item>
-  <title>News item</title>
-  <dc:creator>News </dc:creator>
-  <link>https://drganghe.github.io/quarto-academic-website-template/posts/news-title/</link>
-  <description><![CDATA[ 
-
-
-
-
-<section id="summary" class="level2">
-<h2 class="anchored" data-anchor-id="summary">Summary</h2>
-<p>About the news</p>
-<!--Include social share buttons-->
-<!-- 
-AddToAny check more: https://www.addtoany.com/buttons/for/website 
-Using includes will make edits easier, will only need to add or remove button here if needed.
-https://quarto.org/docs/authoring/includes.html
--->
-<div class="a2a_kit a2a_kit_size_32 a2a_default_style">
-<p><a class="a2a_dd" href="https://www.addtoany.com/share"></a> <a class="a2a_button_linkedin"></a> <a class="a2a_button_bluesky"></a> <a class="a2a_button_facebook"></a> <a class="a2a_button_copy_link"></a> <a class="a2a_button_email"></a></p>
-</div>
-<script async="" src="https://static.addtoany.com/menu/page.js"></script>
-
-
 </section>
 
  ]]></description>
-  <category>news</category>
-  <guid>https://drganghe.github.io/quarto-academic-website-template/posts/news-title/</guid>
-  <pubDate>Mon, 24 Jun 2024 04:00:00 GMT</pubDate>
-  <media:content url="https://drganghe.github.io/quarto-academic-website-template/files/images/placeholder3.JPG" medium="image"/>
-</item>
-<item>
-  <title>Can quantum-mechanical description of physical reality be considered complete?</title>
-  <dc:creator>Albert Einstein</dc:creator>
-  <dc:creator>Boris Podolsky</dc:creator>
-  <dc:creator>Nathan Rosen</dc:creator>
-  <link>https://drganghe.github.io/quarto-academic-website-template/posts/paper-title/</link>
-  <description><![CDATA[ 
-
-
-
-
-<!--Include academic icons or bottons-->
-<!-- 
-Load Academicons v1: https://jpswalsh.github.io/academicons/
--->
-<p><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css"></p>
-<p><link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css"></p>
-<!---
-The following code are needed to show dimension citation and altmetrics.
-https://api.altmetric.com/embeds.html
-https://badge.dimensions.ai/
---->
-<script type="text/javascript" src="https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js"></script>
-<script async="" src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
-<script type="text/javascript" src="//cdn.plu.mx/widget-popup.js"></script>
-<section id="abstract" class="level2">
-<h2 class="anchored" data-anchor-id="abstract">Abstract</h2>
-<p>In a complete theory there is an element corresponding to each element of reality. A sufficient condition for the reality of a physical quantity is the possibility of predicting it with certainty, without disturbing the system. In quantum mechanics in the case of two physical quantities described by non-commuting operators, the knowledge of one precludes the knowledge of the other. Then either (1) the description of reality given by the wave function in quantum mechanics is not complete or (2) these two quantities cannot have simultaneous reality. Consideration of the problem of making predictions concerning a system on the basis of measurements made on another system that had previously interacted with it leads to the result that if (1) is false then (2) is also false. One is thus led to conclude that the description of reality as given by a wave function is not complete.</p>
-</section>
-<section id="links" class="level2">
-<h2 class="anchored" data-anchor-id="links">Links</h2>
-<p>Published <a href="https://journals.aps.org/pr/pdf/10.1103/PhysRev.47.777">paper</a></p>
-<script type="text/javascript" src="https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js"></script><div class="altmetric-embed" data-badge-popover="right" data-badge-type="donut" data-doi="10.1103/PhysRev.47.777"></div>
-
-<span class="__dimensions_badge_embed__" data-doi="10.1103/PhysRev.47.777" data-hide-zero-citations="true" data-style="small_circle"></span><script async="" src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
-
-
-</section>
-
-<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" id="quarto-citation"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@article{einstein1935,
-  author = {Einstein, Albert and Podolsky, Boris and Rosen, Nathan},
-  title = {Can Quantum-Mechanical Description of Physical Reality Be
-    Considered Complete?},
-  journal = {Physical Review},
-  volume = {47},
-  number = {7938},
-  pages = {777-80},
-  date = {1935-05-15},
-  url = {https://journals.aps.org/pr/pdf/10.1103/PhysRev.47.777},
-  doi = {10.1103/PhysRev.47.777},
-  langid = {en}
-}
-</code></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-einstein1935" class="csl-entry quarto-appendix-citeas">
-Einstein, Albert, Boris Podolsky, and Nathan Rosen. 1935. <span>“Can
-Quantum-Mechanical Description of Physical Reality Be Considered
-Complete?”</span> <em>Physical Review</em> 47 (7938): 777–80. <a href="https://doi.org/10.1103/PhysRev.47.777">https://doi.org/10.1103/PhysRev.47.777</a>.
-</div></div></section></div> ]]></description>
-  <category>paper</category>
-  <guid>https://drganghe.github.io/quarto-academic-website-template/posts/paper-title/</guid>
-  <pubDate>Wed, 15 May 1935 04:00:00 GMT</pubDate>
-  <media:content url="https://drganghe.github.io/quarto-academic-website-template/posts/paper-title/featured.jpg" medium="image" type="image/jpeg"/>
+  <category>blog</category>
+  <guid>https://loiseaujc.github.io/posts/blog-title/fortran_vs_python.html</guid>
+  <pubDate>Mon, 08 Sep 2025 22:00:00 GMT</pubDate>
+  <media:content url="https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Fortran_acs_cover.jpeg/250px-Fortran_acs_cover.jpeg" medium="image" type="image/jpeg"/>
 </item>
 </channel>
 </rss>

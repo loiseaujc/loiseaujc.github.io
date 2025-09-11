@@ -1,0 +1,10 @@
+    - path: https://pastel.hal.science/tel-03169495
+      image: "/files/profiles/profile2.JPG"
+      title: "Simon Kern"
+      lastname: "Kern"
+#      author: 
+      subtitle: "Postdoc"
+#      date: "2024-03-12"
+      categories: [Postdoc] 
+      started: "2023"
+      ended: "2026"    

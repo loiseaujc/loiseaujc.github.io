@@ -2,9 +2,7 @@
   {
     "listing": "/posts.html",
     "items": [
-      "/posts/event-title/index.html",
-      "/posts/news-title/index.html",
-      "/posts/paper-title/index.html"
+      "/posts/blog-title/fortran_vs_python.html"
     ]
   },
   {
@@ -14,9 +12,7 @@
   {
     "listing": "/index.html",
     "items": [
-      "/posts/event-title/index.html",
-      "/posts/news-title/index.html",
-      "/posts/paper-title/index.html"
+      "/posts/blog-title/fortran_vs_python.html"
     ]
   },
   {

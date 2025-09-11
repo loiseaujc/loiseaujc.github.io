@@ -4,15 +4,15 @@ project:
 
 # Meta
 description-meta: "Quarto Academic Website Template adapted by Dr. Gang He"
-author-meta: "Dr. Gang He"
+author-meta: "Dr. Jean-Christophe Loiseau"
 
 website:
-  title: "Quarto Academic"
+  title: "Dr. Jean-Christophe Loiseau"
   image: "https://quarto.org/quarto.png"
   description: "Quarto Academic Website Template adapted by Dr. Gang He"
  
   navbar:
-    background: light  # You can change the background color here
+    background: dark  # You can change the background color here
 
     left:   # You can comment out all navigation items here if you just like to keep the index page only
 #      - text: Home
@@ -41,12 +41,14 @@ website:
           href: posts.qmd#category=presentation                   
       - text: Group   # Comment the Group part out to remove the Group page
         href: people.qmd
+      - text: Blog
+        href: posts.qmd#category=blog
 
     right: 
       - text: CV
         href: files/nsf-biosketch.pdf
       - icon: github
-        href: https://github.com/drganghe/quarto-academic-website-template
+        href: https://github.com/loiseaujc
         target: _blank
       - text: "{{< fa brands bluesky >}}"
         href: https://bsky.app
@@ -58,7 +60,7 @@ website:
   page-navigation: true
   
   page-footer: 
-    left: "[Your Name](http://www.github.com) &copy; <script>document.write(new Date().getFullYear())</script>" 
+    left: "[Jean-Christophe Loiseau](http://www.github.com) &copy; <script>document.write(new Date().getFullYear())</script>" 
     center: "Build on [Quart Academic Website Template](https://github.com/drganghe/quarto-academic-website-template) adapted by [Dr. Gang He](http://drganghe.github.io)"
     right:  
       - icon: github
@@ -87,11 +89,11 @@ website:
   twitter-card: true 
 #  card-style: summary      
   
-  site-url: "https://drganghe.github.io/quarto-academic-website-template"
+  site-url: "https://loiseaujc.github.io/"
   
-  google-analytics:
-    tracking-id: ""  # Please delete or replace with your own tracking ID
-    anonymize-ip: true 
+  # google-analytics:
+  #   tracking-id: ""  # Please delete or replace with your own tracking ID
+  #   anonymize-ip: true 
 
 bibliography: references.bib  # Add references.bib to the root folder to enable the bibliography function
 
@@ -110,4 +112,6 @@ format:
     email-obfuscation: javascript
     link-external-filter: '^(?:http:|https:)\/\/drganghe\.github\.io\/custom'
     include-in-header: "files/includes/_academic.qmd"
-
+    monofont: Fira Code, consolas, courier, monospace
+    highlight-style: dracula
+    code-line-numbers: true

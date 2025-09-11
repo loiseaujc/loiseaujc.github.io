@@ -1,5 +1,5 @@
 ---
-title: "Quarto Academic, PhD"
+title: "Jean-Christophe Loiseau, PhD"
 description-meta: "Quarto Academic Website Template adapted by Dr. Gang He"
 image: "files/images/placeholder4.JPG"
 page-navigation: false
@@ -12,40 +12,26 @@ about:
   template: trestles
   image-width: 70%
   links:
-    - icon: sun
-      text: Lab
-      href: https://www.github.com
-      target: _blank
-    - icon: globe
-      text: Uprofile
-      href: https://baruch.cuny.edu
-      target: _blank
     - icon: envelope
       text: E-mail
-      href: mailto:email@gmail.com    
+      href: mailto:jean-christophe.loiseau@ensam.eu
+    - icon: github
+      text: GitHub
+      href: https://www.github.com/loiseaujc
+      target: _blank
     - icon: linkedin
       text: LinkedIn
       href: https://linkedin.com
       target: _blank
-    - icon: youtube
-      text: YouTube
-      href: https://www.youtube.com     
-      target: _blank 
-    - text: "{{< ai orcid >}} ORCID"   # use academic icons, "" are needed, you also need to install the fontawesome extension
-      href: https://orcid.org
-      target: _blank
-    - text: "{{< ai clarivate >}} Web of Science"
-      href: https://www.webofscience.com  
-      target: _blank
-    - text: "{{< ai scopus >}} Scopus"
-      href: https://www.scopus.com
+    - text: "{{< ai orcid >}} ORCID"
+      href: https://orcid.org/0000-0002-7244-8416
       target: _blank
     - text: "{{< ai google-scholar >}} Google Scholar"
-      href: https://scholar.google.com
+      href: https://scholar.google.com/citations?user=4rvzkMEAAAAJ&hl=fr
       target: _blank
-#    - text: "{{< ai researchgate >}} Research Gate"
-#      href: https://www.researchgate.net
-#      target: _blank
+    - text: "{{< ai researchgate >}} Research Gate"
+      href: https://www.researchgate.net/profile/Jean-Christophe-Loiseau
+      target: _blank
 
 listing:   # Comment the listing section and delete corresponding lines in the index.qmd file to remove the recent posts
   - id: recent-posts
@@ -67,31 +53,28 @@ listing:   # Comment the listing section and delete corresponding lines in the i
 
 :::{#hero-heading}
 
-I'm a [Quarto Academeic Website Template](https://github.com/drganghe/quarto-academic-website-template) adapted by [Dr. Gang He](http://drganghe.github.io).
 
-I'm a template that you can fork to build your own website with easy adaptation and deployment.
+:::{.callout-warning}
+Site still under construction. Bare with me.
+:::
 
-1. **Star** this repository to bookmark it for future reference.  
-1. **Fork** this repository and rename it to `YourGitHubUserName.github.io`.  
-1. **Update** the `_quarto.yml` file to configure your site’s basic settings.  
-1. **Add or edit content** in the following files and folders:
-   - `/posts/` – posts about publications, news, events  
-   - `teaching.qmd` – teaching information  
-   - `projects.yml` – research or other projects  
-   - `people.qmd` and `/people/` – team or collaborators  
-   - `/files/` - profiles, images, pdfs, and includes 
-1. [**Render and preview**](https://quarto.org/docs/websites/) your site locally.  
-1. [**Publish**](https://quarto.org/docs/publishing/github-pages.html) your site using GitHub Pages (make sure [configuring](https://quarto.org/docs/publishing/images/gh-pages-docs-dir.png) your GitHub repository to publish from the `docs` directory, not the `root` folder). 
-1. **Refine and polish** your content and design as needed.  
-1. ✅ Enjoy your new website!
+## Bio
 
-## Experience
+I'm an Assitant Professor of applied mathematics and fluid dynamics at [Arts et Métiers Institute of Technology](https://artsetmetiers.fr/en) (Paris, France).
+I split my time between teaching to (mechanical) engineering students and doing research on topics such as transition to turbulence, flow control and data-driven modelling.
 
-- Researcher, Univerisity
+On this site I keep a list of [my publications](posts.qmd#category=paper), the [courses](teaching.qmd) I teach, the [open-source softwares]() I develop or contribute to, as well as a [technical blog](posts.qmd#category=blog).
 
-## Education
+## Selected Projects
 
-- PhD, Univerisity
+{{< fa brands python size=1xl >}} [`PySINDy`](https://github.com/dynamicslab/pysindy) -- Sparse identification of nonlinear dynamical systems from data.
+
+![](https://fortran-lang.org/_static/fortran-logo-256x256.png){width=1em} [`LightKrylov`](https://github.com/nekStab/LightKrylov) -- Implementation of Krylov methods in modern Fortran.
+
+![](https://fortran-lang.org/_static/fortran-logo-256x256.png){width=1em} [`LightConvex`](https://github.com/loiseaujc/LightConvex) -- Convex programming in modern Fortran.
+
+![](https://fortran-lang.org/_static/fortran-logo-256x256.png){width=1em} [`stdlib`](https://github.com/fortran-lang/stdlib) -- Community-driven development of a standard library for Fortran.
+
 
 :::
 

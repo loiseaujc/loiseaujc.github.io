@@ -5,29 +5,198 @@ description-meta: "Information, pdfs, and social metrics of papers"
 #back-to-top-navigation: true
 title-block-banner: false
 css: custom.css
+tbl-cap-location: bottom
 ---
 
-
+```{=html}
+<style>
+.flushright {
+   text-align: right;
+}
+</style>
+```
 <!--Include academic icons or buttons-->
 {{< include /files/includes/_academic.qmd >}}
 
-Notes: \* corresponding author; <sup>GS</sup> graduate student advisee; <sup>VS</sup> visiting scholar; ![](https://drganghe.github.io/files/images/highly-cited-paper-badge.png "ESI Highly Cited Paper"){width=20 fig-alt="Highly cited paper"} ESI [Highly Cited Paper](https://webofscience.help.clarivate.com/en-us/Content/esi-highly-cited-papers.html) (top 1%); ![](https://drganghe.github.io/files/images/hot-paper-badge.png "ESI Hot Paper"){width=20 fig-alt="Hot paper"} ESI [Hot Paper](https://webofscience.help.clarivate.com/en-us/Content/esi-hot-papers.html) (top 0.1%) 
 
-Total citations as of January 2025:
+<!-- ![](https://drganghe.github.io/files/images/highly-cited-paper-badge.png "ESI Highly Cited Paper"){width=20 fig-alt="Highly cited paper"} ESI [Highly Cited Paper](https://webofscience.help.clarivate.com/en-us/Content/esi-highly-cited-papers.html) (top 1%); ![](https://drganghe.github.io/files/images/hot-paper-badge.png "ESI Hot Paper"){width=20 fig-alt="Hot paper"} ESI [Hot Paper](https://webofscience.help.clarivate.com/en-us/Content/esi-hot-papers.html) (top 0.1%)  -->
 
-- [Web of Science](https://www.webofscience.com): 100,000 (h-index = 100)   
-- [Google Scholar](https://scholar.google.com/citations?user=qc6CJjYAAAAJ&hl=en): 179,000 (h-index = 127, i10-index = 377) 
 
-## Selected Work
+| Citations | h-index | i-10 index |
+| :---: | :---: | :---: |
+| 2229 | 20 | 26 |
 
-Einstein, A., Podolsky, B., & Rosen, N. (1935). [Can quantum-mechanical description of physical reality be considered complete?](posts/paper-title/index.qmd). *Physical review*, 47(10), 777. \[[pdf](https://scholar.google.com/)\] \[[code and data](https://doi.org)\] ![](https://drganghe.github.io/files/images/highly-cited-paper-badge.png "ESI Highly Cited Paper"){width=20 fig-alt="Highly cited paper"} ![](https://drganghe.github.io/files/images/hot-paper-badge.png "ESI Hot Paper"){width=20 fig-alt="Hot paper"} <span class="__dimensions_badge_embed__" data-doi="10.1103/PhysRev.47.777" data-style="large_rectangle"></span> <div data-badge-popover="right" data-badge-type="1" data-doi="10.1103/PhysRev.47.777" data-hide-no-mentions="true" class="altmetric-embed"></div>     
+: Total citations as of September 2025 from [Google Scholar](https://scholar.google.com/citations?user=4rvzkMEAAAAJ&hl=en) {{< ai google-scholar size=xl color=black >}}
 
+List of publications in reversed chronological order (most recent first). For each, a link to the journal version is given along with the corresponding arXiv preprint (if not open access).
+
+[*Notes*]{.underline} : \* corresponding author; <sup>GS</sup> graduate student advisee; <sup>VS</sup> visiting scholar.
+
+---
+
+---
+
+R. A. S. Frantz<sup>GS</sup>\*, C. Mimeau, M. Salihoglu<sup>GS</sup>, **J.-Ch. Loiseau**, & J.-Ch. Robinet (2025). Bifurcation sequence in the wakes of a sphere and a cube. *Journal of Fluid Mechanics*, vol. 1018.
+\[[PDF](https://www.cambridge.org/core/journals/journal-of-fluid-mechanics/article/bifurcation-sequence-in-the-wakes-of-a-sphere-and-a-cube/FD3454216F8CDCD9F6CCDA3ECCB78EBA)\]
+<span class="__dimensions_badge_embed__" data-doi="10.1017/jfm.2025.10469" data-style="large_rectangle"></span> <div data-badge-popover="right" data-badge-type="1" data-doi="10.1017/jfm.2025.10469" data-hide-no-mentions="true" class="altmetric-embed"></div>
 
 <center><hr style="width:50%"></center>
 
-Einstein, A. (1965). Concerning an heuristic point of view toward the emission and transformation of light. *American Journal of Physics*, 33(5), 367. [[pdf](https://icg.isy.liu.se/en/phd-courses/quantum_foundations/references/Einstein1905b.pdf)] <span class="__dimensions_badge_embed__" data-doi="10.1038/s41560-023-01304-w" data-style="large_rectangle"></span> <div data-badge-popover="right" data-badge-type="1" data-doi="10.1038/s41560-023-01304-w" data-hide-no-mentions="true" class="altmetric-embed"></div>
+J. L. Callaham\*<sup>GS</sup>, **J.-Ch. Loiseau**, & S. L. Brunton (2023). Multiscale model reduction for incompressible flows. *Journal of Fluid Mechanics*, vol. 973.
+\[[PDF](https://www.cambridge.org/core/services/aop-cambridge-core/content/view/FC550C3A53CEB7174759D0C45C3DFDBB/S0022112023005104a_hi.pdf/multiscale-model-reduction-for-incompressible-flows.pdf)\]
+<span class="__dimensions_badge_embed__" data-doi="10.1017/jfm.2023.510" data-style="large_rectangle"></span> <div data-badge-popover="right" data-badge-type="1" data-doi="10.1017/jfm.2023.510" data-hide-no-mentions="true" class="altmetric-embed"></div>
+
+<center><hr style="width:50%"></center>
+
+R. A. S. Frantz<sup>GS</sup>\*, **J.-Ch. Loiseau**, & J.-Ch. Robinet (2023). Krylov methods for large-scale dynamical systems: applications in fluid dynamics. *Applied Mechanics Review*, 75(3). \[[PDF](https://asmedigitalcollection.asme.org/appliedmechanicsreviews/article-abstract/75/3/030802/1156502/Krylov-Methods-for-Large-Scale-Dynamical-Systems)\] \[[arXiv](https://arxiv.org/pdf/2301.12940)\]
+<span class="__dimensions_badge_embed__" data-doi="10.1115/1.4056808" data-style="large_rectangle"></span> <div data-badge-popover="right" data-badge-type="1" data-doi="10.1115/1.4056808" data-hide-no-mentions="true" class="altmetric-embed"></div>
+
+<center><hr style=width:50%></center>
+
+M. A. Elhaway<sup>GS</sup>, F. Romano, **J.-Ch. Loiseau**, & A. Dazin\* (2023). Machine learning for optimal flow control in an axial compressor. *European Physical Journal E.*, 46(28). \[[PDF](https://link.springer.com/content/pdf/10.1140/epje/s10189-023-00284-9.pdf)\]
+<span class="__dimensions_badge_embed__" data-doi="10.1140/epje/s10189-023-00284-9" data-style="large_rectangle"></span> <div data-badge-popover="right" data-badge-type="1" data-doi="10.1140/epje/s10189-023-00284-9" data-hide-no-mentions="true" class="altmetric-embed"></div>
 
 
+<center><hr style=width:50%></center>
+
+G. Nastro\*, J.-Ch. Robinet, **J.-Ch. Loiseau**, P.-Y. Passaggia, & N. Mazellier (2023). Global stability, sensitivity and passive control of low-Reynolds number flows around NACA 4412 swept wings. *Journal of Fluid Mechanics*, vol. 957. \[[PDF](https://www.cambridge.org/core/services/aop-cambridge-core/content/view/9A18EB3560D675EC11D91A7BD4E302F3/S0022112023000411a.pdf/global_stability_sensitivity_and_passive_control_of_lowreynoldsnumber_flows_around_naca_4412_swept_wings.pdf)\]
+<span class="__dimensions_badge_embed__" data-doi="10.1017/jfm.2023.41" data-style="large_rectangle"></span> <div data-badge-popover="right" data-badge-type="1" data-doi="10.1017/jfm.2023.41" data-hide-no-mentions="true" class="altmetric-embed"></div>  
+
+<center><hr style=width:50%></center>
+
+O. Chehab<sup>GS</sup>, A. Défossez, **J.-Ch. Loiseau**, A. Gramfort, & J.-R. King\* (2022). Deep recurrent encoder: an end-to-end network to model magnetoencephalography at scale. *Neurons, Behavior, Data Analysis and Theory*. \[[PDF](Deep Recurrent Encoder: an end-to-end network to model magnetoencephalography at scale)\]
+<span class="__dimensions_badge_embed__" data-doi="10.51628/001c.38668" data-style="large_rectangle"></span> <div data-badge-popover="right" data-badge-type="1" data-doi="10.51628/001c.38668" data-hide-no-mentions="true" class="altmetric-embed"></div>
+
+<center><hr style=width:50%></center>
+
+J. L. Callaham<sup>GS</sup>\*, G. Rigas, **J.-Ch. Loiseau**, & S. L. Brunton (2022). An empirical mean-field model of symmetry-breaking in a turbulent wake. *Science Advances*, 8(19). \[[PDF](https://www.science.org/doi/full/10.1126/sciadv.abm4786)\]
+<span class="__dimensions_badge_embed__" data-doi="10.1126/sciadv.abm4786" data-style="large_rectangle"></span> <div data-badge-popover="right" data-badge-type="1" data-doi="10.1126/sciadv.abm4786" data-hide-no-mentions="true" class="altmetric-embed"></div>
+
+<center><hr style=width:50%></center>
+
+A. Sansica\*, **J.-Ch. Loiseau**, M. Kanamori, A. Hashimoto, & J.-Ch. Robinet (2022). System identification of two-dimensional transonic buffet. *AIAA Journal*, 60(5). \[[PDF](https://hal.science/hal-03906486v1/file/DYNFLUID_AIAA_2022_LOISEAU.pdf)\]
+<span class="__dimensions_badge_embed__" data-doi="10.2514/1.J061001" data-style="large_rectangle"></span> <div data-badge-popover="right" data-badge-type="1" data-doi="10.2514/1.J061001" data-hide-no-mentions="true" class="altmetric-embed"></div>
+
+<center><hr style=width:50%></center>
+
+J. L. Callaham<sup>GS</sup>\*, S. L. Brunton, & **J.-Ch. Loiseau** (2022). On the role of nonlinear correlations in reduced-order modelling. *Journal of Fluid Mechanics*, vol. 938. \[[PDF](https://www.cambridge.org/core/services/aop-cambridge-core/content/view/CC2980F9AA4AC20A7453C3056ED950C4/S0022112021009940a.pdf/on-the-role-of-nonlinear-correlations-in-reduced-order-modelling.pdf)\]
+<span class="__dimensions_badge_embed__" data-doi="10.1017/jfm.2021.994" data-style="large_rectangle"></span> <div data-badge-popover="right" data-badge-type="1" data-doi="10.1017/jfm.2021.994" data-hide-no-mentions="true" class="altmetric-embed"></div>
+
+<center><hr style=width:50%></center>
+
+A. A. Kaptanoglu<sup>GS</sup>\*, B. M. de Silva<sup>GS</sup>, U. Fasel, K. Kaheman<sup>GS</sup>, A. J. Goldschmidt, J. Callaham<sup>GS</sup>, C. B. Delahunt, Z. G. Nicolaou, K. Champion<sup>GS</sup>, **J.-Ch. Loiseau**, J. N. Kutz, & S. L. Brunton (2022). `PySINDy`: a comprehensive Python package for robust sparse system identification. *Journal of Open Source Software*, 7(69). \[[PDF](https://joss.theoj.org/papers/10.21105/joss.03994)\]
+<span class="__dimensions_badge_embed__" data-doi="10.21105/joss.03994" data-style="large_rectangle"></span> <div data-badge-popover="right" data-badge-type="1" data-doi="10.21105/joss.03994" data-hide-no-mentions="true" class="altmetric-embed"></div>
+
+<center><hr style=width:50%></center>
+
+J. L. Callaham<sup>GS</sup>\*, **J.-Ch. Loiseau**, G. Rigas, & S. L. Brunton (2021). Nonlinear stochastic modelling with Langevin regression. *Proceedings of the Royal Society A*, 477:20210092.
+\[[PDF](https://royalsocietypublishing.org/doi/pdf/10.1098/rspa.2021.0092)\]
+<span class="__dimensions_badge_embed__" data-doi="10.1098/rspa.2021.0092" data-style="large_rectangle"></span> <div data-badge-popover="right" data-badge-type="1" data-doi="10.1098/rspa.2021.0092" data-hide-no-mentions="true" class="altmetric-embed"></div>
+
+<center><hr style=width:50%></center>
+
+M. A. Bucci<sup>GS</sup>\*, S. Cherubini, **J.-Ch. Loiseau**, & J.-Ch. Robinet (2021). Influence of freestream turbulence on the flow over a wall roughness. *Physical Review Fluids*, vol. 6.
+\[[PDF](https://journals.aps.org/prfluids/abstract/10.1103/PhysRevFluids.6.063903)\]
+<span class="__dimensions_badge_embed__" data-doi="10.1103/PhysRevFluids.6.063903" data-style="large_rectangle"></span> <div data-badge-popover="right" data-badge-type="1" data-doi="10.1103/PhysRevFluids.6.063903" data-hide-no-mentions="true" class="altmetric-embed"></div>
+
+<center><hr style=width:50%></center>
+
+**J.-Ch. Loiseau**\* (2020). Data-driven modeling of the chaotic thermal convection in an annular thermosyphon. *Theoretical and Computational Fluid Dynamics*, 34(4).
+\[[PDF](https://link.springer.com/article/10.1007/s00162-020-00536-w)\]
+<span class="__dimensions_badge_embed__" data-doi="10.1007/s00162-020-00536-w" data-style="large_rectangle"></span> <div data-badge-popover="right" data-badge-type="1" data-doi="10.1007/s00162-020-00536-w" data-hide-no-mentions="true" class="altmetric-embed"></div>
+
+<center><hr style=width:50%></center>
+
+B. M. de Silva<sup>GS</sup>\*, K. Champion<sup>GS</sup>, M. Quade, **J.-Ch. Loiseau**, J. N. Kutz, & S. L. Brunton (2020). `PySINDy`: a Python package for the sparse identification of nonlinear dynamical systems from data. *Journal of Open Source Software*, 5(49).
+\[[PDF](https://joss.theoj.org/papers/10.21105/joss.02104)\]
+<span class="__dimensions_badge_embed__" data-doi="10.21105/joss.02104" data-style="large_rectangle"></span> <div data-badge-popover="right" data-badge-type="1" data-doi="10.21105/joss.02104" data-hide-no-mentions="true" class="altmetric-embed"></div>
+
+<center><hr style=width:50%></center>
+
+Y. Bengana<sup>GS</sup>, **J.-Ch. Loiseau**, J.-Ch. Robinet, & L. S. Tuckerman\* (2019). Bifurcation analysis and frequency prediction in shear-driven cavity flow. *Journal of Fluid Mechanics*, vol. 875.
+\[[PDF](https://sam.ensam.eu/handle/10985/18039)\]
+<span class="__dimensions_badge_embed__" data-doi="10.1017/jfm.2019.422" data-style="large_rectangle"></span> <div data-badge-popover="right" data-badge-type="1" data-doi="10.1017/jfm.2019.422" data-hide-no-mentions="true" class="altmetric-embed"></div>
+
+<center><hr style=width:50%></center>
+
+S. Ghosh<sup>GS</sup>\*, **J.-Ch. Loiseau**, W.-P. Breugem, & L. Brandt (2019). Modal and non-modal linear stability of Poiseuille flow through a channel with a porous substrate. *European Journal of Mechanics - B/Fluids*, vol. 75.
+\[[PDF](https://hal.science/hal-02470688v1/file/DYNFLUID_EJM_2019_LOISEAU.pdf)\]
+<span class="__dimensions_badge_embed__" data-doi="10.1016/j.euromechflu.2018.11.013" data-style="large_rectangle"></span> <div data-badge-popover="right" data-badge-type="1" data-doi="10.1016/j.euromechflu.2018.11.013" data-hide-no-mentions="true" class="altmetric-embed"></div>
+
+
+<center><hr style=width:50%></center>
+
+F. Picella<sup>GS</sup>\*, **J.-Ch. Loiseau**, F. Lusseyran, J.-Ch. Robinet, S. Cherubini, & L. Pastur (2018). Successive bifurcations in a fully three-dimensional open cavity flow. *Journal of Fluid Mechanics*, vol. 844.
+\[[PDF](https://www.cambridge.org/core/journals/journal-of-fluid-mechanics/article/abs/successive-bifurcations-in-a-fully-threedimensional-open-cavity-flow/7E7D87FF453E91FF728563567F278CCB)\]
+<span class="__dimensions_badge_embed__" data-doi="10.1017/jfm.2018.169" data-style="large_rectangle"></span> <div data-badge-popover="right" data-badge-type="1" data-doi="10.1017/jfm.2018.169" data-hide-no-mentions="true" class="altmetric-embed"></div>
+
+<center><hr style=width:50%></center>
+
+**J.-Ch. Loiseau**\*, B. R. Noack, & S. L. Brunton (2018). Sparse reduced-order modelling: sensor-based dynamics to full-state estimation. *Journal of Fluid Mechanics*, vol. 844
+\[[PDF](https://arxiv.org/pdf/1706.03531)\]
+<span class="__dimensions_badge_embed__" data-doi="10.1017/jfm.2018.147" data-style="large_rectangle"></span> <div data-badge-popover="right" data-badge-type="1" data-doi="10.1017/jfm.2018.147" data-hide-no-mentions="true" class="altmetric-embed"></div>
+
+<center><hr style=width:50%></center>
+
+**J.-Ch. Loiseau**\* and S. L. Brunton (2018). Constrained sparse Galerkin regression. *Journal of Fluid Mechanics*, vol. 838.
+\[[PDF](https://www.cambridge.org/core/journals/journal-of-fluid-mechanics/article/abs/constrained-sparse-galerkin-regression/0E18A4A55FF5AC1401D236C0E4D1CAAE)\]
+<span class="__dimensions_badge_embed__" data-doi="10.1017/jfm.2017.823" data-style="large_rectangle"></span> <div data-badge-popover="right" data-badge-type="1" data-doi="10.1017/jfm.2017.823" data-hide-no-mentions="true" class="altmetric-embed"></div>
+
+<center><hr style=width:50%></center>
+
+M. A. Bucci<sup>GS</sup>\*, D. K. Puckert<sup>GS</sup>, C. A. Andriano<sup>GS</sup>, **J.-Ch. Loiseau**, S. Cherubini, J.-Ch. Robinet, & U. Rist (2017). Roughness-induced transition by quasi-resonance of a varicose global mode. *Journal of Fluid Mechanics*, vol. 836.
+\[[PDF](https://www.cambridge.org/core/journals/journal-of-fluid-mechanics/article/abs/constrained-sparse-galerkin-regression/0E18A4A55FF5AC1401D236C0E4D1CAAE)\]
+<span class="__dimensions_badge_embed__" data-doi="10.1017/jfm.2017.791" data-style="large_rectangle"></span> <div data-badge-popover="right" data-badge-type="1" data-doi="10.1017/jfm.2017.791" data-hide-no-mentions="true" class="altmetric-embed"></div>
+
+<center><hr style=width:50%></center>
+
+Z. Ge<sup>GS</sup>\*, **J.-Ch. Loiseau**, O. Tammisola, & L. Brandt (2018). An efficient mass-preserving interface-correction level set/ghost fluid method for droplet suspensions under depletion forces. *Journal of Computational Physics*, vol. 353.
+\[[PDF](https://www.cambridge.org/core/journals/journal-of-fluid-mechanics/article/abs/constrained-sparse-galerkin-regression/0E18A4A55FF5AC1401D236C0E4D1CAAE)\]
+<span class="__dimensions_badge_embed__" data-doi="10.1016/j.jcp.2017.10.046" data-style="large_rectangle"></span> <div data-badge-popover="right" data-badge-type="1" data-doi="10.1016/j.jcp.2017.10.046" data-hide-no-mentions="true" class="altmetric-embed"></div>
+
+<center><hr style=width:50%></center>
+
+O. Tammisola, **J.-Ch. Loiseau**, & L. Brandt (2017). Effect of viscosity ratio on the self-sustained instabilities in planar immiscible jets. *Physical Review Fluids*, vol. 2.
+\[[PDF](https://arxiv.org/pdf/1701.02972)\]
+<span class="__dimensions_badge_embed__" data-doi="10.1103/PhysRevFluids.2.033903" data-style="large_rectangle"></span> <div data-badge-popover="right" data-badge-type="1" data-doi="10.1103/PhysRevFluids.2.033903" data-hide-no-mentions="true" class="altmetric-embed"></div>
+
+<center><hr style=width:50%></center>
+
+A. A. Banaei<sup>GS</sup>, **J.-Ch. Loiseau**, I. Lashgari<sup>GS</sup>, & L. Brandt (2017). Numerical simulations of elastic capsules with nucleus in shear flow. *European Journal of Computational Mechanics*, vol. 26.
+\[[PDF](https://arxiv.org/pdf/1705.09338)\]
+<span class="__dimensions_badge_embed__" data-doi="10.1080/17797179.2017.1294828" data-style="large_rectangle"></span> <div data-badge-popover="right" data-badge-type="1" data-doi="10.1080/17797179.2017.1294828" data-hide-no-mentions="true" class="altmetric-embed"></div>
+
+<center><hr style=width:50%></center>
+
+**J.-Ch. Loiseau**\*, J.-Ch. Robinet, & E. Leriche (2016). Intermittency and transition to chaos in the cubical lid-driven cavity flow. *Fluid Dynamics Research*, vol. 48.
+\[[PDF](https://iopscience.iop.org/article/10.1088/0169-5983/48/6/061421/pdf)\]
+<span class="__dimensions_badge_embed__" data-doi="10.1088/0169-5983/48/6/061421" data-style="large_rectangle"></span> <div data-badge-popover="right" data-badge-type="1" data-doi="10.1088/0169-5983/48/6/061421" data-hide-no-mentions="true" class="altmetric-embed"></div>
+
+<center><hr style=width:50%></center>
+
+A. Ducoin\*, **J.-Ch. Loiseau**, & J.-Ch. Robinet (2016). Numerical investigation of the interaction between laminar to turbulent transition and the wake of an airfoil. *European Journal of Mechanics - B/Fluids*, vol. 57.
+\[[PDF](https://hal.science/hal-01635838/document)\]
+<span class="__dimensions_badge_embed__" data-doi="10.1016/j.euromechflu.2016.01.005" data-style="large_rectangle"></span> <div data-badge-popover="right" data-badge-type="1" data-doi="10.1016/j.euromechflu.2016.01.005" data-hide-no-mentions="true" class="altmetric-embed"></div>
+
+<center><hr style=width:50%></center>
+
+J. Fanon<sup>GS</sup>, **J.-Ch. Loiseau**, P. Valluri, I. Bethune, & L. O Naraigh (2016). High-performance computational fluid dynamics: a custom-code approach. *European Journal of Physics*, vol. 37.
+\[[PDF](https://iopscience.iop.org/article/10.1088/0143-0807/37/4/045001/pdf)\]
+<span class="__dimensions_badge_embed__" data-doi="10.1088/0143-0807/37/4/045001" data-style="large_rectangle"></span> <div data-badge-popover="right" data-badge-type="1" data-doi="10.1088/0143-0807/37/4/045001" data-hide-no-mentions="true" class="altmetric-embed"></div>
+
+<center><hr style=width:50%></center>
+
+**J.-Ch. Loiseau**\*, J.-Ch. Robinet, S. Cherubini, & E. Leriche (2014). Investigation of the roughness-induced transition: global stability analyses and direct numerical simulations. *Journal of Fluid Mechanics*, vol. 760.
+\[[PDF](https://hal.science/hal-01086744/document)\]
+<span class="__dimensions_badge_embed__" data-doi="10.1017/jfm.2014.589" data-style="large_rectangle"></span> <div data-badge-popover="right" data-badge-type="1" data-doi="10.1017/jfm.2014.589" data-hide-no-mentions="true" class="altmetric-embed"></div>
+
+
+<!-- Einstein, A., Podolsky, B., & Rosen, N. (1935). [Can quantum-mechanical description of physical reality be considered complete?](posts/paper-title/index.qmd). *Physical review*, 47(10), 777. \[[pdf](https://scholar.google.com/)\] \[[code and data](https://doi.org)\] ![](https://drganghe.github.io/files/images/highly-cited-paper-badge.png "ESI Highly Cited Paper"){width=20 fig-alt="Highly cited paper"} ![](https://drganghe.github.io/files/images/hot-paper-badge.png "ESI Hot Paper"){width=20 fig-alt="Hot paper"} <span class="__dimensions_badge_embed__" data-doi="10.1103/PhysRev.47.777" data-style="large_rectangle"></span> <div data-badge-popover="right" data-badge-type="1" data-doi="10.1103/PhysRev.47.777" data-hide-no-mentions="true" class="altmetric-embed"></div>      -->
+<!---->
+<!---->
+<!-- <centhttps://journals.aps.org/prfluids/abstract/10.1103/PhysRevFluids.6.063903er><hr style="width:50%"></center> -->
+<!---->
+<!-- Einstein, A. (1965). Concerning an heuristic point of view toward the emission and transformation of light. *American Journal of Physics*, 33(5), 367. [[pdf](https://icg.isy.liu.se/en/phd-courses/quantum_foundations/references/Einstein1905b.pdf)] <span class="__dimensions_badge_embed__" data-doi="10.1038/s41560-023-01304-w" data-style="large_rectangle"></span> <div data-badge-popover="right" data-badge-type="1" data-doi="10.1038/s41560-023-01304-w" data-hide-no-mentions="true" class="altmetric-embed"></div> -->
 
 <!--Include social share buttons-->
 

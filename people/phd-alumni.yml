@@ -1,10 +1,32 @@
-    - path: https://drganghe.github.io/quarto-academic-website-template
+    - path: https://pastel.hal.science/tel-03169495
       image: "/files/profiles/profile2.JPG"
-      title: "Alumni A"
-      lastname: "A"
+      title: "Cosimo Tarcia Morisco"
+      lastname: "Tarcia Morisco"
+#      author: 
+      subtitle: "PhD Alumni"
+#      date: "2024-03-12"
+      categories: [PhD Student] 
+      started: "2020"
+      ended: "2016"    
+
+    - path: https://pastel.hal.science/tel-03740480
+      image: "/files/profiles/profile2.JPG"
+      title: "Ricardo Schuh Frantz"
+      lastname: "Frantz"
+#      author: 
+      subtitle: "PhD Alumni"
+#      date: "2024-03-12"
+      categories: [PhD Student] 
+      started: "2019"
+      ended: "2022"
+
+    - path: https://pastel.hal.science/tel-04966316
+      image: "/files/profiles/profile2.JPG"
+      title: "Mohamed Elhawary"
+      lastname: "Elhawary"
 #      author: 
       subtitle: "PhD Alumni"
 #      date: "2024-03-12"
       categories: [PhD Student] 
       started: "2024"
-      ended: "2025"
+      ended: "2021"

@@ -6,19 +6,14 @@ title-block-banner: false
 
 <center>
 
-**Quarto Academic**
+**Dr. Jean-Christophe Loiseau**
 
-School
+Laboratoire DynFluid
 
-College
+Ecole Nationale Supérieure d'Arts et Métiers
 
-University
+Address: 151 boulevard de l'hôpital, 75013 Paris, France
 
-Address: 
-
-Phone: 
-
-E-mail: 
-
+E-mail: [jean-christophe.loiseau@ensam.eu](mailto:jean-christophe.loiseau@ensam.eu)
 
 </center>

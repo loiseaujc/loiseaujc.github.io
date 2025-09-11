@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.34">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Dr.&nbsp;Jean-Christophe Loiseau">
+<meta name="dcterms.date" content="2025-09-09">
+<meta name="description" content="Quarto Academic Website Template adapted by Dr.&nbsp;Gang He">
+
+<title>Is Fortran better than Python for teaching the basics of numerical linear algebra? – Dr.&nbsp;Jean-Christophe Loiseau</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-7ffecba3d65d0ceb76f4c7db622b63c9.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-ee646ce384f049f4eccff96e17073bcf.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/quarto-contrib/fontawesome6-1.2.0/all.min.css" rel="stylesheet">
+<link href="../../site_libs/quarto-contrib/fontawesome6-1.2.0/latex-fontsize.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+<!-- 
+Load Academicons v1: https://jpswalsh.github.io/academicons/
+-->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+
+<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+
+<!---
+The following code are needed to show dimension citation and altmetrics.
+https://api.altmetric.com/embeds.html
+https://badge.dimensions.ai/
+--->
+
+<script type="text/javascript" src="https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js"></script>
+
+<script async="" src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
+
+<script type="text/javascript" src="//cdn.plu.mx/widget-popup.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../styles.css">
+<meta property="og:title" content="Is Fortran better than Python for teaching the basics of numerical linear algebra? – Dr.&nbsp;Jean-Christophe Loiseau">
+<meta property="og:description" content="Quarto Academic Website Template adapted by Dr.&nbsp;Gang He">
+<meta property="og:image" content="https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Fortran_acs_cover.jpeg/250px-Fortran_acs_cover.jpeg">
+<meta property="og:site_name" content="Dr. Jean-Christophe Loiseau">
+<meta name="twitter:title" content="Is Fortran better than Python for teaching the basics of numerical linear algebra? – Dr.&nbsp;Jean-Christophe Loiseau">
+<meta name="twitter:description" content="Quarto Academic Website Template adapted by Dr.&nbsp;Gang He">
+<meta name="twitter:image" content="https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Fortran_acs_cover.jpeg/250px-Fortran_acs_cover.jpeg">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Dr.&nbsp;Jean-Christophe Loiseau</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-about" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">About</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-about">    
+        <li>
+    <a class="dropdown-item" href="../../posts.html#category=news">
+ <span class="dropdown-text">News</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../posts.html#category=event">
+ <span class="dropdown-text">Events</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../contact.html">
+ <span class="dropdown-text">Contact</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-research" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Research</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-research">    
+        <li>
+    <a class="dropdown-item" href="../../publications.html">
+ <span class="dropdown-text">List of Publications</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../posts.html#category=paper">
+ <span class="dropdown-text">Selected Papers</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../projects.html">
+ <span class="dropdown-text">Grants</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../../teaching.html"> 
+<span class="menu-text">Teaching</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-outreach" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Outreach</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-outreach">    
+        <li>
+    <a class="dropdown-item" href="../../posts.html#category=presentation">
+ <span class="dropdown-text">Presentations</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../../people.html"> 
+<span class="menu-text">Group</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../posts.html#category=blog"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../files/nsf-biosketch.pdf"> 
+<span class="menu-text">CV</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/loiseaujc" target="_blank"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://bsky.app" target="_blank"> 
+<span class="menu-text"><i class="fa-brands fa-bluesky" aria-label="bluesky"></i></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="../../posts.xml" target="_blank"> <i class="bi bi-rss" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#the-hello-world-of-iterative-solvers" id="toc-the-hello-world-of-iterative-solvers" class="nav-link active" data-scroll-target="#the-hello-world-of-iterative-solvers">The <code>Hello World</code> of iterative solvers</a>
+  <ul class="collapse">
+  <li><a href="#where-do-students-struggle" id="toc-where-do-students-struggle" class="nav-link" data-scroll-target="#where-do-students-struggle">Where do students struggle?</a></li>
+  <li><a href="#what-about-fortran" id="toc-what-about-fortran" class="nav-link" data-scroll-target="#what-about-fortran">What about <code>Fortran</code>?</a></li>
+  </ul></li>
+  <li><a href="#linear-least-squares-your-first-step-into-machine-learning" id="toc-linear-least-squares-your-first-step-into-machine-learning" class="nav-link" data-scroll-target="#linear-least-squares-your-first-step-into-machine-learning">Linear least-squares, your first step into Machine Learning</a></li>
+  <li><a href="#fortran-may-have-a-slight-edge-but-i-swept-some-things-under-the-rug" id="toc-fortran-may-have-a-slight-edge-but-i-swept-some-things-under-the-rug" class="nav-link" data-scroll-target="#fortran-may-have-a-slight-edge-but-i-swept-some-things-under-the-rug"><code>Fortran</code> may have a slight edge, but I swept some things under the rug…</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Is Fortran better than Python for teaching the basics of numerical linear algebra?</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">blog</div>
+  </div>
+  </div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Jean-Christophe Loiseau </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">September 9, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><u><strong>Disclaimer</strong></u> – This is <strong>not</strong> a post about which language is the most elegant or which implementation is the fastest (we all know it’s <code>Fortran</code>). It’s about <strong>teaching</strong> the basics of scientific computing to engineering students with a limited programming experience. Yes, the <code>Numpy</code>/<code>Scipy</code>/<code>matplotlib</code> stack is awesome. Yes, you can use <code>numba</code> or <code>jax</code> to speed up your code, or <code>Cython</code>, or even <code>Mojo</code> the latest kid in the block. Or you know what? Use <code>Julia</code> or <code>Rust</code> instead. But that’s not the <em>basics</em> and it’s beyond the point.</p>
+<center>
+<hr width="50%" hr="">
+</center>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://upload.wikimedia.org/wikipedia/commons/d/de/Lochkarte_FORTRAN.jpg" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption>Punched card in 80-column format according to the IBM standard. Printed for use with one line of FORTRAN source code (used in the example as a declaration of six float variables). Source: <a href="https://commons.wikimedia.org/wiki/File:Lochkarte_FORTRAN.jpg">Wikimedia Commons</a></figcaption>
+</figure>
+</div>
+<center>
+<hr width="50%" hr="">
+</center>
+<p>I’ve been teaching an <em>Intro to Scientific Computing</em> class for nearly 10+ years. This class is intended for second year engineering students and, as such, places a large emphasis on numerical linear algebra. Like the rest of Academia, I’m using a combination of <code>Python</code> and <code>numpy</code> arrays for this. Yet, after all these years, I start to believe it ain’t necessarily the right choice for a first encounter with numerical linear algebra. Obvisouly everything is not black and white and I’ll try to be nuanced. But, in my opinion, a strongly typed language such as <code>Fortran</code> might lead to an overall better <u>learning</u> experience. And that’s what it’s all about when you start Uni: learning the principles of scientific programming, not the quirks of a particular language (unless you’re a CS student, which is a different crowd).</p>
+<p>Don’t get me wrong though. Being proficient with <code>numpy</code>, <code>scipy</code> and <code>matplotlib</code> is an absolute necessity for STEM students today, and that’s a good thing. Even from an educational perspective, the scientific <code>Python</code> ecosystem enables students to do really cool projects, putting the fun back in learning. It would be completely non-sensical to deny this. But using <code>x = np.linalg.solve(A, b)</code> ain’t the same thing as having a basic understanding of how these algorithms work. And to be clear: the goal of these classes is not to transform a student into a numerical linear algebra expert who could write the next generation LAPACK. It is to teach them just enough of numerical computing so that, when they’ll transition to an engineering position, they’ll be able to make an informed decision regarding which solver or algorithm to use when writing a simulation or data analysis tool to tackle whatever business problem they’re working on.</p>
+<p>If you liked and aced your numerical methods class, then what I’ll discuss might not necessary be relatable. You’re one of a kind. More often than not, students struggle with such courses. This could be due to genuine comprehension difficulties, or lazyness and lack of motivation simply because they don’t see the point. While both issues are equally important to address, I’ll focus on the first one: students who are willing to put the effort into learning the subject but have difficulties transforming the mathematical algorithm into an actionnable piece of code. Note however that initially motivated but struggling students might easily drift to the second type, hence my focus there first.</p>
+<p>In the rest of this post, I’ll go through two examples. For each, I’ll show a typical <code>Python</code> code such a student might write and discuss all of the classical problems they’ve encountered to get there. A large part of these are syntax issues or result from the permissiveness of an interpreted language like <code>Python</code> which is a double edged sword. Then I’ll show an equivalent <code>Fortran</code> implementation and explain why I believe it can solve part of these problems. But first, I need to address the two elephants in the room:</p>
+<ol type="1">
+<li>My research is on applied mathematics and numerical linear algebra for the physical sciences. I am <strong>not</strong> doing research on Education. Everything that follows comes from my reflection about my interactions with students I taught to or mentored. If you have scientific evidence (pertaining to scientific computing in particular) proving me wrong, please tell me.</li>
+<li>When I write <code>Fortran</code>, what I really mean is modern <code>Fortran</code>, not <code>FORTRAN</code>. Anything pre-dating the <code>Fortran 90</code> standard (or even better, the <code>Fortran 2018</code> one) is not even an option (yes, I’m looking at you <code>FORTRAN 77</code> and your incomprehensible <code>goto</code>, error-prone <code>common</code>, artithmetic <code>if</code> and what not).</li>
+</ol>
+<p>With that being said, let’s get started with a concrete, yet classical, example to illustrate my point.</p>
+<section id="the-hello-world-of-iterative-solvers" class="level2">
+<h2 class="anchored" data-anchor-id="the-hello-world-of-iterative-solvers">The <code>Hello World</code> of iterative solvers</h2>
+<p>You’ve started University a year ago and are taking your first class on scientific computing. Maybe you already went through the hassle of Gaussian elimination and the LU factorization. During the last class, Professor X discussed about <a href="https://en.wikipedia.org/wiki/Iterative_method">iterative solvers</a> for linear systems. It is now the hands-on session and today’s goal is to implement the <a href="https://en.wikipedia.org/wiki/Jacobi_method">Jacobi method</a>. Why Jacobi? Because it is simple enough to implement in an hour or so.</p>
+<p>The exact problem you’re given is the following:</p>
+<blockquote class="blockquote">
+<p>Consider the Poisson equation with homogeneous Dirichlet boundary conditions on the unit-square. Assume the Laplace operator has been discretized using a second-order accurate central finite-difference scheme. The discretized equation reads <span class="math display">\[\dfrac{u_{i+1, j} - 2u_{i, j} + u_{i-1, j}}{\Delta x^2} + \dfrac{u_{i, j+1} - 2u_{i, j} + u_{i, j-1}}{\Delta y^2} = b_{i, j}.\]</span> For the sake of simplicity, take <span class="math inline">\(\Delta x = \Delta y\)</span>. Write a function implementing the Jacobi method to solve the resulting linear system to a user-prescribed tolerance.</p>
+</blockquote>
+<p>We can all agree this is a simple enough yet somewhat realistic example. More importantly, it is sufficient to illustrate my point. Here is what the average student might write in <code>Python</code>.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-2"><a href="#cb1-2"></a></span>
+<span id="cb1-3"><a href="#cb1-3"></a><span class="kw">def</span> jacobi(b , dx, tol, maxiter):</span>
+<span id="cb1-4"><a href="#cb1-4"></a>    <span class="co"># Initialize variables.</span></span>
+<span id="cb1-5"><a href="#cb1-5"></a>    nx, ny <span class="op">=</span> b.shape</span>
+<span id="cb1-6"><a href="#cb1-6"></a>    residual <span class="op">=</span> <span class="fl">1.0</span></span>
+<span id="cb1-7"><a href="#cb1-7"></a>    u <span class="op">=</span> np.zeros((nx, ny))</span>
+<span id="cb1-8"><a href="#cb1-8"></a>    tmp <span class="op">=</span> np.zeros((nx, ny))</span>
+<span id="cb1-9"><a href="#cb1-9"></a></span>
+<span id="cb1-10"><a href="#cb1-10"></a>    <span class="co"># Jacobi solver.</span></span>
+<span id="cb1-11"><a href="#cb1-11"></a>    <span class="cf">for</span> iteration <span class="kw">in</span> <span class="bu">range</span>(maxiter):</span>
+<span id="cb1-12"><a href="#cb1-12"></a>        <span class="co"># Jacobi iteration.</span></span>
+<span id="cb1-13"><a href="#cb1-13"></a>        <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, nx<span class="op">-</span><span class="dv">1</span>):</span>
+<span id="cb1-14"><a href="#cb1-14"></a>            <span class="cf">for</span> j <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, ny<span class="op">-</span><span class="dv">1</span>):</span>
+<span id="cb1-15"><a href="#cb1-15"></a>                tmp[i, j] <span class="op">=</span> <span class="fl">0.25</span><span class="op">*</span>(b[i, j]<span class="op">*</span>dx<span class="op">**</span><span class="dv">2</span> <span class="op">-</span> u[i<span class="op">+</span><span class="dv">1</span>, j] <span class="op">-</span> u[i<span class="op">-</span><span class="dv">1</span>, j] </span>
+<span id="cb1-16"><a href="#cb1-16"></a>                                                <span class="op">-</span> u[i, j<span class="op">+</span><span class="dv">1</span>] <span class="op">-</span> u[i, j<span class="op">-</span><span class="dv">1</span>])</span>
+<span id="cb1-17"><a href="#cb1-17"></a></span>
+<span id="cb1-18"><a href="#cb1-18"></a>        <span class="co"># Compute residual</span></span>
+<span id="cb1-19"><a href="#cb1-19"></a>        residual <span class="op">=</span> np.linalg.norm(u<span class="op">-</span>tmp)</span>
+<span id="cb1-20"><a href="#cb1-20"></a>        <span class="co"># Update solution.</span></span>
+<span id="cb1-21"><a href="#cb1-21"></a>        u <span class="op">=</span> tmp</span>
+<span id="cb1-22"><a href="#cb1-22"></a>        <span class="co"># If converged, exit the loop.</span></span>
+<span id="cb1-23"><a href="#cb1-23"></a>        <span class="cf">if</span> residual <span class="op">&lt;=</span> tol:</span>
+<span id="cb1-24"><a href="#cb1-24"></a>            <span class="cf">break</span></span>
+<span id="cb1-25"><a href="#cb1-25"></a></span>
+<span id="cb1-26"><a href="#cb1-26"></a>    <span class="cf">return</span> u</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Yes, you shouldn’t do <code>for</code> loops in <code>Python</code>. But remember, you are not a seasoned programmer. You’re taking your first class on scientific computing and that’s how the Jacobi method is typically presented. Be forgiving.</p>
+<section id="where-do-students-struggle" class="level3">
+<h3 class="anchored" data-anchor-id="where-do-students-struggle">Where do students struggle?</h3>
+<p>Admittidely, the code is quite readable and look very similar to the pseudocode you’d use to describe the Jacobi method. But if you’re reading this blog post, there probably are a handful of things you’ve internalized and don’t even think about anymore (true for both <code>Python</code> and <code>Fortran</code>). And that’s precisely what the students (at least mine) struggle with, starting with the very first line.</p>
+<p><strong>What the hell is <code>numpy</code> and why do I need it? Also, why import it as <code>np</code>? –</strong> These questions come back every year. Yet, I don’t have satisfying answers. I always hesitate between</p>
+<blockquote class="blockquote">
+<p>Trust me kid, you don’t want to use nested lists in <code>Python</code> to do any serious numerical computing.</p>
+</blockquote>
+<p>which naturally begs the question of why, or</p>
+<blockquote class="blockquote">
+<p>When I said we’ll use <code>Python</code> for this scientific computing class, what I really meant is we’ll use <code>numpy</code> which is a package written for numerical computing because <code>Python</code> doesn’t naturally have good capabilities for number crunching. As for the import as <code>np</code>, that’s just a convention.</p>
+</blockquote>
+<p>And this naturally leads to the question of “<em>why Python in the first place then?</em>” for which the only valid answer I have is</p>
+<blockquote class="blockquote">
+<p>Well, because <code>Python</code> is supposed to be easy to learn and everybody uses it.</p>
+</blockquote>
+<p>Clearly, <code>import numpy as np</code> is an innocent-looking line of code. It has nothing to do with the subject being taught though, and everything with the choice of the language, only diverting the students from the learning process.</p>
+<p><strong>I coded everything correctly, 100% sure, but I get this weird error message about indentation –</strong> Oh boy! What a classic! The error message varies between</p>
+<pre><code>IndentationError: expected an indented block</code></pre>
+<p>and</p>
+<pre><code>TabError: inconsistent use of tabs and spaces in indentation</code></pre>
+<p><code>&lt;TAB&gt;</code> versus <code>SPACE</code> is a surprisingly hot topic in programming which I don’t want to engage in. A seasoned programmer might say “<em>simply configure your IDE properly</em>” which is fair. But we’re talking about your average student (who’s not a CS one remember) and they might use IDLE or even just notepad. As for the <code>IndentationError</code>, it is a relatively easy error to catch. Yet, the fact that <code>for</code>, <code>if</code> or <code>while</code> constructs are not clearly delineated in <code>Python</code> other than visually is surprisingly hard for students. I find that it puts an additional cognitive burden on top of a subject which is already demanding enough.</p>
+<p>It could also be more subtle. The code might run but the results are garbage because the student wrote something like</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1"></a>    <span class="cf">for</span> iteration <span class="kw">in</span> <span class="bu">range</span>(maxiter):</span>
+<span id="cb4-2"><a href="#cb4-2"></a>    <span class="co"># Jacobi iteration.</span></span>
+<span id="cb4-3"><a href="#cb4-3"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, nx<span class="op">-</span><span class="dv">1</span>):</span>
+<span id="cb4-4"><a href="#cb4-4"></a>    <span class="cf">for</span> j <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, ny<span class="op">-</span><span class="dv">1</span>):</span>
+<span id="cb4-5"><a href="#cb4-5"></a>    tmp[i, j] <span class="op">=</span> <span class="fl">0.25</span><span class="op">*</span>(b[i, j]<span class="op">*</span>dx<span class="op">**</span><span class="dv">2</span> <span class="op">-</span> u[i<span class="op">+</span><span class="dv">1</span>, j] <span class="op">-</span> u[i<span class="op">-</span><span class="dv">1</span>, j] </span>
+<span id="cb4-6"><a href="#cb4-6"></a>                                                <span class="op">-</span> u[i, j<span class="op">+</span><span class="dv">1</span>] <span class="op">-</span> u[i, j<span class="op">-</span><span class="dv">1</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>You might argue that this perfectly understandable, though if you want to be picky, there is no dealineation of where the different loops end. Which the whole point of indentation in <code>Python</code>. But students do not necessarily get that.</p>
+<p><strong>Why <code>range(1, nx-1)</code> and not <code>range(2, nx-1)</code>? The first column/row is my boundary. –</strong> Another classic related to 0-based vs 1-based indexing. And another very hot debate I don’t want to engage in. The fact however is that linear algebra (and a lot of scientific computing for that matter) use 1-based indexing. Think about vectors or matrices. Almost every single maths books write them as</p>
+<p><span class="math display">\[
+\begin{bmatrix}
+    a_{11} &amp; a_{12} &amp; a_{13} \\
+    a_{21} &amp; a_{22} &amp; a_{23} \\
+    a_{31} &amp; a_{32} &amp; a_{33}
+\end{bmatrix}.
+\]</span></p>
+<p>The upper left element has the (1, 1) index, not (0, 0). Why use a language with 0-based indexing for linear algebra other than putting an additional cognitive burden on the students learning the subject? This is a recipe for the nefarious off-by-one error. And these errors are sneaky. The code might run but produce incorrect results and it’s a nightmare for the students (or the poor TA helping them) to figure out why.</p>
+<p><strong>Why <code>np.linalg.norm</code> and not just <code>norm</code> or <code>np.norm</code>? –</strong> This is one is related to my first point. When you’re used to it, you no longer question it. But you don’t know students then and, once more, I don’t have a really clear answer other than</p>
+<blockquote class="blockquote">
+<p>Well, <code>linalg</code> stand for linear algebra, and <code>np.linalg</code> is a collection of linear algebra related function. It is a submodule of <code>numpy</code>, the package I told you about before.</p>
+</blockquote>
+<p>Grouping like-minded functionalities into a dedicated submodule is definitely good practice, no question there. Discussing the architecture of <code>numpy</code> makes a lot of sense when students have to do a big project involving numerical computing but not strictly speaking about numerical computing. On the other hand, when it is their first numerical computing class (and possibly first with <code>Python</code>) I find it distracting. Again, it’s not a big thing really but still. And then you have to explain why <code>np.det</code> and <code>np.trace</code> are not part of <code>np.linalg</code>…</p>
+<p><strong>Other common problems –</strong> There are other very common problems like using the wrong function or inconsistent use of lower- or upper-case for variables. Once you know <code>Python</code> is case-sensitive, this is mainly a concentration problem. No big deal there. But there is one last thing that tends to cause problems to distracted students and that has to do with the dynamic nature of <code>Python</code>. Nowhere in the code snippet is it clearly specified that <code>b</code> needs to be a two-dimensional <code>np.array</code> of real numbers nor that it shouldn’t be modified by the function. It is only implicit. And that can be a big problem for students when working with marginally more complicated algorithms. Sure enough, type annotation is a thing now in <code>Python</code>, but it still is pretty new and comparatively few people actually use them.</p>
+</section>
+<section id="what-about-fortran" class="level3">
+<h3 class="anchored" data-anchor-id="what-about-fortran">What about <code>Fortran</code>?</h3>
+<p>Alright, I’ve spent the last five minutes talking shit about <code>Python</code> but how does <code>Fortran</code> compare with it? Here is a typical implementation of the same function. I’ve actually digged it from my own set of archived homeworks I did 15+ years ago and hardly modified it.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode numberSource fortran number-lines code-with-copy"><code class="sourceCode fortranfixed"><span id="cb5-1"><a href="#cb5-1"></a><span class="kw">function</span> jacobi(b, dx, tol, maxiter) <span class="kw">result</span>(u)</span>
+<span id="cb5-2"><a href="#cb5-2"></a>    <span class="kw">implicit</span> <span class="kw">none</span></span>
+<span id="cb5-3"><a href="#cb5-3"></a>    <span class="dt">real</span>, <span class="dt">dimension(:, :)</span>, <span class="dt">intent(in)</span> <span class="dt">::</span> b</span>
+<span id="cb5-4"><a href="#cb5-4"></a>    <span class="dt">real</span>, <span class="dt">intent(in)</span> <span class="dt">::</span> dx, tol</span>
+<span id="cb5-5"><a href="#cb5-5"></a>    <span class="dt">integer</span>, <span class="dt">intent(in)</span> <span class="dt">::</span> maxiter</span>
+<span id="cb5-6"><a href="#cb5-6"></a>    <span class="dt">real</span>, <span class="dt">dimension(:, :)</span>, <span class="dt">allocatable</span> <span class="dt">::</span> u</span>
+<span id="cb5-7"><a href="#cb5-7"></a>    <span class="co">! Internal variables.</span></span>
+<span id="cb5-8"><a href="#cb5-8"></a>    <span class="dt">real</span>, <span class="dt">dimension(:, :)</span>, <span class="dt">allocatable</span> <span class="dt">::</span> tmp</span>
+<span id="cb5-9"><a href="#cb5-9"></a>    <span class="dt">integer</span> <span class="dt">::</span> nx, ny, i, j, iteration</span>
+<span id="cb5-10"><a href="#cb5-10"></a></span>
+<span id="cb5-11"><a href="#cb5-11"></a>    <span class="co">! Initialize variables.</span></span>
+<span id="cb5-12"><a href="#cb5-12"></a>    nx <span class="kw">=</span> <span class="fu">size</span>(b, <span class="dv">1</span>) ; ny <span class="kw">=</span> <span class="fu">size</span>(b, <span class="dv">2</span>)</span>
+<span id="cb5-13"><a href="#cb5-13"></a>    <span class="kw">allocate</span>(u(nx, ny), source <span class="kw">=</span> <span class="fl">0.0</span>)</span>
+<span id="cb5-14"><a href="#cb5-14"></a>    residual <span class="kw">=</span> <span class="fl">1.0</span></span>
+<span id="cb5-15"><a href="#cb5-15"></a></span>
+<span id="cb5-16"><a href="#cb5-16"></a>    <span class="co">! Jacobi solver.</span></span>
+<span id="cb5-17"><a href="#cb5-17"></a>    <span class="kw">do</span> iteration <span class="kw">=</span> <span class="dv">1</span>, maxiter</span>
+<span id="cb5-18"><a href="#cb5-18"></a>        <span class="co">! Jacobi iteration.</span></span>
+<span id="cb5-19"><a href="#cb5-19"></a>        <span class="kw">do</span> j <span class="kw">=</span> <span class="dv">2</span>, ny<span class="kw">-</span><span class="dv">1</span></span>
+<span id="cb5-20"><a href="#cb5-20"></a>            <span class="kw">do</span> i <span class="kw">=</span> <span class="dv">2</span>, nx<span class="kw">-</span><span class="dv">1</span></span>
+<span id="cb5-21"><a href="#cb5-21"></a>                tmp(i, j) <span class="kw">=</span> <span class="fl">0.25</span><span class="kw">*</span>(b(i, j)<span class="kw">*</span>dx<span class="kw">**</span><span class="dv">2</span> <span class="kw">-</span> u(i<span class="kw">+</span><span class="dv">1</span>, j) <span class="kw">-</span> u(i<span class="kw">-</span><span class="dv">1</span>, j) <span class="co">&amp;</span></span>
+<span id="cb5-22"><a href="#cb5-22"></a>                                                <span class="kw">-</span> u(i, j<span class="kw">+</span><span class="dv">1</span>) <span class="kw">-</span> u(i, j<span class="kw">-</span><span class="dv">1</span>))</span>
+<span id="cb5-23"><a href="#cb5-23"></a>            <span class="kw">enddo</span></span>
+<span id="cb5-24"><a href="#cb5-24"></a>        <span class="kw">enddo</span></span>
+<span id="cb5-25"><a href="#cb5-25"></a></span>
+<span id="cb5-26"><a href="#cb5-26"></a>        <span class="co">! Compute residual.</span></span>
+<span id="cb5-27"><a href="#cb5-27"></a>        residual <span class="kw">=</span> norm2(u <span class="kw">-</span> tmp)</span>
+<span id="cb5-28"><a href="#cb5-28"></a>        <span class="co">! Update solution.</span></span>
+<span id="cb5-29"><a href="#cb5-29"></a>        u <span class="kw">=</span> tmp</span>
+<span id="cb5-30"><a href="#cb5-30"></a>        <span class="co">! If convered, exit the loop.</span></span>
+<span id="cb5-31"><a href="#cb5-31"></a>        <span class="kw">if</span> (residual <span class="op">&lt;=</span> tol) <span class="kw">exit</span></span>
+<span id="cb5-32"><a href="#cb5-32"></a>    <span class="kw">enddo</span></span>
+<span id="cb5-33"><a href="#cb5-33"></a></span>
+<span id="cb5-34"><a href="#cb5-34"></a><span class="kw">end function</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>No surprise there. The task is sufficiently simple that both implementations are equally readable. If anything, the <code>Fortran</code> one is a bit more verbose. But in view of what I’ve just said about the <code>Python</code> code, I think it actually a good thing. Let me explain.</p>
+<p><strong>Definition of the variables –</strong> <code>Fortran</code> is a strongly typed language. Lines 2 to 8 are nothing but the definitions of the different variables used in the routine. While you might argue it’s a pain in the a** to write these, I think it can actually be very beneficial for students. Before even implementing the method, they have to clearly think about which variables are input, which are ouput, what are their types and dimensions. And to do so, they have to have at least a minimal understanding of the algorithm itself. Once it’s done, there are no more surprises (hopefully), and the contract between the code and the user is crystal clear. And more importantly, the effort put in clearly identifying the input and output of numerical algorithm usually pays off and leads to less error-prone process.</p>
+<p><strong>Begining and end of the constructs –</strong> <code>Fortran</code> uses the <code>do</code>/<code>end do</code> (or <code>enddo</code>) construct, clearly specifying where the loop starts where it ends. The indentation used in the code snippet really is just a matter of style. In constrast to <code>Python</code>, writing</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode numberSource fortran number-lines code-with-copy"><code class="sourceCode fortranfixed"><span id="cb6-1"><a href="#cb6-1"></a>    <span class="kw">do</span> j <span class="kw">=</span> <span class="dv">2</span>, ny<span class="kw">-</span><span class="dv">1</span></span>
+<span id="cb6-2"><a href="#cb6-2"></a>    <span class="kw">do</span> i <span class="kw">=</span> <span class="dv">2</span>, nx<span class="kw">-</span><span class="dv">1</span></span>
+<span id="cb6-3"><a href="#cb6-3"></a>    tmp(i, j) <span class="kw">=</span> <span class="fl">0.25</span><span class="kw">*</span>(b(i, j)<span class="kw">*</span>dx<span class="kw">**</span><span class="dv">2</span> <span class="kw">-</span> u(i<span class="kw">+</span><span class="dv">1</span>, j) <span class="kw">-</span> u(i<span class="kw">-</span><span class="dv">1</span>, j) <span class="kw">&amp;</span></span>
+<span id="cb6-4"><a href="#cb6-4"></a>                                    <span class="kw">-</span> u(i, j<span class="kw">+</span><span class="dv">1</span>) <span class="kw">-</span> u(i, j<span class="kw">-</span><span class="dv">1</span>))</span>
+<span id="cb6-5"><a href="#cb6-5"></a>    <span class="kw">enddo</span></span>
+<span id="cb6-6"><a href="#cb6-6"></a>    <span class="kw">enddo</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>does not make the code any less readable and wouldn’t change a dime in terms of computations. It’s a minor thing, fair enough. But it instantly get rid of the <code>IndentationError</code> or <code>TabError</code> which are puzzling students. I may be wrong, but I believe it actually reduces the cognitive load associated with the programming language and let the students focus on the actual numerical linear algebra task.</p>
+<p><strong>No off-by-one error –</strong> By default, <code>Fortran</code> uses a 1-based indexing. No off-by-one errors, period.</p>
+<p><strong>Intrinsic functions for basic scientific computations –</strong> While you have to use <code>np.linalg.norm</code> in <code>Python</code> to compute the norm of a vector, <code>Fortran</code> natively has the <code>norm2</code> function for that. No external library required. If you want to be picky, you may say that <code>norm2</code> is a weird name and that <code>norm</code> might be just fine.</p>
+<p><strong>Some quirks of <code>Fortran</code> –</strong> All is not perfect though, starting with Line 2 and the <code>implicit none</code> statement. This is a historical remnant which is considered good practice by modern <code>Fortran</code> standards but not actually needed. Students being students, they will more likely than not ask questions about it although it has nothing to do with the subject of the class itself. Admittidely, it can be a bit cumbersome to explicitely define all the integers you use even if it’s just for a one-time loop. Likewise, there is the question of <code>real</code> vs <code>double precision</code> vs <code>real(wp)</code> (where <code>wp</code> is yet another variable you’ve defined somewhere). I don’t think it matters too much though when learning the basics of numerical linear algebra algorithms, although it certainly does when you start discussing about precision and performances.</p>
+</section>
+</section>
+<section id="linear-least-squares-your-first-step-into-machine-learning" class="level2">
+<h2 class="anchored" data-anchor-id="linear-least-squares-your-first-step-into-machine-learning">Linear least-squares, your first step into Machine Learning</h2>
+<p>Alright, let’s look at another example. Same class, later in the semester. Professor X now discusses over-determined linear systems and how it relates to least-squares, regression and basic machine learning applications. During the hands-on session, you’re given the following problem</p>
+<blockquote class="blockquote">
+<p>Consider the following unconstrained quadratic program <span class="math display">\[\mathrm{minimize} \quad \| Ax - b \|_2^2.\]</span> Write a least-squares solver based on the QR factorization of the matrix <span class="math inline">\(A\)</span>. You can safely assume that <span class="math inline">\(A\)</span> is a tall matrix (i.e.&nbsp;<span class="math inline">\(m &gt; n\)</span>).</p>
+</blockquote>
+<p>Here is what the typical <code>Python</code> code written by the students might look like.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb7-2"><a href="#cb7-2"></a></span>
+<span id="cb7-3"><a href="#cb7-3"></a><span class="kw">def</span> qr(A):</span>
+<span id="cb7-4"><a href="#cb7-4"></a>    <span class="co"># Initialize variables.</span></span>
+<span id="cb7-5"><a href="#cb7-5"></a>    m, n <span class="op">=</span> A.shape</span>
+<span id="cb7-6"><a href="#cb7-6"></a>    Q <span class="op">=</span> np.zeros((m, n))</span>
+<span id="cb7-7"><a href="#cb7-7"></a>    R <span class="op">=</span> np.zeros((n, n))</span>
+<span id="cb7-8"><a href="#cb7-8"></a></span>
+<span id="cb7-9"><a href="#cb7-9"></a>    <span class="co"># QR factorization based on the Gram-Schmidt orthogonalization process.</span></span>
+<span id="cb7-10"><a href="#cb7-10"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(n):</span>
+<span id="cb7-11"><a href="#cb7-11"></a>        q <span class="op">=</span> A[:, i]</span>
+<span id="cb7-12"><a href="#cb7-12"></a>        <span class="co"># Orthogonalization w.r.t. to the previous basis vectors.</span></span>
+<span id="cb7-13"><a href="#cb7-13"></a>        <span class="cf">for</span> j <span class="kw">in</span> <span class="bu">range</span>(i):</span>
+<span id="cb7-14"><a href="#cb7-14"></a>            R[j, i] <span class="op">=</span> np.vdot(q, Q[:, j])</span>
+<span id="cb7-15"><a href="#cb7-15"></a>            q <span class="op">=</span> q <span class="op">-</span> R[j, i]<span class="op">*</span>Q[:, j]</span>
+<span id="cb7-16"><a href="#cb7-16"></a></span>
+<span id="cb7-17"><a href="#cb7-17"></a>        <span class="co"># Normalize and store the new vector.</span></span>
+<span id="cb7-18"><a href="#cb7-18"></a>        R[i, i] <span class="op">=</span> np.linalg.norm(q)</span>
+<span id="cb7-19"><a href="#cb7-19"></a>        Q[:, i] <span class="op">=</span> q <span class="op">/</span> R[i, i]</span>
+<span id="cb7-20"><a href="#cb7-20"></a></span>
+<span id="cb7-21"><a href="#cb7-21"></a>    <span class="cf">return</span> Q, R</span>
+<span id="cb7-22"><a href="#cb7-22"></a></span>
+<span id="cb7-23"><a href="#cb7-23"></a><span class="kw">def</span> upper_triangular_solve(R, b):</span>
+<span id="cb7-24"><a href="#cb7-24"></a>    <span class="co"># Initialize variables.</span></span>
+<span id="cb7-25"><a href="#cb7-25"></a>    n <span class="op">=</span> R.shape[<span class="dv">0</span>]</span>
+<span id="cb7-26"><a href="#cb7-26"></a>    x <span class="op">=</span> np.zeros((n))</span>
+<span id="cb7-27"><a href="#cb7-27"></a></span>
+<span id="cb7-28"><a href="#cb7-28"></a>    <span class="co"># Backsubstitution.</span></span>
+<span id="cb7-29"><a href="#cb7-29"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(n<span class="op">-</span><span class="dv">1</span>, <span class="op">-</span><span class="dv">1</span>, <span class="op">-</span><span class="dv">1</span>):</span>
+<span id="cb7-30"><a href="#cb7-30"></a>        x[i] <span class="op">=</span> b[i]</span>
+<span id="cb7-31"><a href="#cb7-31"></a>        <span class="cf">for</span> j <span class="kw">in</span> <span class="bu">range</span>(n<span class="op">-</span><span class="dv">1</span>, i, <span class="op">-</span><span class="dv">1</span>):</span>
+<span id="cb7-32"><a href="#cb7-32"></a>            x[i] <span class="op">=</span> x[i] <span class="op">-</span> R[i, j]<span class="op">*</span>x[j]</span>
+<span id="cb7-33"><a href="#cb7-33"></a>        x[i] <span class="op">=</span> x[i] <span class="op">/</span> R[i, i]</span>
+<span id="cb7-34"><a href="#cb7-34"></a></span>
+<span id="cb7-35"><a href="#cb7-35"></a>    <span class="cf">return</span> x</span>
+<span id="cb7-36"><a href="#cb7-36"></a></span>
+<span id="cb7-37"><a href="#cb7-37"></a><span class="kw">def</span> lstsq(A, b):</span>
+<span id="cb7-38"><a href="#cb7-38"></a>    <span class="co"># QR factorization.</span></span>
+<span id="cb7-39"><a href="#cb7-39"></a>    Q, R <span class="op">=</span> qr(A)</span>
+<span id="cb7-40"><a href="#cb7-40"></a>    <span class="co"># Solve R @ x = Q.T @ b.</span></span>
+<span id="cb7-41"><a href="#cb7-41"></a>    x <span class="op">=</span> upper_triangular_solve(R, Q.T <span class="op">@</span> b)</span>
+<span id="cb7-42"><a href="#cb7-42"></a>    <span class="cf">return</span> x</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>This one was adapted from an exercise I gave last year. In reality, students lumped everything into one big function unless told otherwise, but nevermind. For comparison, here is the equivalent <code>Fortran</code> code.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode numberSource fortran number-lines code-with-copy"><code class="sourceCode fortranfixed"><span id="cb8-1"><a href="#cb8-1"></a><span class="kw">subroutine</span> qr(A, Q, R)</span>
+<span id="cb8-2"><a href="#cb8-2"></a>    <span class="kw">implicit</span> <span class="kw">none</span></span>
+<span id="cb8-3"><a href="#cb8-3"></a>    <span class="dt">real</span>, <span class="dt">dimension(:, :)</span>, <span class="dt">intent(in)</span> <span class="dt">::</span> A</span>
+<span id="cb8-4"><a href="#cb8-4"></a>    <span class="dt">real</span>, <span class="dt">dimension(:, :)</span>, <span class="dt">allocatable</span>, <span class="dt">intent(out)</span> <span class="dt">::</span> Q, R</span>
+<span id="cb8-5"><a href="#cb8-5"></a>    <span class="co">! Internal variables.</span></span>
+<span id="cb8-6"><a href="#cb8-6"></a>    <span class="dt">integer</span> <span class="dt">::</span> i, j, m, n</span>
+<span id="cb8-7"><a href="#cb8-7"></a>    <span class="dt">real</span>, <span class="dt">dimension(:)</span>, <span class="dt">allocatable</span> <span class="dt">::</span> q_hat</span>
+<span id="cb8-8"><a href="#cb8-8"></a></span>
+<span id="cb8-9"><a href="#cb8-9"></a>    <span class="co">! Initialize variables.</span></span>
+<span id="cb8-10"><a href="#cb8-10"></a>    m <span class="kw">=</span> <span class="fu">size</span>(A, <span class="dv">1</span>); n <span class="kw">=</span> <span class="fu">size</span>(A, <span class="dv">2</span>)</span>
+<span id="cb8-11"><a href="#cb8-11"></a>    <span class="kw">allocate</span>(Q(m, n), source<span class="kw">=</span><span class="fl">0.0</span>)</span>
+<span id="cb8-12"><a href="#cb8-12"></a>    <span class="kw">allocate</span>(R(n, n), source<span class="kw">=</span><span class="fl">0.0</span>)</span>
+<span id="cb8-13"><a href="#cb8-13"></a>    </span>
+<span id="cb8-14"><a href="#cb8-14"></a>    <span class="co">! QR factorization based on the Gram-Schmidt orthogonalization process.</span></span>
+<span id="cb8-15"><a href="#cb8-15"></a>    <span class="kw">do</span> i <span class="kw">=</span> <span class="dv">1</span>, n</span>
+<span id="cb8-16"><a href="#cb8-16"></a>        q_hat <span class="kw">=</span> A(:, i)</span>
+<span id="cb8-17"><a href="#cb8-17"></a>        <span class="co">! Orthogonalize w.r.t. the previous basis vectors.</span></span>
+<span id="cb8-18"><a href="#cb8-18"></a>        <span class="kw">do</span> j <span class="kw">=</span> <span class="dv">1</span>, i<span class="kw">-</span><span class="dv">1</span></span>
+<span id="cb8-19"><a href="#cb8-19"></a>            R(j, i) <span class="kw">=</span> <span class="fu">dot_product</span>(q_hat, Q(:, j))</span>
+<span id="cb8-20"><a href="#cb8-20"></a>            q_hat <span class="kw">=</span> q_hat <span class="kw">-</span> R(j, i)<span class="kw">*</span>Q(:, j)</span>
+<span id="cb8-21"><a href="#cb8-21"></a>        <span class="kw">end do</span></span>
+<span id="cb8-22"><a href="#cb8-22"></a></span>
+<span id="cb8-23"><a href="#cb8-23"></a>        <span class="co">! Normalize and store the new vector.</span></span>
+<span id="cb8-24"><a href="#cb8-24"></a>        R(i, i) <span class="kw">=</span> norm2(q_hat)</span>
+<span id="cb8-25"><a href="#cb8-25"></a>        Q(:, i) <span class="kw">=</span> q_hat <span class="kw">/</span> R(i, i)</span>
+<span id="cb8-26"><a href="#cb8-26"></a>    <span class="kw">end do</span></span>
+<span id="cb8-27"><a href="#cb8-27"></a><span class="kw">end subroutine</span></span>
+<span id="cb8-28"><a href="#cb8-28"></a></span>
+<span id="cb8-29"><a href="#cb8-29"></a><span class="kw">function</span> upper_triangular_solve(R, b) <span class="kw">result</span>(x)</span>
+<span id="cb8-30"><a href="#cb8-30"></a>    <span class="kw">implicit</span> <span class="kw">none</span></span>
+<span id="cb8-31"><a href="#cb8-31"></a>    <span class="dt">real</span>, <span class="dt">dimension(:, :)</span>, <span class="dt">intent(in)</span> <span class="dt">::</span> R</span>
+<span id="cb8-32"><a href="#cb8-32"></a>    <span class="dt">real</span>, <span class="dt">dimension(:)</span>, <span class="dt">intent(in)</span> <span class="dt">::</span> b</span>
+<span id="cb8-33"><a href="#cb8-33"></a>    <span class="dt">real</span>, <span class="dt">dimension(:)</span>, <span class="dt">allocatable</span> <span class="dt">::</span> x</span>
+<span id="cb8-34"><a href="#cb8-34"></a>    <span class="co">! Internal variables.</span></span>
+<span id="cb8-35"><a href="#cb8-35"></a>    <span class="dt">integer</span> <span class="dt">::</span> n, i, j</span>
+<span id="cb8-36"><a href="#cb8-36"></a></span>
+<span id="cb8-37"><a href="#cb8-37"></a>    <span class="co">! Initialize variables.</span></span>
+<span id="cb8-38"><a href="#cb8-38"></a>    n <span class="kw">=</span> <span class="fu">size</span>(R, <span class="dv">1</span>)</span>
+<span id="cb8-39"><a href="#cb8-39"></a>    <span class="kw">allocate</span>(x(n), source<span class="kw">=</span><span class="fl">0.0</span>)</span>
+<span id="cb8-40"><a href="#cb8-40"></a></span>
+<span id="cb8-41"><a href="#cb8-41"></a>    <span class="co">! Backsubstitution.</span></span>
+<span id="cb8-42"><a href="#cb8-42"></a>    <span class="kw">do</span> i <span class="kw">=</span> n, <span class="dv">1</span>, <span class="kw">-</span><span class="dv">1</span></span>
+<span id="cb8-43"><a href="#cb8-43"></a>        x(i) <span class="kw">=</span> b(i)</span>
+<span id="cb8-44"><a href="#cb8-44"></a>        <span class="kw">do</span> j <span class="kw">=</span> n<span class="kw">-</span><span class="dv">1</span>, i, <span class="kw">-</span><span class="dv">1</span></span>
+<span id="cb8-45"><a href="#cb8-45"></a>            x(i) <span class="kw">=</span> x(i) <span class="kw">-</span> R(i, j)<span class="kw">*</span>x(j)</span>
+<span id="cb8-46"><a href="#cb8-46"></a>        <span class="kw">enddo</span></span>
+<span id="cb8-47"><a href="#cb8-47"></a>        x(i) <span class="kw">=</span> x(i) <span class="kw">/</span> R(i, i)</span>
+<span id="cb8-48"><a href="#cb8-48"></a>    <span class="kw">end do</span></span>
+<span id="cb8-49"><a href="#cb8-49"></a><span class="kw">end function</span></span>
+<span id="cb8-50"><a href="#cb8-50"></a></span>
+<span id="cb8-51"><a href="#cb8-51"></a><span class="kw">function</span> lstsq(A, b) <span class="kw">result</span>(x)</span>
+<span id="cb8-52"><a href="#cb8-52"></a>    <span class="kw">implicit</span> <span class="kw">none</span></span>
+<span id="cb8-53"><a href="#cb8-53"></a>    <span class="dt">real</span>, <span class="dt">dimension(:, :)</span>, <span class="dt">intent(in)</span> <span class="dt">::</span> A</span>
+<span id="cb8-54"><a href="#cb8-54"></a>    <span class="dt">real</span>, <span class="dt">dimension(:)</span>, <span class="dt">intent(in)</span> <span class="dt">::</span> b</span>
+<span id="cb8-55"><a href="#cb8-55"></a>    <span class="dt">real</span>, <span class="dt">dimension(:)</span>, <span class="dt">allocatable</span> <span class="dt">::</span> x</span>
+<span id="cb8-56"><a href="#cb8-56"></a>    <span class="co">! Internal variables.</span></span>
+<span id="cb8-57"><a href="#cb8-57"></a>    <span class="dt">real</span>, <span class="dt">dimension(:, :)</span>, <span class="dt">allocatable</span> <span class="dt">::</span> Q, R</span>
+<span id="cb8-58"><a href="#cb8-58"></a></span>
+<span id="cb8-59"><a href="#cb8-59"></a>    <span class="co">! QR factorization.</span></span>
+<span id="cb8-60"><a href="#cb8-60"></a>    <span class="kw">call</span> qr(A, Q, R)</span>
+<span id="cb8-61"><a href="#cb8-61"></a>    <span class="co">! Solve R @ x = Q.T @ b.</span></span>
+<span id="cb8-62"><a href="#cb8-62"></a>    x <span class="kw">=</span> upper_triangular_solve(R, <span class="fu">matmul</span>(<span class="fu">transpose</span>(Q), b))</span>
+<span id="cb8-63"><a href="#cb8-63"></a><span class="kw">end function</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Just like the Jacobi example, both implementations are equally readable. At this point in the semester, the students got somewhat more comfortable with <code>Python</code>. The classical indentation problems were not so much of a problem anymore. The off-by-one errors due to 0-based indexing for the Gram-Schmidt orthogonalization in <code>qr</code> or in the backsubstitution algorithm on the other hand… That was painful. In a 90-minutes class, it took almost a whole hour simply for them to debug these errors.</p>
+<p>But there was another thing that confused students. A lot. And that has to do with computing dot products in <code>numpy</code>. There’s so many different ways: <code>np.vdot(x, y)</code>, <code>np.dot(x.T, y)</code>, <code>np.dot(np.transpose(x), y)</code>, or <code>x.transpose().dot(y)</code> to list just the ones I have seen in their codes. Again, this has nothing to do with linear algebra, but everything with the language. Not only do they need to learn the math, but they simultaneously need to learn the not-quite-necessarily-math-standard syntax used in the language (yes, I’m looking at you <code>@</code>). It’s just a question of habits, sure enough, but again it can be impeding the learning process.</p>
+<p>On the other hand, the <code>Fortran</code> implementation is even closer to the standard mathematical description of the algorithm: 1-based indexing, intrinsic <code>dot_product</code> function, etc. But beside the <code>implicit none</code>, there is the need to use a <code>subroutine</code> rather than a <code>function</code> construct for the QR decomposition because it has two output variables. Not a big deal again, but to be fair, it does add another minor layer of abstraction due to the language semantics rather than that of the subject being studied.</p>
+</section>
+<section id="fortran-may-have-a-slight-edge-but-i-swept-some-things-under-the-rug" class="level2">
+<h2 class="anchored" data-anchor-id="fortran-may-have-a-slight-edge-but-i-swept-some-things-under-the-rug"><code>Fortran</code> may have a slight edge, but I swept some things under the rug…</h2>
+<p>In the end, when it comes to teaching the basics of numerical linear algebra, <code>Python</code> and <code>Fortran</code> are not that different. And in that regard, neither is <code>Julia</code> which I really like as well. The main advantages I see of using <code>Fortran</code> for this task however are:</p>
+<ul>
+<li><strong>1-based indexing</strong> : in my experience, the 0-based indexing in <code>Python</code> leads to so many off-by-one erros driving the students crazy. Because linear algebra textbooks naturally use 1-based indexing, having to translate everything in your head to 0-based indices is a huge cognitive burden on top of a subject already demanding enough. You might get used to it eventually, but it’s a painful process impeding the learning outcomes.</li>
+<li><strong>Strong typing</strong> : combined with <code>implicit none</code>, having to declare the type, dimension and input or output nature of every variable you use might seem cumbersome at first. But it forces students to pause and ponder to identify which is which. Sure this is an effort, but it is worth it. Learning is not effortless and this effort forces you to have a somewhat better understanding of a numerical algorithm before even starting to implement it. Which I think is a good thing.</li>
+<li><strong>Clear delineation of the constructs</strong> : at least during the first few weeks, having to rely only on visual clues to identify where does a loop ends in <code>Python</code> seems to be quite complicated for a non-negligible fraction of the students I have. In that respect, the <code>do</code>/<code>enddo</code> construct in <code>Fortran</code> is much more explicit and probably easier to grasp.</li>
+</ul>
+<p>Obvisouly, I’m not expecting educators worldwide to switch back to <code>Fortran</code> overnight, nor is it necessarily desirable. The advantages I see are non-negligible from my perspective but certainly not enough by themselves. There are many other things that need to be taken into account. <code>Python</code> is a very generalist language. You can do so much more than just numerical computing so it makes complete sense to have it in the classroom. The ecosystem is incredibly vast and the interactive nature definitely has its pros. Notebooks such as <code>Jupyter</code> can be incredible teaching tools (although they come with their own problems in term good coding practices). So are the <code>Pluto</code> notebooks in <code>Julia</code>.</p>
+<p><code>Fortran</code> is good at one thing: enabling computational scientists and engineers to write high-performing mathematical models without all the intricacies of equally peformant but more CS-oriented languages such as <code>C</code> or <code>C++</code>. Sure enough, the modern <code>Fortran</code> ecosystem is orders of magnitude smaller than <code>Python</code>, and targetted toward numerical computing almost exclusively. And the <code>Julia</code> one is fairly impressive. But the community is working on it (see the <a href="https://fortran-lang.org/">fortran-lang website</a> or the <a href="https://fortran-lang.discourse.group/">Fortran discourse</a> if you don’t trust me). The bad rep of <code>Fortran</code> is unjustified, particularly for teaching purposes. Many of its detractors have hardly been exposed to anything else than <code>FORTRAN 77</code>. And it’s true that, by current standards, most of <code>FORTRAN 77</code> codes are terrible sphagetti codes making extensive use of implicit typing and incomprehensible <code>goto</code> statements. Even I, as a <code>Fortran</code> programmer, acknowledge it. But that’s no longer what <code>Fortran</code> is since the 1990’s, and certainly not today!</p>
+<!--Include social share buttons-->
+<!-- 
+AddToAny check more: https://www.addtoany.com/buttons/for/website 
+Using includes will make edits easier, will only need to add or remove button here if needed.
+https://quarto.org/docs/authoring/includes.html
+-->
+<div class="a2a_kit a2a_kit_size_32 a2a_default_style">
+<p><a class="a2a_dd" href="https://www.addtoany.com/share"></a> <a class="a2a_button_linkedin"></a> <a class="a2a_button_bluesky"></a> <a class="a2a_button_facebook"></a> <a class="a2a_button_copy_link"></a> <a class="a2a_button_email"></a></p>
+</div>
+<script async="" src="https://static.addtoany.com/menu/page.js"></script>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("^(?:http:|https:)\/\/drganghe\.github\.io\/custom");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // target, if specified
+            link.setAttribute("target", "_blank");
+            if (link.getAttribute("rel") === null) {
+              link.setAttribute("rel", "noopener");
+            }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<a href="http://www.github.com">Jean-Christophe Loiseau</a> ©
+<script>document.write(new Date().getFullYear())</script>
+</div>   
+    <div class="nav-footer-center">
+<p>Build on <a href="https://github.com/drganghe/quarto-academic-website-template">Quart Academic Website Template</a> adapted by <a href="http://drganghe.github.io">Dr.&nbsp;Gang He</a></p>
+</div>
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/drganghe/quarto-academic-website-template" target="_blank">
+      <i class="bi bi-github" role="img">
+</i> 
+    </a>
+  </li>  
+    <li class="nav-item">
+    <a class="nav-link" href="https://bsky.app" target="_blank">
+<p><i class="fa-brands fa-bluesky" aria-label="bluesky"></i></p>
+</a>
+  </li>  
+    <li class="nav-item compact">
+    <a class="nav-link" href="../../posts.xml" target="_blank">
+      <i class="bi bi-rss" role="img">
+</i> 
+    </a>
+  </li>  
+</ul>
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
