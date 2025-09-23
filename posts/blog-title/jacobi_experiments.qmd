@@ -1,0 +1,686 @@
+---
+title: "Jacobi method: From a naïve implementation to a modern Fortran multithreaded one"
+author: "Jean-Christophe Loiseau"
+date: "2025-09-23"
+categories: [blog]
+image : "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Fortran_acs_cover.jpeg/250px-Fortran_acs_cover.jpeg"
+#css: /custom.css
+draft: false
+format: html
+---
+
+In a previous [post](https://loiseaujc.github.io/posts/blog-title/fortran_vs_python.html), I used the Jacobi method to illustrate some merits of `Fortran` over `Python` for teaching purposes.
+Since then, I received a handful of messages asking how to write efficient `Fortran` code.
+Because of its algorithmic simplicity, the Jacobi method makes for an excellent case study.
+In this post, we'll see how to go from a naïve implementation taking a minute to solve a linear system with a quarter million unknowns to a multithreaded version taking less 3 seconds.
+Bonus point: the code is entirely standard-compliant and you don't need to know anything about [OpenMP](https://www.openmp.org/) or [MPI](https://en.wikipedia.org/wiki/Message_Passing_Interface).
+If you want to see the whole code, check [this](https://github.com/loiseaujc/Jacobi-Experiments) GitHub repo.
+But first, what is the Jacobi method?
+
+## Solving a linear system with the Jacobi method?
+
+Consider the system of linear equations
+
+$$
+\mathbf{Ax} = \mathbf{b},
+$$
+
+where $\mathbf{A}$ is an invertible $n \times n$ matrix.
+If you ever had a course on numerical linear algebra, you have seen various algorithms to solve this problem.
+These are divided in two categories: direct solvers targetting small- to medium-sized dense matrices, and iterative solvers for large sparse matrices.
+
+Among the zoo of iterative methods, the [Jacobi method](https://en.wikipedia.org/wiki/Jacobi_method) is probably the first one you've encountered.
+There are two reasons for that:
+
+1. It is easy to implement, no matter the programming language.
+2. Its theoretical analysis is rather simple, even for undergrad students.
+
+It does come with its limitations though: it does not work for all possible matrices and the convergence is rather slow (i.e. it requires many iterations).
+Because of these, the Jacobi method is not a viable alternative compared to the (preconditioned) [conjugate gradient](https://en.wikipedia.org/wiki/Conjugate_gradient_method) or [multigrid](https://en.wikipedia.org/wiki/Multigrid_method) methods and is thus hardly used in production codes.
+It is however, in my opinion, a fantastic learning example.
+So, how does it work?
+
+### A brief overview
+
+The Jacobi method relies on the additive decomposition:
+
+$$\mathbf{A} = \mathbf{D} + \mathbf{R},$$
+
+where $\mathbf{D}$ is the diagonal component of $\mathbf{A}$, and $\mathbf{R}$ consists of the off-diagonal terms.
+Plugging this decomposition into our system leads to
+
+$$
+\mathbf{Dx} + \mathbf{Rx} = \mathbf{b}.
+$$
+
+Starting from an initial guess $\mathbf{x}_0$, the core idea of the Jacobi method is to treat the diagonal contributions *implicitly* and the off-diagonal ones *explicitly*, analoguous to a time-integration scheme.
+This leads to the following iterative scheme
+
+$$
+\mathbf{x}_{t+1} = \mathbf{D}^{-1} \left( \mathbf{b} - \mathbf{Rx}_t \right),
+$$
+
+where subscript $t$ denotes the $t$-th iteration of the method.
+What we claim then is that, under suitable assumptions on $\mathbf{A}$, the iterate $\mathbf{x}_t$ converges to the actual solution of the system as $t \to \infty$.
+So when does it converge?
+And if so, how fast does it converge?[^1]
+
+
+
+### Fair enough, but does it actually converge?
+
+The questions of whether or not an iterative method converges and, if so, how fast does it converge are obviously critical to assess its competitiveness.
+To answer to both of these questions, let us rewrite the Jacobi iteration as
+
+$$
+\begin{aligned}
+\mathbf{x}_{t+1}    &   = \mathbf{x}_t - \mathbf{D}^{-1} \left( \mathbf{b} - \mathbf{Ax}_t \right) \\
+                    &   = \left( \mathbf{I} - \mathbf{D}^{-1}\mathbf{A} \right) \mathbf{x}_t - \mathbf{D}^{-1} \mathbf{b}.
+\end{aligned}
+$$
+
+To derive this expression, simply add and subtract $\mathbf{Dx}_t$ inside the parenthesized term in the right-hand side and group terms together.
+Now, let $\mathbf{x}_{\star}$ be the true solution of the system, i.e. $\mathbf{x}_{\star} = \mathbf{A}^{-1} \mathbf{b}$, and $\mathbf{e}_t = \mathbf{x}_t - \mathbf{x}_{\star}$ be the error at iteration $t$.
+Using simple algebraic manipulations, the dynamics of the error vector are governed by
+
+$$
+\mathbf{e}_{t+1} = \left(\mathbf{I} - \mathbf{D}^{-1} \mathbf{A} \right) \mathbf{e}_t.
+$$
+
+Obviously, the Jacobi method converges to the correct solution provided $\displaystyle \lim_{t \to \infty} \| \mathbf{e}_t \| = 0$ where $\| \cdot \|$ is a suitable vector norm.
+The question of its convergence thus reduces to: under what condition on $\mathbf{I} - \mathbf{D}^{-1} \mathbf{A}$ does the norm of the error vector goes to zero?
+
+> **Theorem n°1 --** The Jacobi iterative method
+>
+> $$\mathbf{x}_{t+1} = \left( \mathbf{I} - \mathbf{D}^{-1} \mathbf{A} \right) \mathbf{x}_t - \mathbf{D}^{-1}\mathbf{b}$$
+>
+> converges for any initial vector $\mathbf{x}_0$ provided $\| \mathbf{I} - \mathbf{D}^{-1} \mathbf{A} \| < 1$ where $\| \cdot \|$ is a matrix norm induced by the corresponding vector norm.
+
+> **Sketch of the proof --** Let $\| \cdot \|$ be a matrix norm consistent with a vector norm. Then
+>
+> $$\| \mathbf{e}_{t+1} \| = \| \left( \mathbf{I} - \mathbf{D}^{-1} \mathbf{A} \right) \mathbf{e}_t \| \leq \| \mathbf{I} - \mathbf{D}^{-1} \mathbf{A} \| \cdot \| \mathbf{e}_t \|.$$
+>
+> A simple inductive argument shows that (for $t$ large enough)
+>
+> $$\| \mathbf{e}_t \| \leq \| \mathbf{I} - \mathbf{D}^{-1} \mathbf{A} \|^t \cdot \| \mathbf{e}_0 \|.$$
+>
+> Hence, $\| \mathbf{e}_t \|$ converges to zero as $t \to \infty$ for all $\mathbf{e}_0$ provided that $\| \mathbf{I} - \mathbf{D}^{-1} \mathbf{A} \| < 1$.
+
+Alright, we now know the Jacobi method converges provided $\| \mathbf{I} - \mathbf{D}^{-1} \mathbf{A} \| < 1$.
+But what are the necessary and/or sufficient conditions on $\mathbf{A}$ for $\| \mathbf{I} - \mathbf{D}^{-1} \mathbf{A} \|$ to be less than unity?
+
+> **Theorem n°2 --** Let $\mathbf{A}$ and $2\mathbf{D} - \mathbf{A}$ be symmetric positive definite matrices. Then, the Jacobi iteration converges.
+
+The proof is divided in two parts.
+
+> **Proof (part 1) --** Let $\mathbf{A}$ be symmetric positive definite and $\mu$ be an eigenvalue of $\mathbf{I} - \mathbf{D}^{-1} \mathbf{A}$ with eigenvector $\mathbf{v}$. Then
+> $$ \left( \mathbf{I} - \mathbf{D}^{-1} \mathbf{A} \right) \mathbf{v} = \mu \mathbf{v}.$$
+> Mutliplying from the left by $\mathbf{D}^{-1}$ leads to
+> $$ \left( \mathbf{D} - \mathbf{A} \right) \mathbf{v} = \mu \mathbf{Dv}.$$
+> Then
+> $$ \mathbf{v}^T \left( \mathbf{D} - \mathbf{A} \right) \mathbf{v} = \mu \mathbf{v}^T \mathbf{Dv}.$$
+> Re-arranging terms yields
+> $$ \left(1 - \mu \right) \mathbf{v}^T \mathbf{Dv} = \mathbf{v}^T \mathbf{Av}.$$
+> $\mathbf{A}$ and $\mathbf{D}$ being symmetric positive definite, we have
+> $$ \mathbf{v}^T \mathbf{Av} > 0 \quad \text{and} \quad \mathbf{v}^T \mathbf{Dv} > 0.$$
+> It implies $\left( 1 - \mu \right) > 0$ and thus $\mu < 1$.
+> Hence, all the eigenvalues $\mu$ of $\mathbf{I} - \mathbf{D}^{-1} \mathbf{A}$ are less than unity.
+
+While we arrived at the conclusion that $\mu < 1$, nothing so far implies $-1 < \mu$ and thus $\| \mathbf{I} - \mathbf{D}^{-1} \mathbf{A} \| < 1$.
+This is where the condition on $2\mathbf{D} - \mathbf{A}$ comes into play.
+
+> **Proof (part 2) --** Let $2\mathbf{D} - \mathbf{A}$ be symmetric positive definite. Then
+> $$\mathbf{v}^T \left( 2\mathbf{D} - \mathbf{A} \right) \mathbf{v} > 0$$
+> and thus
+> $$\mathbf{v}^T \left( \mathbf{D} - \mathbf{A} \right) \mathbf{v} > - \mathbf{v}^T \mathbf{Dv}.$$
+> From part 1, we know that $\mathbf{v}^T \left( \mathbf{D} - \mathbf{A} \right) \mathbf{v} = \mu \mathbf{v}^T \mathbf{Dv}$. Hence
+> $$\mu \mathbf{v}^T \mathbf{Dv} > - \mathbf{v}^T\mathbf{Dv}$$
+> implying $-1 < \mu$. Combined with part 1, we thus have $-1 < \mu < 1$, i.e. the eigenvalues of $\mathbf{I} - \mathbf{D}^{-1}\mathbf{A}$ are inside the unit circle (and real) and the Jacobi iteration converges.
+
+Note that the condition "$\mathbf{A}$ and $2\mathbf{D} - \mathbf{A}$ being symmetric positive definite" is sufficient although not necessary to guarantee the convergence of the Jacobi method.
+Another classical sufficient but not necessary condition is that $\mathbf{A}$ is strictly row diagonally dominant.
+Again, it is relatively easy to prove but since I'm the teacher here, I'll end this theoretical analysis with the nefarious: *This is left as an exercise for the reader.*
+
+### Alright, it converges. But how fast?
+
+We've actually already partially answered this question.
+From the sketch of the proof for Theorem n°1, we have
+
+$$
+\| \mathbf{e}_t \| \leq \| \mathbf{I} - \mathbf{D}^{-1} \mathbf{A} \|^t \cdot \| \mathbf{e}_0 \|.
+$$
+
+Obviously, the smaller $\| \mathbf{I} - \mathbf{D}^{-1} \mathbf{A} \|$, the faster the convergence.
+And we know that $\| \mathbf{I} - \mathbf{D}^{-1} \mathbf{A} \| < 1$ is related to the eigenvalues of the iteration matrix being inside the unit circle.
+So how do the eigenvalues influence the convergence rate of the method?
+
+A useful quantity to estimate the convergence rate of the method is the [spectral radius](https://en.wikipedia.org/wiki/Spectral_radius) of the iteration matrix $\mathbf{M} = \mathbf{I} - \mathbf{D}^{-1} \mathbf{A}$.
+It is defined as
+
+$$
+\rho(\mathbf{M}) = \max \left\{ \vert \mu_1 \vert, \cdots, \vert \mu_n \vert \right\},
+$$
+
+where $\mu_i$ are the eigenvalues.
+Moreover, $\rho(\mathbf{M}) \leq \| \mathbf{M} \|$ for every natural matrix norms.
+From our previous discussion, we know that $\rho(\mathbf{M}) < 1$ since the Jacobi method converges.
+Eventhough the spectral radius is only a lower bound for $\| \mathbf{I} - \mathbf{D}^{-1} \mathbf{A} \|$, we'll assume for the sake of simplicity that it is pretty tight.
+Hence, we roughly have
+
+$$
+\| \mathbf{e}_t \| \leq \rho(\mathbf{M})^t \cdot \| \mathbf{e}_0 \|.
+$$
+
+We could make this statement more formal but it wouldn't change the intuition: the smaller the spectral radius, the larger the asymptotic convergence rate.
+Unfortunately, there is not much else to say without knowing exactly the matrix $\mathbf{A}$ so let's turn to the actual problem of interest of this post.
+
+## The Poisson's equation on the unit square
+
+The [Poisson's equation](https://en.wikipedia.org/wiki/Poisson%27s_equation) is an elliptic partial differential equation (PDE) appearing in numerous fields of physics.
+Let's parse what this means:
+
+- **PDE --** The solution of the equation depends on more than one variable, where the variables are typically the different spatial dimensions.
+- **Elliptic --** The solution exhibits a certain notion of smoothness, whatever that means mathematically. Typically, it implies that the solution will not exhibit any discontinuities or very steep fronts in contrast to what you may see for hyperbolic equations (think shock waves for instance).
+
+Mathematically, it reads
+
+$$
+\nabla^2 u = -f,
+$$
+
+along with appropriate boundary conditions.
+In the rest of this post, we'll consider one of its simplest variations.
+The domain $\Omega$ is the unit square, i.e. $\Omega = \left[0, 1 \right]^2$ and we will consider only homogenous Dirichlet boundary conditions, i.e. $u = 0$ on the boundaries of the square.
+Our problem thus is
+
+$$
+\left\{
+\begin{aligned}
+    \dfrac{\partial^2 u}{\partial x^2} + \dfrac{\partial^2 u}{\partial y^2} = -f \quad & \text{for } (x, y) \in \Omega \\
+    u(x, y) = 0 \quad & \text{for } (x, y) \in \partial \Omega.
+\end{aligned}
+\right.
+$$
+
+Note that the problem is sufficiently simple that you can express its analytical solution using Fourier series.
+But we are computational scientists, so we'll solve the problem numerically.
+
+### Discretizing the problem
+
+There are many different ways to discretize a partial differential equation.
+Finite differences, finite volumes, finite elements, spectral elements, spectral methods, pseudo-spectral methods, etc.
+There are no silver bullets though.
+Each has its pros and cons.
+At the end of the day, the discretization method used is often a matter of personal preferences.
+To keep things simple, we will consider the standard second-order accurate finite-difference scheme.
+We will also consider a uniform grid spacing in each direction so that our differential operators can be approximated as
+
+$$
+\dfrac{\partial^2 u}{\partial x^2} \simeq \dfrac{u_{i+1, j} - 2u_{i, j} + u_{i-1, j}}{\Delta x^2}
+\quad \text{and} \quad
+\dfrac{\partial^2 u}{\partial y^2} \simeq \dfrac{u_{i, j+1} - 2u_{i, j} + u_{i, j-1}}{\Delta y^2}
+$$
+
+where $\Delta x$ and $\Delta y$ are the grid sizes in each direction, and $u_{i, j}$ is the value of our unknown function evaluated at the grid point $(x_i, y_j) = (i \Delta x, j \Delta y)$.
+For the sake of simplicity, we'll assume furthermore that $\Delta x = \Delta y$.
+Our discretized partial differential equation for points inside of the domain then reads
+
+$$
+\dfrac{1}{\Delta x^2} \left( u_{i+1, j} + u_{i-1, j} + u_{i, j+1} + u_{i, j-1} - 4 u_{i, j} \right) = -f_{i, j}.
+$$
+
+It may not seem like a linear system, but trust me, it is.
+The field $u(x, y)$ is represented as a two-dimensional array (and I mean *array*, not *matrix*) for the sake of simplicity.
+But you can always represent it as a vector by simply stacking the columns of the array on top of one another, and likewise for the right-hand side forcing $f(x, y)$.
+
+So, where is the matrix then?
+Consider a single column of the array $u$, that is we fix $x$ and only consider different $y$-values.
+The second-order derivative in the $y$-direction can be represented as an $(n_y-2) \times (n_y-2)$ matrix given by
+
+$$
+\mathbf{D}_y
+=
+\dfrac{1}{\Delta y^2}
+\begin{bmatrix}
+    -2  & 1 \\
+    1   & -2 & 1 \\
+        & 1 & -2 & 1 \\
+        &  & \ddots & \ddots & \ddots \\
+        & &   &   1   &   -2  &   1   \\
+        & &   &       &   1   & -2
+\end{bmatrix}
+$$
+
+where we excluded the points on the upper and lower boundaries as these are equal to zero owing to our choice of boundary conditions.
+Likewise, considering a single row of $u$ (i.e. fixing $y$ and considering different $x$-values), the second-order derivative in the horizontal direction can be represented as an $(n_x - 2) \times (n_x -2)$ matrix $\mathbf{D}_x$ with the same tridiagonal structure as $\mathbf{D}_y$.
+Our problem can then be represented in a standard linear system form as
+
+$$
+\left( \mathbf{I}_{n_y} \otimes \mathbf{D}_x + \mathbf{D}_y \otimes \mathbf{I}_{n_x} \right) \mathrm{vec}(u) = -\mathrm{vec}(f),
+$$
+
+where $\otimes$ is the [Kronecker product](https://en.wikipedia.org/wiki/Kronecker_product).
+If we were to explicitly construct it, this matrix would have $n_x \times n_y$ rows and likewise for the number of columns.
+For a discretization employing 512 points in each direction, that would be 260 100 columns and rows.
+Pretty big then, and completely intractable for standard direct linear solvers!
+
+### The Jacobi method for the 2D Poisson equation
+
+Time to write the Jacobi update rule for our particular problem.
+Recall that our problem reads
+
+$$
+\dfrac{1}{\Delta x^2} \left( u_{i+1, j} + u_{i-1, j} + u_{i, j+1} + u_{i, j-1} - 4 u_{i, j} \right) = -f_{i, j}.
+$$
+
+On the left-hand side, the $u_{ij}$ term corresponds to the diagonal component while all the others are the off-diagonal ones.
+Following what we have written for the Jacobi method in matrix form, specializing for this equation leads to the following update rule
+
+$$
+u_{i, j}^{(t+1)} = \dfrac{1}{4} \left( \Delta x^2 \cdot f_{i, j} - u_{i+1, j}^{(t)} - u_{i-1, j}^{(t)} - u_{i, j+1}^{(t)} - u_{i, j-1}^{(t)} \right)
+$$
+
+where the superscript $\cdot ^{(t)}$ denotes the iteration number.
+This will be fairly simple to implement.
+Create two arrays, one to store the solution at iteration $t$ and the other one at iteration $t+1$.
+Loop over the indices and update the $(i, j)$-th entries of the second table with the appropriate combination of values from the first one.
+Note that it is important to keep these two tables.
+If you were to have only one table and directly update its $(i, j)$ entry, you would end-up with a different method: Gauss-Seidel.
+More on that in a later post (maybe).
+
+**Convergence properties --** The second-order accurate central finite-difference approximation $\mathbf{L} = \mathbf{I}_{n_y} \otimes \mathbf{D}_x + \mathbf{D}_y \otimes \mathbf{I}_{n_x}$ of the Laplace operator $\nabla^2$ is a symmetric negative definite matrix.
+Hence, $-\mathbf{L}$ is symmetric positive definite (and this is the reason for why there is a minus sign on the right-hand side of our problem if you wondered).
+It is easy to show moreover that $-\mathbf{L}$ satisfies the assumptions for Theorem n°2 to hold.
+Hence, after a sufficiently large number of iterations, the Jacobi method will converge to the actual solution of our linear system.
+But again, how fast?
+
+As before, we can get some intuition by looking at the spectral radius of this matrix.
+I won't go through the calculations (and I'll assume $n_x = n_y$), but we basically have
+
+$$
+\rho(\mathbf{I} + \mathbf{D}^{-1} \mathbf{L}) \simeq 1 - \dfrac{\pi^2}{2 n_x^2}.
+$$
+
+Using an increasing number of grid points to discretize our domain (that is considering a finer and finer mesh), the spectral radius of the iteration matrix gets closer and closer to unity.
+As a consequence, the Jacobi method requires more and more iterations to compute a reasonnably accurate solution.
+This poor scaling property is one of the reasons why it ain't actually used nowadays in high-performance computing solvers.
+But this does not concern us here.
+
+## Let `Fortran` shine!
+
+Alright! It's time for what you all expected: the `Fortran` implementation.
+We'll start with a simple translation to `Fortran` of the pseudo-code.
+This implementation will be our baseline.
+We will then incrementally improve it by using various tips and tricks with a particular constraint: use only standard-compliant `Fortran` code.
+I'll try to explain the rationale behind every decision I make along the way.
+By the end of our journey, we'll have a standard-compliant implementation which can naturally leverage multithreaded computations without having have to write a single openMP pragma.
+Performance-wise, we'll end up with a 20x to 30x speed-up compared to our baseline implementation without every leaving the realm of `Fortran`.
+Too good to be true? Bare with me then!
+
+### Baseline implementation
+
+Let us start with an almost verbatim translation of the pseudo-code to `Fortran`.
+In the rest, we will use `double precision` arithmetic.
+The `kind` parameter will be defined as
+
+```fortran
+integer, parameter :: dp = selected_real_kind(15, 307)
+```
+
+This is often considered to be a good practice in `Fortran` and guarantees a certain portability of the code across different compilers and platforms.
+Let us now turn our attention to the Jacobi kernel.
+Our textbook implementation is shown below.
+
+```fortran
+pure subroutine textbook_kernel(nx, ny, u, v, b, dx)
+    implicit none
+    integer, intent(in) :: nx, ny
+    real(dp), intent(out) :: u(nx, ny)
+    real(dp), intent(in) :: v(nx, ny), b(nx, ny), dx
+    integer :: i, j
+    do j = 2, ny-1
+        do i = 2, nx-1
+            u(i, j) = 0.25_dp*(b(i, j)*dx**2 - v(i+1, j) - v(i-1, j) &
+                                             - v(i, j+1) - v(i, j-1))
+        enddo
+    enddo
+end subroutine
+```
+
+The `pure` keyword is here to tell the compiler that we guarantee this subroutine has no unintended side-effect.
+It is not technically mandatory, but it is also part of the good practices in `Fortran`.
+Hopefully, if we do things right, this kernel should be where we spend most of the computational time.
+To the actual solver now.
+
+```fortran
+function textbook_solver(b, tol, maxiter) result(u)
+    implicit none
+    real(dp), intent(in) :: b(:, :), tol
+    integer, intent(in) :: maxiter
+    real(dp), allocatable :: u(:, :)
+    ! Internal variables
+    integer :: nx, ny, i, j, iteration
+    real(dp), allocatable :: v(:, :)
+    real(dp) :: dx, l2_norm
+    ! Initialize variables
+    nx = size(b, 1); ny = size(b, 2); dx = 1.0_dp/(nx - 1)
+    if (nx /= ny) then
+        error stop "Number of points in each direction need to be equal."
+    endif
+    allocate (u(nx, ny), source=0.0_dp)
+    allocate (v(nx, ny), source=0.0_dp)
+    l2_norm = 1.0_dp
+    iteration = 0
+    ! Begining of the Jacobi iterative method.
+    do while ((iteration < maxiter) .and. (l2_norm > tol))
+        ! Jacobi iteration.
+        call textbook_kernel(nx, ny, v, u, b, dx)
+        ! Compute error norm.
+        l2_norm = norm2(u - v)
+        ! Update variable.
+        u = v
+        ! Update iteration counter.
+        iteration = iteration + 1
+    end do
+    print *, "Textbook solver :"
+    print *, "    - Number of iterations :", iteration
+    print *, "    - l2-norm of the error :", l2_norm
+end function
+```
+
+Even if you ain't familiar with `Fortran`, the code should be quite readable.
+After having declared and initialized all of the required variables, the Jacobi method starts from Line 20 and proceeds in 3 steps:
+
+1. Perform the Jacobi update by calling our textbook kernel.
+2. Compute the 2-norm of the correction.
+3. Update the current solution with its latest estimate.
+
+This loop keeps on going until the 2-norm of the correction is small enough to claim convergence.
+In all of our experiments, the tolerance is set to $10^{-8}$.
+
+**Performances --** We will use 512 points in each direction with a uniform grid spacing and assume the initial guess to be the zero solution for all of our experiments.
+We thus have slightly more than a quarter million of unknowns, a reasonnably large linear system.
+The code is compiled using `gfortran 15.1` and the following options: `-O3 -march=native -mtune=native`.
+The table below summarizes some of the key computational metrics.
+
+| **Solver** | **# of iterations** | **Time to solution** | **Speed-up w.r.t. baseline** |
+| :---: | :---:| :---:| :---: |
+| Textbook | 128 395 | 58 s | 1 |
+
+Solving a linear system with a quarter million of unknowns in under one minute is quite impressive when you think about it.
+It is clearly orders of magnitude faster than if you were to do it by hand (and far less error-prone)!
+But is this the best we can do?
+You might be inclined to say *yes*.
+After all, our implementation is an almost verbatim translation of the pseudo-code and maths don't lie.
+But that ain't completely true though...
+When it comes to scientific computing, there are many streetfighting skills you can pick along the way to massively improve the computational performances of a given algorithm.
+So let's start optimizing!
+
+### You shall not copy!
+
+Our Jacobi kernel is so simple that there ain't much room for improvement so let's look at the solver itself starting with line 26
+
+```fortran
+    u = v
+```
+
+It is the update of our current estimate of the solution with the one we've just computed.
+It essentially is a `copy` operation.
+Given how simple our Jacobi kernel is, it acutally takes almost as long as computing a Jacobi update.
+So let's get rid of it by simply performing an additional call to the Jacobi kernel with role of `u` and `v` being flipped.
+
+```fortran
+function nocopy_solver(b, tol, maxiter) result(u)
+    implicit none
+    real(dp), intent(in) :: b(:, :), tol
+    integer, intent(in) :: maxiter
+    real(dp), allocatable :: u(:, :)
+    ! Internal variables
+    integer :: nx, ny, i, j, iteration
+    real(dp), allocatable :: v(:, :)
+    real(dp) :: dx, l2_norm
+    ! Initialize variables
+    nx = size(b, 1); ny = size(b, 2); dx = 1.0_dp/(nx - 1)
+    if (nx /= ny) then
+        error stop "Number of points in each direction need to be equal."
+    endif
+    allocate (u(nx, ny), source=0.0_dp)
+    allocate (v(nx, ny), source=0.0_dp)
+    l2_norm = 1.0_dp
+    iteration = 0
+    ! Begining of the Jacobi iterative method.
+    do while ((iteration < maxiter) .and. (l2_norm > tol))
+        ! Jacobi iteration (no copy).
+        call textbook_kernel(nx, ny, v, u, b, dx)
+        call textbook_kernel(nx, ny, u, v, b, dx)
+        ! Compute error norm.
+        l2_norm = norm2(u - v)
+        ! Update variable.
+        u = v
+        ! Update iteration counter.
+        iteration = iteration + 2
+    end do
+    print *, "No-copy solver  :"
+    print *, "    - Number of iterations :", iteration
+    print *, "    - l2-norm of the error :", l2_norm
+end function
+```
+
+**Performances --** Code-wise, very little has changed compared to our baseline implementation.
+The `nocopy_solver` slightlty departs from the pseudo-code but is still as readable.
+Peformance-wise, it is a different story.
+
+| **Solver** | **# of iterations** | **Time to solution** | **Speed-up w.r.t. baseline** |
+| :---: | :---:| :---:| :---: |
+| Textbook | 128 395 | 58 s | 1 |
+| No-copy | 128 396 | 30 s | 1.9 |
+
+This one-line change makes our solver compute the solution twice as fast!
+But don't get too excited, it is somewhat expected if you think of it.
+A `copy` is roughly as expensive as computing a Jacobi update itself.
+As a consequence, in the time frame it took our baseline implementation to peform a Jacobi update followed by a copy, the `nocopy_solver` performed no copy (hence the name) but two updates.
+And boom, twice as fast.
+This is the first but probably most important take-away message:
+
+> **Avoir copies like the plague and re-use intermediate results as much as possible.**
+
+This is not specific to `Fortran` and is true for pretty much any programming language you use.
+
+### Further optimizations
+
+While the no-copy trick is fairly general, let us turn now to somewhat Jacobi-specific optimization tricks starting with the Jacobi kernel itself.
+Let $v$ be the current approximate solution and $u$ the new one being computed.
+Recall that the update rule is as follows
+
+$$
+    u_{i, j} = \dfrac{1}{4} \left( b_{i, j} \cdot \Delta x^2 - (v_{i+1, j} + v_{i-1, j} + v_{i, j+1} + v_{i, j-1}) \right)
+$$
+
+for all $i$ and $j$ corresponding to points in the interior of the computational domain.
+One crucial observation is that there are no dependencies between the entries of $u$: they can be update in any abitrary order, not necessarily the lexicographic one.
+In particular, we could let the compiler decide on its own what is the most efficient way to do this update based on its internal mechanics.
+The 2008 standard introduced a particular construct conveying precisely this: the `do concurrent`.
+Below is the Jacobi kernel rewritten using this construct.
+
+```fortran
+pure subroutine doconcurrent_kernel(nx, ny, u, v, b, dx)
+    implicit none(external)
+    integer(ilp), intent(in) :: nx, ny
+    real(dp), intent(out) :: u(nx, ny)
+    real(dp), intent(in) :: v(nx, ny), b(nx, ny), dx
+    integer :: i, j
+    do concurrent(i=2:nx - 1, j=2:ny - 1)
+        ! Jacobi update.
+        u(i, j) = 0.25_dp*(b(i, j)*dx**2 - v(i + 1, j) - v(i - 1, j) &
+                                         - v(i, j + 1) - v(i, j - 1))
+    end do
+end subroutine doconcurrent_kernel
+```
+
+For now, it does not actually improve the computational performances of our kernel.
+For serial computations, it mostly is a syntactic sugar letting someone reading the code know that this loop could technically be computed in parallel with no problem.
+It might help the compiler optimize a bit, but the kernel being so simple I haven't seen much changes.
+It'll be different though once we go to multithreaded computations but that's a story for slightly later.
+
+The main source of computational improvement is located on line 25:
+
+```fortran
+    l2_norm = norm2(u-v)
+```
+
+There is nothing particularly wrong with this line.
+In practice however, the Jacobi method is quite slow to converge and computing the residual norm at every iteration incurs extra computational costs which are unecessary.
+We would be much better off by checking the residual only once in a while.
+We could replace it with
+
+```fortran
+    if (mod(iteration, 1000)) l2_norm = norm2(u - v)
+```
+
+or using the newest `do concurrent` construct
+
+```fortran
+if (mod(iteration, 1000)) then
+    l2_norm = 0.0_dp
+    do concurrent(i=2:nx-1, j=2:ny-1) reduce(+:l2_norm)
+        l2_norm = l2_norm + (u(i, j) - v(i, j))**2
+    enddo
+    l2_norm = sqrt(l2_norm)
+endif
+```
+
+Either way is fine, `norm2` is an intrinsic `Fortran` function and its implementation has already been optimized by the compiler vendors.
+Checking the residual norm every 1000 iterations is arbitrary.
+It has been chosen out of simplicity considering that the method takes 128 000 iterations to converge on our particular problem.
+In practice, you might actually pass this as an extra argument to the solver to let the user decide.
+Here is the updated solver.
+
+```fortran
+function doconcurrent_solver(b, tol, maxiter) result(u)
+    implicit none(external)
+    real(dp), intent(in) :: b(:, :), tol
+    integer, intent(in) :: maxiter
+    real(dp), allocatable :: u(:, :)
+    ! Internal variables.
+    integer :: nx, ny, i, j, iteration
+    real(dp), allocatable :: v(:, :)
+    real(dp) :: dx, l2_norm
+    ! Initialize variables
+    nx = size(b, 1); ny = size(b, 2); dx = 1.0_dp/(nx - 1)
+    if (nx /= ny) then
+        error stop "Number of points in each direction need to be equal."
+    endif
+    allocate (u(nx, ny), source=0.0_dp)
+    allocate (v(nx, ny), source=0.0_dp)
+    l2_norm = 1.0_dp
+    iteration = 0
+    do while ((iteration < maxiter) .and. (l2_norm > tol))
+        ! Jacobi kernel (no-copy).
+        call doconcurrent_kernel(nx, ny, v, u, b, dx)
+        call doconcurrent_kernel(nx, ny, u, v, b, dx)
+        ! Compute error norm.
+        if (mod(iteration, 1000) == 0) l2_norm = error_norm(u, v)
+        ! Update iteration counter.
+        iteration = iteration + 2
+    end do
+    l2_norm = error_norm(u, v) ! Sanity check
+    print *, "Do-concurrent solver :"
+    print *, "    - Number of iterations :", iteration
+    print *, "    - l2-norm of the error :", l2_norm
+end function
+
+pure real(dp) function error_norm(u, v) result(l2_norm)
+    implicit none
+    real(dp), intent(in) :: u(:, :), v(:, :)
+    integer :: i, j
+    l2_norm = 0.0_dp
+    do concurrent(i=2:size(u, 1)-1, j=2:size(u, 2)-1) reduce(+:l2_norm)
+        l2_norm = l2_norm + (u(i, j) - v(i, j))**2
+    end do
+    l2_norm = sqrt(l2_norm)
+end function
+```
+
+**Performances --** Again, the new solver is just as readable as the previous ones.
+No big changes here, but look at the performances below!
+
+| **Solver** | **# of iterations** | **Time to solution** | **Speed-up w.r.t. baseline** |
+| :---: | :---:| :---:| :---: |
+| Textbook | 128 395 | 58 s | 1 |
+| No-copy | 128 396 | 30 s | 1.9 |
+| do concurrent | 129 002 | 16 s | 3.6 |
+
+The new solver is 3 to 4 times faster than our baseline!
+This is quite remarkable given that we changed only a couple of lines compared to the original textbook implementation.
+Things are not always so clear cut for more complex algorithms, but still.
+And here is our second take-way:
+
+> **Compute just what you need, not more.**
+
+Here, computing the residual norm for each iteration was clearly a non-negligible and non-necessary bottleneck.
+At this point, there is no more low-hanging fruit for optimization.
+You might think this is it.
+A 3.6x speed-up is good enough and you may call it a day.
+But you know what?
+There's more.
+We can reach a 20x to 30x speed-up without changing anything else to the code!
+
+### Multithreaded performances
+
+Computers these days tend to have built-in parallel computing capabilities.
+Yet, we haven't leverage these so far.
+Let's change that.
+I will not get into a discussion about openMP vs MPI or GPU offloading.
+I will keep things very practical instead.
+Remember when I said we can perform the Jacobi update in any $i, j$ order we want?
+The Jacobi update rule is embarassingly parallel.
+That is precisely what the `do concurrent` construct is conveying.
+And compilers can leverage this for increased computational performances.
+For our solver, it is a simple as changing the `gfortran` compilation options from
+
+```
+-O3 -mtune=native -march=native
+```
+
+to
+
+```
+-O3 -mtune=native -march=native -ftree-parallelize-loop=n
+```
+
+where `n` is the number of processes/threads to be used.
+And that's it.
+Litterally.
+And look at these performances!
+
+
+| **Number of threads** | **Time to solution** | **Speed-up w.r.t. baseline** |
+| :---: | :---: | :---: |
+| 1 | 16 s | 3.6 |
+| 2 | 8.6 s | 6.7 |
+| 4 | 4.1 s | 14.1 |
+| 8 | 2.1 s | 27.6 |
+
+As promised, we finish with a linear solver computing the solution of a system with a quarter million of unknowns in less than 3 seconds and not a single openMP pragma or MPI call.
+The code is the **exact same as before**.
+The only thing that changed is the addition of the new compilation option.
+And that is enough to reach a 27x speed-up compared to our original textbook implementation![^2]
+Pretty good considering we changed only a handful of lines of code and added only one extra compilation option, innit?
+There would be a lot more to say about the different parallel computing paradigms and the associated neaty greedy details, but this post is already sufficiently long as it is so I'll stop right there.
+I'll leave you with a cautionnary quote by the famous [Donald Knuth](https://en.wikipedia.org/wiki/Donald_Knuth) though
+
+> The real problem is that programmers have spent far too much time worrying about efficiency in the wrong places and at the wrong times; premature optimization is the root of all evil (or at least most of it) in programming.
+
+<!--Include social share buttons-->
+
+{{< include /files/includes/_socialshare.qmd >}}
+
+[^1]: We need to invert the matrix $\mathbf{D}$ at each iteration.
+While this operation requires $\mathcal{O}(n^3)$ flops for a general matrix, $\mathbf{D}$ here is diagonal.
+Hence, its inverse is straightforward to compute and only requires $n$ flops.
+Likewise, the matrix-vector product $\mathbf{Rx}_t$ requires in general $\mathcal{O}(n^2)$ flops.
+In most applications though, the matrix $\mathbf{A}$ is sparse and so is $\mathbf{R}$, typically reducing the number of floating points operations down to $\mathcal{O}(n)$ as well.
+For a sparse linear system, each iteration of the Jacobi method hence requires $\mathcal{O}(n)$ flops.
+The question then is how many iterations does it take to converge?
+
+[^2]: If you run the code on your own computer, you may get different results as it depends on the number of cores you have, how fast they are, etc. But still, you should get pretty much the same trend.
