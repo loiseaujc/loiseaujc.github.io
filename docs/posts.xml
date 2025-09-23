@@ -15,7 +15,1484 @@
 <link>https://loiseaujc.github.io/posts.html</link>
 </image>
 <generator>quarto-1.7.34</generator>
-<lastBuildDate>Mon, 08 Sep 2025 22:00:00 GMT</lastBuildDate>
+<lastBuildDate>Mon, 22 Sep 2025 22:00:00 GMT</lastBuildDate>
+<item>
+  <title>Jacobi method: From a naïve implementation to a modern Fortran multithreaded one</title>
+  <dc:creator>Jean-Christophe Loiseau</dc:creator>
+  <link>https://loiseaujc.github.io/posts/blog-title/jacobi_experiments.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<p>In a previous <a href="https://loiseaujc.github.io/posts/blog-title/fortran_vs_python.html">post</a>, I used the Jacobi method to illustrate some merits of <code>Fortran</code> over <code>Python</code> for teaching purposes. Since then, I received a handful of messages asking how to write efficient <code>Fortran</code> code. Because of its algorithmic simplicity, the Jacobi method makes for an excellent case study. In this post, we’ll see how to go from a naïve implementation taking a minute to solve a linear system with a quarter million unknowns to a multithreaded version taking less 3 seconds. Bonus point: the code is entirely standard-compliant and you don’t need to know anything about <a href="https://www.openmp.org/">OpenMP</a> or <a href="https://en.wikipedia.org/wiki/Message_Passing_Interface">MPI</a>. If you want to see the whole code, check <a href="https://github.com/loiseaujc/Jacobi-Experiments">this</a> GitHub repo. But first, what is the Jacobi method?</p>
+<section id="solving-a-linear-system-with-the-jacobi-method" class="level2">
+<h2 class="anchored" data-anchor-id="solving-a-linear-system-with-the-jacobi-method">Solving a linear system with the Jacobi method?</h2>
+<p>Consider the system of linear equations</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0A%5Cmathbf%7BAx%7D%20=%20%5Cmathbf%7Bb%7D,%0A"></p>
+<p>where <img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7BA%7D"> is an invertible <img src="https://latex.codecogs.com/png.latex?n%20%5Ctimes%20n"> matrix. If you ever had a course on numerical linear algebra, you have seen various algorithms to solve this problem. These are divided in two categories: direct solvers targetting small- to medium-sized dense matrices, and iterative solvers for large sparse matrices.</p>
+<p>Among the zoo of iterative methods, the <a href="https://en.wikipedia.org/wiki/Jacobi_method">Jacobi method</a> is probably the first one you’ve encountered. There are two reasons for that:</p>
+<ol type="1">
+<li>It is easy to implement, no matter the programming language.</li>
+<li>Its theoretical analysis is rather simple, even for undergrad students.</li>
+</ol>
+<p>It does come with its limitations though: it does not work for all possible matrices and the convergence is rather slow (i.e.&nbsp;it requires many iterations). Because of these, the Jacobi method is not a viable alternative compared to the (preconditioned) <a href="https://en.wikipedia.org/wiki/Conjugate_gradient_method">conjugate gradient</a> or <a href="https://en.wikipedia.org/wiki/Multigrid_method">multigrid</a> methods and is thus hardly used in production codes. It is however, in my opinion, a fantastic learning example. So, how does it work?</p>
+<section id="a-brief-overview" class="level3">
+<h3 class="anchored" data-anchor-id="a-brief-overview">A brief overview</h3>
+<p>The Jacobi method relies on the additive decomposition:</p>
+<p><img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7BA%7D%20=%20%5Cmathbf%7BD%7D%20+%20%5Cmathbf%7BR%7D,"></p>
+<p>where <img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7BD%7D"> is the diagonal component of <img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7BA%7D">, and <img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7BR%7D"> consists of the off-diagonal terms. Plugging this decomposition into our system leads to</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0A%5Cmathbf%7BDx%7D%20+%20%5Cmathbf%7BRx%7D%20=%20%5Cmathbf%7Bb%7D.%0A"></p>
+<p>Starting from an initial guess <img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7Bx%7D_0">, the core idea of the Jacobi method is to treat the diagonal contributions <em>implicitly</em> and the off-diagonal ones <em>explicitly</em>, analoguous to a time-integration scheme. This leads to the following iterative scheme</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0A%5Cmathbf%7Bx%7D_%7Bt+1%7D%20=%20%5Cmathbf%7BD%7D%5E%7B-1%7D%20%5Cleft(%20%5Cmathbf%7Bb%7D%20-%20%5Cmathbf%7BRx%7D_t%20%5Cright),%0A"></p>
+<p>where subscript <img src="https://latex.codecogs.com/png.latex?t"> denotes the <img src="https://latex.codecogs.com/png.latex?t">-th iteration of the method. What we claim then is that, under suitable assumptions on <img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7BA%7D">, the iterate <img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7Bx%7D_t"> converges to the actual solution of the system as <img src="https://latex.codecogs.com/png.latex?t%20%5Cto%20%5Cinfty">. So when does it converge? And if so, how fast does it converge?<sup>1</sup></p>
+</section>
+<section id="fair-enough-but-does-it-actually-converge" class="level3">
+<h3 class="anchored" data-anchor-id="fair-enough-but-does-it-actually-converge">Fair enough, but does it actually converge?</h3>
+<p>The questions of whether or not an iterative method converges and, if so, how fast does it converge are obviously critical to assess its competitiveness. To answer to both of these questions, let us rewrite the Jacobi iteration as</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0A%5Cbegin%7Baligned%7D%0A%5Cmathbf%7Bx%7D_%7Bt+1%7D%20%20%20%20&amp;%20%20%20=%20%5Cmathbf%7Bx%7D_t%20-%20%5Cmathbf%7BD%7D%5E%7B-1%7D%20%5Cleft(%20%5Cmathbf%7Bb%7D%20-%20%5Cmathbf%7BAx%7D_t%20%5Cright)%20%5C%5C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20&amp;%20%20%20=%20%5Cleft(%20%5Cmathbf%7BI%7D%20-%20%5Cmathbf%7BD%7D%5E%7B-1%7D%5Cmathbf%7BA%7D%20%5Cright)%20%5Cmathbf%7Bx%7D_t%20-%20%5Cmathbf%7BD%7D%5E%7B-1%7D%20%5Cmathbf%7Bb%7D.%0A%5Cend%7Baligned%7D%0A"></p>
+<p>To derive this expression, simply add and subtract <img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7BDx%7D_t"> inside the parenthesized term in the right-hand side and group terms together. Now, let <img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7Bx%7D_%7B%5Cstar%7D"> be the true solution of the system, i.e.&nbsp;<img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7Bx%7D_%7B%5Cstar%7D%20=%20%5Cmathbf%7BA%7D%5E%7B-1%7D%20%5Cmathbf%7Bb%7D">, and <img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7Be%7D_t%20=%20%5Cmathbf%7Bx%7D_t%20-%20%5Cmathbf%7Bx%7D_%7B%5Cstar%7D"> be the error at iteration <img src="https://latex.codecogs.com/png.latex?t">. Using simple algebraic manipulations, the dynamics of the error vector are governed by</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0A%5Cmathbf%7Be%7D_%7Bt+1%7D%20=%20%5Cleft(%5Cmathbf%7BI%7D%20-%20%5Cmathbf%7BD%7D%5E%7B-1%7D%20%5Cmathbf%7BA%7D%20%5Cright)%20%5Cmathbf%7Be%7D_t.%0A"></p>
+<p>Obviously, the Jacobi method converges to the correct solution provided <img src="https://latex.codecogs.com/png.latex?%5Cdisplaystyle%20%5Clim_%7Bt%20%5Cto%20%5Cinfty%7D%20%5C%7C%20%5Cmathbf%7Be%7D_t%20%5C%7C%20=%200"> where <img src="https://latex.codecogs.com/png.latex?%5C%7C%20%5Ccdot%20%5C%7C"> is a suitable vector norm. The question of its convergence thus reduces to: under what condition on <img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7BI%7D%20-%20%5Cmathbf%7BD%7D%5E%7B-1%7D%20%5Cmathbf%7BA%7D"> does the norm of the error vector goes to zero?</p>
+<blockquote class="blockquote">
+<p><strong>Theorem n°1 –</strong> The Jacobi iterative method</p>
+<p><img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7Bx%7D_%7Bt+1%7D%20=%20%5Cleft(%20%5Cmathbf%7BI%7D%20-%20%5Cmathbf%7BD%7D%5E%7B-1%7D%20%5Cmathbf%7BA%7D%20%5Cright)%20%5Cmathbf%7Bx%7D_t%20-%20%5Cmathbf%7BD%7D%5E%7B-1%7D%5Cmathbf%7Bb%7D"></p>
+<p>converges for any initial vector <img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7Bx%7D_0"> provided <img src="https://latex.codecogs.com/png.latex?%5C%7C%20%5Cmathbf%7BI%7D%20-%20%5Cmathbf%7BD%7D%5E%7B-1%7D%20%5Cmathbf%7BA%7D%20%5C%7C%20%3C%201"> where <img src="https://latex.codecogs.com/png.latex?%5C%7C%20%5Ccdot%20%5C%7C"> is a matrix norm induced by the corresponding vector norm.</p>
+</blockquote>
+<blockquote class="blockquote">
+<p><strong>Sketch of the proof –</strong> Let <img src="https://latex.codecogs.com/png.latex?%5C%7C%20%5Ccdot%20%5C%7C"> be a matrix norm consistent with a vector norm. Then</p>
+<p><img src="https://latex.codecogs.com/png.latex?%5C%7C%20%5Cmathbf%7Be%7D_%7Bt+1%7D%20%5C%7C%20=%20%5C%7C%20%5Cleft(%20%5Cmathbf%7BI%7D%20-%20%5Cmathbf%7BD%7D%5E%7B-1%7D%20%5Cmathbf%7BA%7D%20%5Cright)%20%5Cmathbf%7Be%7D_t%20%5C%7C%20%5Cleq%20%5C%7C%20%5Cmathbf%7BI%7D%20-%20%5Cmathbf%7BD%7D%5E%7B-1%7D%20%5Cmathbf%7BA%7D%20%5C%7C%20%5Ccdot%20%5C%7C%20%5Cmathbf%7Be%7D_t%20%5C%7C."></p>
+<p>A simple inductive argument shows that (for <img src="https://latex.codecogs.com/png.latex?t"> large enough)</p>
+<p><img src="https://latex.codecogs.com/png.latex?%5C%7C%20%5Cmathbf%7Be%7D_t%20%5C%7C%20%5Cleq%20%5C%7C%20%5Cmathbf%7BI%7D%20-%20%5Cmathbf%7BD%7D%5E%7B-1%7D%20%5Cmathbf%7BA%7D%20%5C%7C%5Et%20%5Ccdot%20%5C%7C%20%5Cmathbf%7Be%7D_0%20%5C%7C."></p>
+<p>Hence, <img src="https://latex.codecogs.com/png.latex?%5C%7C%20%5Cmathbf%7Be%7D_t%20%5C%7C"> converges to zero as <img src="https://latex.codecogs.com/png.latex?t%20%5Cto%20%5Cinfty"> for all <img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7Be%7D_0"> provided that <img src="https://latex.codecogs.com/png.latex?%5C%7C%20%5Cmathbf%7BI%7D%20-%20%5Cmathbf%7BD%7D%5E%7B-1%7D%20%5Cmathbf%7BA%7D%20%5C%7C%20%3C%201">.</p>
+</blockquote>
+<p>Alright, we now know the Jacobi method converges provided <img src="https://latex.codecogs.com/png.latex?%5C%7C%20%5Cmathbf%7BI%7D%20-%20%5Cmathbf%7BD%7D%5E%7B-1%7D%20%5Cmathbf%7BA%7D%20%5C%7C%20%3C%201">. But what are the necessary and/or sufficient conditions on <img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7BA%7D"> for <img src="https://latex.codecogs.com/png.latex?%5C%7C%20%5Cmathbf%7BI%7D%20-%20%5Cmathbf%7BD%7D%5E%7B-1%7D%20%5Cmathbf%7BA%7D%20%5C%7C"> to be less than unity?</p>
+<blockquote class="blockquote">
+<p><strong>Theorem n°2 –</strong> Let <img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7BA%7D"> and <img src="https://latex.codecogs.com/png.latex?2%5Cmathbf%7BD%7D%20-%20%5Cmathbf%7BA%7D"> be symmetric positive definite matrices. Then, the Jacobi iteration converges.</p>
+</blockquote>
+<p>The proof is divided in two parts.</p>
+<blockquote class="blockquote">
+<p><strong>Proof (part 1) –</strong> Let <img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7BA%7D"> be symmetric positive definite and <img src="https://latex.codecogs.com/png.latex?%5Cmu"> be an eigenvalue of <img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7BI%7D%20-%20%5Cmathbf%7BD%7D%5E%7B-1%7D%20%5Cmathbf%7BA%7D"> with eigenvector <img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7Bv%7D">. Then <img src="https://latex.codecogs.com/png.latex?%20%5Cleft(%20%5Cmathbf%7BI%7D%20-%20%5Cmathbf%7BD%7D%5E%7B-1%7D%20%5Cmathbf%7BA%7D%20%5Cright)%20%5Cmathbf%7Bv%7D%20=%20%5Cmu%20%5Cmathbf%7Bv%7D."> Mutliplying from the left by <img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7BD%7D%5E%7B-1%7D"> leads to <img src="https://latex.codecogs.com/png.latex?%20%5Cleft(%20%5Cmathbf%7BD%7D%20-%20%5Cmathbf%7BA%7D%20%5Cright)%20%5Cmathbf%7Bv%7D%20=%20%5Cmu%20%5Cmathbf%7BDv%7D."> Then <img src="https://latex.codecogs.com/png.latex?%20%5Cmathbf%7Bv%7D%5ET%20%5Cleft(%20%5Cmathbf%7BD%7D%20-%20%5Cmathbf%7BA%7D%20%5Cright)%20%5Cmathbf%7Bv%7D%20=%20%5Cmu%20%5Cmathbf%7Bv%7D%5ET%20%5Cmathbf%7BDv%7D."> Re-arranging terms yields <img src="https://latex.codecogs.com/png.latex?%20%5Cleft(1%20-%20%5Cmu%20%5Cright)%20%5Cmathbf%7Bv%7D%5ET%20%5Cmathbf%7BDv%7D%20=%20%5Cmathbf%7Bv%7D%5ET%20%5Cmathbf%7BAv%7D."> <img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7BA%7D"> and <img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7BD%7D"> being symmetric positive definite, we have <img src="https://latex.codecogs.com/png.latex?%20%5Cmathbf%7Bv%7D%5ET%20%5Cmathbf%7BAv%7D%20%3E%200%20%5Cquad%20%5Ctext%7Band%7D%20%5Cquad%20%5Cmathbf%7Bv%7D%5ET%20%5Cmathbf%7BDv%7D%20%3E%200."> It implies <img src="https://latex.codecogs.com/png.latex?%5Cleft(%201%20-%20%5Cmu%20%5Cright)%20%3E%200"> and thus <img src="https://latex.codecogs.com/png.latex?%5Cmu%20%3C%201">. Hence, all the eigenvalues <img src="https://latex.codecogs.com/png.latex?%5Cmu"> of <img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7BI%7D%20-%20%5Cmathbf%7BD%7D%5E%7B-1%7D%20%5Cmathbf%7BA%7D"> are less than unity.</p>
+</blockquote>
+<p>While we arrived at the conclusion that <img src="https://latex.codecogs.com/png.latex?%5Cmu%20%3C%201">, nothing so far implies <img src="https://latex.codecogs.com/png.latex?-1%20%3C%20%5Cmu"> and thus <img src="https://latex.codecogs.com/png.latex?%5C%7C%20%5Cmathbf%7BI%7D%20-%20%5Cmathbf%7BD%7D%5E%7B-1%7D%20%5Cmathbf%7BA%7D%20%5C%7C%20%3C%201">. This is where the condition on <img src="https://latex.codecogs.com/png.latex?2%5Cmathbf%7BD%7D%20-%20%5Cmathbf%7BA%7D"> comes into play.</p>
+<blockquote class="blockquote">
+<p><strong>Proof (part 2) –</strong> Let <img src="https://latex.codecogs.com/png.latex?2%5Cmathbf%7BD%7D%20-%20%5Cmathbf%7BA%7D"> be symmetric positive definite. Then <img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7Bv%7D%5ET%20%5Cleft(%202%5Cmathbf%7BD%7D%20-%20%5Cmathbf%7BA%7D%20%5Cright)%20%5Cmathbf%7Bv%7D%20%3E%200"> and thus <img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7Bv%7D%5ET%20%5Cleft(%20%5Cmathbf%7BD%7D%20-%20%5Cmathbf%7BA%7D%20%5Cright)%20%5Cmathbf%7Bv%7D%20%3E%20-%20%5Cmathbf%7Bv%7D%5ET%20%5Cmathbf%7BDv%7D."> From part 1, we know that <img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7Bv%7D%5ET%20%5Cleft(%20%5Cmathbf%7BD%7D%20-%20%5Cmathbf%7BA%7D%20%5Cright)%20%5Cmathbf%7Bv%7D%20=%20%5Cmu%20%5Cmathbf%7Bv%7D%5ET%20%5Cmathbf%7BDv%7D">. Hence <img src="https://latex.codecogs.com/png.latex?%5Cmu%20%5Cmathbf%7Bv%7D%5ET%20%5Cmathbf%7BDv%7D%20%3E%20-%20%5Cmathbf%7Bv%7D%5ET%5Cmathbf%7BDv%7D"> implying <img src="https://latex.codecogs.com/png.latex?-1%20%3C%20%5Cmu">. Combined with part 1, we thus have <img src="https://latex.codecogs.com/png.latex?-1%20%3C%20%5Cmu%20%3C%201">, i.e.&nbsp;the eigenvalues of <img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7BI%7D%20-%20%5Cmathbf%7BD%7D%5E%7B-1%7D%5Cmathbf%7BA%7D"> are inside the unit circle (and real) and the Jacobi iteration converges.</p>
+</blockquote>
+<p>Note that the condition “<img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7BA%7D"> and <img src="https://latex.codecogs.com/png.latex?2%5Cmathbf%7BD%7D%20-%20%5Cmathbf%7BA%7D"> being symmetric positive definite” is sufficient although not necessary to guarantee the convergence of the Jacobi method. Another classical sufficient but not necessary condition is that <img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7BA%7D"> is strictly row diagonally dominant. Again, it is relatively easy to prove but since I’m the teacher here, I’ll end this theoretical analysis with the nefarious: <em>This is left as an exercise for the reader.</em></p>
+</section>
+<section id="alright-it-converges.-but-how-fast" class="level3">
+<h3 class="anchored" data-anchor-id="alright-it-converges.-but-how-fast">Alright, it converges. But how fast?</h3>
+<p>We’ve actually already partially answered this question. From the sketch of the proof for Theorem n°1, we have</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0A%5C%7C%20%5Cmathbf%7Be%7D_t%20%5C%7C%20%5Cleq%20%5C%7C%20%5Cmathbf%7BI%7D%20-%20%5Cmathbf%7BD%7D%5E%7B-1%7D%20%5Cmathbf%7BA%7D%20%5C%7C%5Et%20%5Ccdot%20%5C%7C%20%5Cmathbf%7Be%7D_0%20%5C%7C.%0A"></p>
+<p>Obviously, the smaller <img src="https://latex.codecogs.com/png.latex?%5C%7C%20%5Cmathbf%7BI%7D%20-%20%5Cmathbf%7BD%7D%5E%7B-1%7D%20%5Cmathbf%7BA%7D%20%5C%7C">, the faster the convergence. And we know that <img src="https://latex.codecogs.com/png.latex?%5C%7C%20%5Cmathbf%7BI%7D%20-%20%5Cmathbf%7BD%7D%5E%7B-1%7D%20%5Cmathbf%7BA%7D%20%5C%7C%20%3C%201"> is related to the eigenvalues of the iteration matrix being inside the unit circle. So how do the eigenvalues influence the convergence rate of the method?</p>
+<p>A useful quantity to estimate the convergence rate of the method is the <a href="https://en.wikipedia.org/wiki/Spectral_radius">spectral radius</a> of the iteration matrix <img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7BM%7D%20=%20%5Cmathbf%7BI%7D%20-%20%5Cmathbf%7BD%7D%5E%7B-1%7D%20%5Cmathbf%7BA%7D">. It is defined as</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0A%5Crho(%5Cmathbf%7BM%7D)%20=%20%5Cmax%20%5Cleft%5C%7B%20%5Cvert%20%5Cmu_1%20%5Cvert,%20%5Ccdots,%20%5Cvert%20%5Cmu_n%20%5Cvert%20%5Cright%5C%7D,%0A"></p>
+<p>where <img src="https://latex.codecogs.com/png.latex?%5Cmu_i"> are the eigenvalues. Moreover, <img src="https://latex.codecogs.com/png.latex?%5Crho(%5Cmathbf%7BM%7D)%20%5Cleq%20%5C%7C%20%5Cmathbf%7BM%7D%20%5C%7C"> for every natural matrix norms. From our previous discussion, we know that <img src="https://latex.codecogs.com/png.latex?%5Crho(%5Cmathbf%7BM%7D)%20%3C%201"> since the Jacobi method converges. Eventhough the spectral radius is only a lower bound for <img src="https://latex.codecogs.com/png.latex?%5C%7C%20%5Cmathbf%7BI%7D%20-%20%5Cmathbf%7BD%7D%5E%7B-1%7D%20%5Cmathbf%7BA%7D%20%5C%7C">, we’ll assume for the sake of simplicity that it is pretty tight. Hence, we roughly have</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0A%5C%7C%20%5Cmathbf%7Be%7D_t%20%5C%7C%20%5Cleq%20%5Crho(%5Cmathbf%7BM%7D)%5Et%20%5Ccdot%20%5C%7C%20%5Cmathbf%7Be%7D_0%20%5C%7C.%0A"></p>
+<p>We could make this statement more formal but it wouldn’t change the intuition: the smaller the spectral radius, the larger the asymptotic convergence rate. Unfortunately, there is not much else to say without knowing exactly the matrix <img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7BA%7D"> so let’s turn to the actual problem of interest of this post.</p>
+</section>
+</section>
+<section id="the-poissons-equation-on-the-unit-square" class="level2">
+<h2 class="anchored" data-anchor-id="the-poissons-equation-on-the-unit-square">The Poisson’s equation on the unit square</h2>
+<p>The <a href="https://en.wikipedia.org/wiki/Poisson%27s_equation">Poisson’s equation</a> is an elliptic partial differential equation (PDE) appearing in numerous fields of physics. Let’s parse what this means:</p>
+<ul>
+<li><strong>PDE –</strong> The solution of the equation depends on more than one variable, where the variables are typically the different spatial dimensions.</li>
+<li><strong>Elliptic –</strong> The solution exhibits a certain notion of smoothness, whatever that means mathematically. Typically, it implies that the solution will not exhibit any discontinuities or very steep fronts in contrast to what you may see for hyperbolic equations (think shock waves for instance).</li>
+</ul>
+<p>Mathematically, it reads</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0A%5Cnabla%5E2%20u%20=%20-f,%0A"></p>
+<p>along with appropriate boundary conditions. In the rest of this post, we’ll consider one of its simplest variations. The domain <img src="https://latex.codecogs.com/png.latex?%5COmega"> is the unit square, i.e.&nbsp;<img src="https://latex.codecogs.com/png.latex?%5COmega%20=%20%5Cleft%5B0,%201%20%5Cright%5D%5E2"> and we will consider only homogenous Dirichlet boundary conditions, i.e.&nbsp;<img src="https://latex.codecogs.com/png.latex?u%20=%200"> on the boundaries of the square. Our problem thus is</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0A%5Cleft%5C%7B%0A%5Cbegin%7Baligned%7D%0A%20%20%20%20%5Cdfrac%7B%5Cpartial%5E2%20u%7D%7B%5Cpartial%20x%5E2%7D%20+%20%5Cdfrac%7B%5Cpartial%5E2%20u%7D%7B%5Cpartial%20y%5E2%7D%20=%20-f%20%5Cquad%20&amp;%20%5Ctext%7Bfor%20%7D%20(x,%20y)%20%5Cin%20%5COmega%20%5C%5C%0A%20%20%20%20u(x,%20y)%20=%200%20%5Cquad%20&amp;%20%5Ctext%7Bfor%20%7D%20(x,%20y)%20%5Cin%20%5Cpartial%20%5COmega.%0A%5Cend%7Baligned%7D%0A%5Cright.%0A"></p>
+<p>Note that the problem is sufficiently simple that you can express its analytical solution using Fourier series. But we are computational scientists, so we’ll solve the problem numerically.</p>
+<section id="discretizing-the-problem" class="level3">
+<h3 class="anchored" data-anchor-id="discretizing-the-problem">Discretizing the problem</h3>
+<p>There are many different ways to discretize a partial differential equation. Finite differences, finite volumes, finite elements, spectral elements, spectral methods, pseudo-spectral methods, etc. There are no silver bullets though. Each has its pros and cons. At the end of the day, the discretization method used is often a matter of personal preferences. To keep things simple, we will consider the standard second-order accurate finite-difference scheme. We will also consider a uniform grid spacing in each direction so that our differential operators can be approximated as</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0A%5Cdfrac%7B%5Cpartial%5E2%20u%7D%7B%5Cpartial%20x%5E2%7D%20%5Csimeq%20%5Cdfrac%7Bu_%7Bi+1,%20j%7D%20-%202u_%7Bi,%20j%7D%20+%20u_%7Bi-1,%20j%7D%7D%7B%5CDelta%20x%5E2%7D%0A%5Cquad%20%5Ctext%7Band%7D%20%5Cquad%0A%5Cdfrac%7B%5Cpartial%5E2%20u%7D%7B%5Cpartial%20y%5E2%7D%20%5Csimeq%20%5Cdfrac%7Bu_%7Bi,%20j+1%7D%20-%202u_%7Bi,%20j%7D%20+%20u_%7Bi,%20j-1%7D%7D%7B%5CDelta%20y%5E2%7D%0A"></p>
+<p>where <img src="https://latex.codecogs.com/png.latex?%5CDelta%20x"> and <img src="https://latex.codecogs.com/png.latex?%5CDelta%20y"> are the grid sizes in each direction, and <img src="https://latex.codecogs.com/png.latex?u_%7Bi,%20j%7D"> is the value of our unknown function evaluated at the grid point <img src="https://latex.codecogs.com/png.latex?(x_i,%20y_j)%20=%20(i%20%5CDelta%20x,%20j%20%5CDelta%20y)">. For the sake of simplicity, we’ll assume furthermore that <img src="https://latex.codecogs.com/png.latex?%5CDelta%20x%20=%20%5CDelta%20y">. Our discretized partial differential equation for points inside of the domain then reads</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0A%5Cdfrac%7B1%7D%7B%5CDelta%20x%5E2%7D%20%5Cleft(%20u_%7Bi+1,%20j%7D%20+%20u_%7Bi-1,%20j%7D%20+%20u_%7Bi,%20j+1%7D%20+%20u_%7Bi,%20j-1%7D%20-%204%20u_%7Bi,%20j%7D%20%5Cright)%20=%20-f_%7Bi,%20j%7D.%0A"></p>
+<p>It may not seem like a linear system, but trust me, it is. The field <img src="https://latex.codecogs.com/png.latex?u(x,%20y)"> is represented as a two-dimensional array (and I mean <em>array</em>, not <em>matrix</em>) for the sake of simplicity. But you can always represent it as a vector by simply stacking the columns of the array on top of one another, and likewise for the right-hand side forcing <img src="https://latex.codecogs.com/png.latex?f(x,%20y)">.</p>
+<p>So, where is the matrix then? Consider a single column of the array <img src="https://latex.codecogs.com/png.latex?u">, that is we fix <img src="https://latex.codecogs.com/png.latex?x"> and only consider different <img src="https://latex.codecogs.com/png.latex?y">-values. The second-order derivative in the <img src="https://latex.codecogs.com/png.latex?y">-direction can be represented as an <img src="https://latex.codecogs.com/png.latex?(n_y-2)%20%5Ctimes%20(n_y-2)"> matrix given by</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0A%5Cmathbf%7BD%7D_y%0A=%0A%5Cdfrac%7B1%7D%7B%5CDelta%20y%5E2%7D%0A%5Cbegin%7Bbmatrix%7D%0A%20%20%20%20-2%20%20&amp;%201%20%5C%5C%0A%20%20%20%201%20%20%20&amp;%20-2%20&amp;%201%20%5C%5C%0A%20%20%20%20%20%20%20%20&amp;%201%20&amp;%20-2%20&amp;%201%20%5C%5C%0A%20%20%20%20%20%20%20%20&amp;%20%20&amp;%20%5Cddots%20&amp;%20%5Cddots%20&amp;%20%5Cddots%20%5C%5C%0A%20%20%20%20%20%20%20%20&amp;%20&amp;%20%20%20&amp;%20%20%201%20%20%20&amp;%20%20%20-2%20%20&amp;%20%20%201%20%20%20%5C%5C%0A%20%20%20%20%20%20%20%20&amp;%20&amp;%20%20%20&amp;%20%20%20%20%20%20%20&amp;%20%20%201%20%20%20&amp;%20-2%0A%5Cend%7Bbmatrix%7D%0A"></p>
+<p>where we excluded the points on the upper and lower boundaries as these are equal to zero owing to our choice of boundary conditions. Likewise, considering a single row of <img src="https://latex.codecogs.com/png.latex?u"> (i.e.&nbsp;fixing <img src="https://latex.codecogs.com/png.latex?y"> and considering different <img src="https://latex.codecogs.com/png.latex?x">-values), the second-order derivative in the horizontal direction can be represented as an <img src="https://latex.codecogs.com/png.latex?(n_x%20-%202)%20%5Ctimes%20(n_x%20-2)"> matrix <img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7BD%7D_x"> with the same tridiagonal structure as <img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7BD%7D_y">. Our problem can then be represented in a standard linear system form as</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0A%5Cleft(%20%5Cmathbf%7BI%7D_%7Bn_y%7D%20%5Cotimes%20%5Cmathbf%7BD%7D_x%20+%20%5Cmathbf%7BD%7D_y%20%5Cotimes%20%5Cmathbf%7BI%7D_%7Bn_x%7D%20%5Cright)%20%5Cmathrm%7Bvec%7D(u)%20=%20-%5Cmathrm%7Bvec%7D(f),%0A"></p>
+<p>where <img src="https://latex.codecogs.com/png.latex?%5Cotimes"> is the <a href="https://en.wikipedia.org/wiki/Kronecker_product">Kronecker product</a>. If we were to explicitly construct it, this matrix would have <img src="https://latex.codecogs.com/png.latex?n_x%20%5Ctimes%20n_y"> rows and likewise for the number of columns. For a discretization employing 512 points in each direction, that would be 260 100 columns and rows. Pretty big then, and completely intractable for standard direct linear solvers!</p>
+</section>
+<section id="the-jacobi-method-for-the-2d-poisson-equation" class="level3">
+<h3 class="anchored" data-anchor-id="the-jacobi-method-for-the-2d-poisson-equation">The Jacobi method for the 2D Poisson equation</h3>
+<p>Time to write the Jacobi update rule for our particular problem. Recall that our problem reads</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0A%5Cdfrac%7B1%7D%7B%5CDelta%20x%5E2%7D%20%5Cleft(%20u_%7Bi+1,%20j%7D%20+%20u_%7Bi-1,%20j%7D%20+%20u_%7Bi,%20j+1%7D%20+%20u_%7Bi,%20j-1%7D%20-%204%20u_%7Bi,%20j%7D%20%5Cright)%20=%20-f_%7Bi,%20j%7D.%0A"></p>
+<p>On the left-hand side, the <img src="https://latex.codecogs.com/png.latex?u_%7Bij%7D"> term corresponds to the diagonal component while all the others are the off-diagonal ones. Following what we have written for the Jacobi method in matrix form, specializing for this equation leads to the following update rule</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0Au_%7Bi,%20j%7D%5E%7B(t+1)%7D%20=%20%5Cdfrac%7B1%7D%7B4%7D%20%5Cleft(%20%5CDelta%20x%5E2%20%5Ccdot%20f_%7Bi,%20j%7D%20-%20u_%7Bi+1,%20j%7D%5E%7B(t)%7D%20-%20u_%7Bi-1,%20j%7D%5E%7B(t)%7D%20-%20u_%7Bi,%20j+1%7D%5E%7B(t)%7D%20-%20u_%7Bi,%20j-1%7D%5E%7B(t)%7D%20%5Cright)%0A"></p>
+<p>where the superscript <img src="https://latex.codecogs.com/png.latex?%5Ccdot%20%5E%7B(t)%7D"> denotes the iteration number. This will be fairly simple to implement. Create two arrays, one to store the solution at iteration <img src="https://latex.codecogs.com/png.latex?t"> and the other one at iteration <img src="https://latex.codecogs.com/png.latex?t+1">. Loop over the indices and update the <img src="https://latex.codecogs.com/png.latex?(i,%20j)">-th entries of the second table with the appropriate combination of values from the first one. Note that it is important to keep these two tables. If you were to have only one table and directly update its <img src="https://latex.codecogs.com/png.latex?(i,%20j)"> entry, you would end-up with a different method: Gauss-Seidel. More on that in a later post (maybe).</p>
+<p><strong>Convergence properties –</strong> The second-order accurate central finite-difference approximation <img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7BL%7D%20=%20%5Cmathbf%7BI%7D_%7Bn_y%7D%20%5Cotimes%20%5Cmathbf%7BD%7D_x%20+%20%5Cmathbf%7BD%7D_y%20%5Cotimes%20%5Cmathbf%7BI%7D_%7Bn_x%7D"> of the Laplace operator <img src="https://latex.codecogs.com/png.latex?%5Cnabla%5E2"> is a symmetric negative definite matrix. Hence, <img src="https://latex.codecogs.com/png.latex?-%5Cmathbf%7BL%7D"> is symmetric positive definite (and this is the reason for why there is a minus sign on the right-hand side of our problem if you wondered). It is easy to show moreover that <img src="https://latex.codecogs.com/png.latex?-%5Cmathbf%7BL%7D"> satisfies the assumptions for Theorem n°2 to hold. Hence, after a sufficiently large number of iterations, the Jacobi method will converge to the actual solution of our linear system. But again, how fast?</p>
+<p>As before, we can get some intuition by looking at the spectral radius of this matrix. I won’t go through the calculations (and I’ll assume <img src="https://latex.codecogs.com/png.latex?n_x%20=%20n_y">), but we basically have</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0A%5Crho(%5Cmathbf%7BI%7D%20+%20%5Cmathbf%7BD%7D%5E%7B-1%7D%20%5Cmathbf%7BL%7D)%20%5Csimeq%201%20-%20%5Cdfrac%7B%5Cpi%5E2%7D%7B2%20n_x%5E2%7D.%0A"></p>
+<p>Using an increasing number of grid points to discretize our domain (that is considering a finer and finer mesh), the spectral radius of the iteration matrix gets closer and closer to unity. As a consequence, the Jacobi method requires more and more iterations to compute a reasonnably accurate solution. This poor scaling property is one of the reasons why it ain’t actually used nowadays in high-performance computing solvers. But this does not concern us here.</p>
+</section>
+</section>
+<section id="let-fortran-shine" class="level2">
+<h2 class="anchored" data-anchor-id="let-fortran-shine">Let <code>Fortran</code> shine!</h2>
+<p>Alright! It’s time for what you all expected: the <code>Fortran</code> implementation. We’ll start with a simple translation to <code>Fortran</code> of the pseudo-code. This implementation will be our baseline. We will then incrementally improve it by using various tips and tricks with a particular constraint: use only standard-compliant <code>Fortran</code> code. I’ll try to explain the rationale behind every decision I make along the way. By the end of our journey, we’ll have a standard-compliant implementation which can naturally leverage multithreaded computations without having have to write a single openMP pragma. Performance-wise, we’ll end up with a 20x to 30x speed-up compared to our baseline implementation without every leaving the realm of <code>Fortran</code>. Too good to be true? Bare with me then!</p>
+<section id="baseline-implementation" class="level3">
+<h3 class="anchored" data-anchor-id="baseline-implementation">Baseline implementation</h3>
+<p>Let us start with an almost verbatim translation of the pseudo-code to <code>Fortran</code>. In the rest, we will use <code>double precision</code> arithmetic. The <code>kind</code> parameter will be defined as</p>
+<div class="sourceCode" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode numberSource fortran number-lines code-with-copy"><code class="sourceCode fortranfixed"><span id="cb1-1"><span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">integer</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">parameter</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">::</span> dp <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">selected_real_kind</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">15</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">307</span>)</span></code></pre></div>
+<p>This is often considered to be a good practice in <code>Fortran</code> and guarantees a certain portability of the code across different compilers and platforms. Let us now turn our attention to the Jacobi kernel. Our textbook implementation is shown below.</p>
+<div class="sourceCode" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode numberSource fortran number-lines code-with-copy"><code class="sourceCode fortranfixed"><span id="cb2-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">pure</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">subroutine</span> textbook_kernel(nx, ny, u, v, b, dx)</span>
+<span id="cb2-2">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">implicit</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">none</span></span>
+<span id="cb2-3">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">integer</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">intent(in)</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">::</span> nx, ny</span>
+<span id="cb2-4">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">real(dp)</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">intent(out)</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">::</span> u(nx, ny)</span>
+<span id="cb2-5">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">real(dp)</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">intent(in)</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">::</span> v(nx, ny), b(nx, ny), dx</span>
+<span id="cb2-6">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">integer</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">::</span> i, j</span>
+<span id="cb2-7">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">do</span> j <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>, ny<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span></span>
+<span id="cb2-8">        <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">do</span> i <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>, nx<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span></span>
+<span id="cb2-9">            u(i, j) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.25_dp</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span>(b(i, j)<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span>dx<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">**</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span> v(i<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, j) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span> v(i<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, j) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">&amp;</span></span>
+<span id="cb2-10">                                             <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span> v(i, j<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span> v(i, j<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>))</span>
+<span id="cb2-11">        <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">enddo</span></span>
+<span id="cb2-12">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">enddo</span></span>
+<span id="cb2-13"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">end subroutine</span></span></code></pre></div>
+<p>The <code>pure</code> keyword is here to tell the compiler that we guarantee this subroutine has no unintended side-effect. It is not technically mandatory, but it is also part of the good practices in <code>Fortran</code>. Hopefully, if we do things right, this kernel should be where we spend most of the computational time. To the actual solver now.</p>
+<div class="sourceCode" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode numberSource fortran number-lines code-with-copy"><code class="sourceCode fortranfixed"><span id="cb3-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">function</span> textbook_solver(b, tol, maxiter) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">result</span>(u)</span>
+<span id="cb3-2">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">implicit</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">none</span></span>
+<span id="cb3-3">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">real(dp)</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">intent(in)</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">::</span> b(:, :), tol</span>
+<span id="cb3-4">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">integer</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">intent(in)</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">::</span> maxiter</span>
+<span id="cb3-5">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">real(dp)</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">allocatable</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">::</span> u(:, :)</span>
+<span id="cb3-6">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">! Internal variables</span></span>
+<span id="cb3-7">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">integer</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">::</span> nx, ny, i, j, iteration</span>
+<span id="cb3-8">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">real(dp)</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">allocatable</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">::</span> v(:, :)</span>
+<span id="cb3-9">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">real(dp)</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">::</span> dx, l2_norm</span>
+<span id="cb3-10">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">! Initialize variables</span></span>
+<span id="cb3-11">    nx <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">size</span>(b, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>); ny <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">size</span>(b, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>); dx <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1.0_dp</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">/</span>(nx <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)</span>
+<span id="cb3-12">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> (nx <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/=</span> ny) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">then</span></span>
+<span id="cb3-13">        error <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">stop</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Number of points in each direction need to be equal."</span></span>
+<span id="cb3-14">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">endif</span></span>
+<span id="cb3-15">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">allocate</span> (u(nx, ny), source<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.0_dp</span>)</span>
+<span id="cb3-16">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">allocate</span> (v(nx, ny), source<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.0_dp</span>)</span>
+<span id="cb3-17">    l2_norm <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1.0_dp</span></span>
+<span id="cb3-18">    iteration <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span></span>
+<span id="cb3-19">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">! Begining of the Jacobi iterative method.</span></span>
+<span id="cb3-20">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">do</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">while</span> ((iteration <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&lt;</span> maxiter) <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.and.</span> (l2_norm <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&gt;</span> tol))</span>
+<span id="cb3-21">        <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">! Jacobi iteration.</span></span>
+<span id="cb3-22">        <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">call</span> textbook_kernel(nx, ny, v, u, b, dx)</span>
+<span id="cb3-23">        <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">! Compute error norm.</span></span>
+<span id="cb3-24">        l2_norm <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> norm2(u <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span> v)</span>
+<span id="cb3-25">        <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">! Update variable.</span></span>
+<span id="cb3-26">        u <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> v</span>
+<span id="cb3-27">        <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">! Update iteration counter.</span></span>
+<span id="cb3-28">        iteration <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> iteration <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span></span>
+<span id="cb3-29">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">end do</span></span>
+<span id="cb3-30">    <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">print</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Textbook solver :"</span></span>
+<span id="cb3-31">    <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">print</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"    - Number of iterations :"</span>, iteration</span>
+<span id="cb3-32">    <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">print</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"    - l2-norm of the error :"</span>, l2_norm</span>
+<span id="cb3-33"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">end function</span></span></code></pre></div>
+<p>Even if you ain’t familiar with <code>Fortran</code>, the code should be quite readable. After having declared and initialized all of the required variables, the Jacobi method starts from Line 20 and proceeds in 3 steps:</p>
+<ol type="1">
+<li>Perform the Jacobi update by calling our textbook kernel.</li>
+<li>Compute the 2-norm of the correction.</li>
+<li>Update the current solution with its latest estimate.</li>
+</ol>
+<p>This loop keeps on going until the 2-norm of the correction is small enough to claim convergence. In all of our experiments, the tolerance is set to <img src="https://latex.codecogs.com/png.latex?10%5E%7B-8%7D">.</p>
+<p><strong>Performances –</strong> We will use 512 points in each direction with a uniform grid spacing and assume the initial guess to be the zero solution for all of our experiments. We thus have slightly more than a quarter million of unknowns, a reasonnably large linear system. The code is compiled using <code>gfortran 15.1</code> and the following options: <code>-O3 -march=native -mtune=native</code>. The table below summarizes some of the key computational metrics.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: center;"><strong>Solver</strong></th>
+<th style="text-align: center;"><strong># of iterations</strong></th>
+<th style="text-align: center;"><strong>Time to solution</strong></th>
+<th style="text-align: center;"><strong>Speed-up w.r.t. baseline</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">Textbook</td>
+<td style="text-align: center;">128 395</td>
+<td style="text-align: center;">58 s</td>
+<td style="text-align: center;">1</td>
+</tr>
+</tbody>
+</table>
+<p>Solving a linear system with a quarter million of unknowns in under one minute is quite impressive when you think about it. It is clearly orders of magnitude faster than if you were to do it by hand (and far less error-prone)! But is this the best we can do? You might be inclined to say <em>yes</em>. After all, our implementation is an almost verbatim translation of the pseudo-code and maths don’t lie. But that ain’t completely true though… When it comes to scientific computing, there are many streetfighting skills you can pick along the way to massively improve the computational performances of a given algorithm. So let’s start optimizing!</p>
+</section>
+<section id="you-shall-not-copy" class="level3">
+<h3 class="anchored" data-anchor-id="you-shall-not-copy">You shall not copy!</h3>
+<p>Our Jacobi kernel is so simple that there ain’t much room for improvement so let’s look at the solver itself starting with line 26</p>
+<div class="sourceCode" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode numberSource fortran number-lines code-with-copy"><code class="sourceCode fortranfixed"><span id="cb4-1">    u <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> v</span></code></pre></div>
+<p>It is the update of our current estimate of the solution with the one we’ve just computed. It essentially is a <code>copy</code> operation. Given how simple our Jacobi kernel is, it acutally takes almost as long as computing a Jacobi update. So let’s get rid of it by simply performing an additional call to the Jacobi kernel with role of <code>u</code> and <code>v</code> being flipped.</p>
+<div class="sourceCode" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode numberSource fortran number-lines code-with-copy"><code class="sourceCode fortranfixed"><span id="cb5-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">function</span> nocopy_solver(b, tol, maxiter) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">result</span>(u)</span>
+<span id="cb5-2">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">implicit</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">none</span></span>
+<span id="cb5-3">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">real(dp)</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">intent(in)</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">::</span> b(:, :), tol</span>
+<span id="cb5-4">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">integer</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">intent(in)</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">::</span> maxiter</span>
+<span id="cb5-5">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">real(dp)</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">allocatable</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">::</span> u(:, :)</span>
+<span id="cb5-6">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">! Internal variables</span></span>
+<span id="cb5-7">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">integer</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">::</span> nx, ny, i, j, iteration</span>
+<span id="cb5-8">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">real(dp)</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">allocatable</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">::</span> v(:, :)</span>
+<span id="cb5-9">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">real(dp)</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">::</span> dx, l2_norm</span>
+<span id="cb5-10">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">! Initialize variables</span></span>
+<span id="cb5-11">    nx <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">size</span>(b, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>); ny <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">size</span>(b, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>); dx <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1.0_dp</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">/</span>(nx <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)</span>
+<span id="cb5-12">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> (nx <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/=</span> ny) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">then</span></span>
+<span id="cb5-13">        error <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">stop</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Number of points in each direction need to be equal."</span></span>
+<span id="cb5-14">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">endif</span></span>
+<span id="cb5-15">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">allocate</span> (u(nx, ny), source<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.0_dp</span>)</span>
+<span id="cb5-16">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">allocate</span> (v(nx, ny), source<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.0_dp</span>)</span>
+<span id="cb5-17">    l2_norm <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1.0_dp</span></span>
+<span id="cb5-18">    iteration <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span></span>
+<span id="cb5-19">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">! Begining of the Jacobi iterative method.</span></span>
+<span id="cb5-20">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">do</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">while</span> ((iteration <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&lt;</span> maxiter) <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.and.</span> (l2_norm <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&gt;</span> tol))</span>
+<span id="cb5-21">        <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">! Jacobi iteration (no copy).</span></span>
+<span id="cb5-22">        <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">call</span> textbook_kernel(nx, ny, v, u, b, dx)</span>
+<span id="cb5-23">        <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">call</span> textbook_kernel(nx, ny, u, v, b, dx)</span>
+<span id="cb5-24">        <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">! Compute error norm.</span></span>
+<span id="cb5-25">        l2_norm <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> norm2(u <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span> v)</span>
+<span id="cb5-26">        <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">! Update variable.</span></span>
+<span id="cb5-27">        u <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> v</span>
+<span id="cb5-28">        <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">! Update iteration counter.</span></span>
+<span id="cb5-29">        iteration <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> iteration <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span></span>
+<span id="cb5-30">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">end do</span></span>
+<span id="cb5-31">    <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">print</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"No-copy solver  :"</span></span>
+<span id="cb5-32">    <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">print</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"    - Number of iterations :"</span>, iteration</span>
+<span id="cb5-33">    <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">print</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"    - l2-norm of the error :"</span>, l2_norm</span>
+<span id="cb5-34"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">end function</span></span></code></pre></div>
+<p><strong>Performances –</strong> Code-wise, very little has changed compared to our baseline implementation. The <code>nocopy_solver</code> slightlty departs from the pseudo-code but is still as readable. Peformance-wise, it is a different story.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: center;"><strong>Solver</strong></th>
+<th style="text-align: center;"><strong># of iterations</strong></th>
+<th style="text-align: center;"><strong>Time to solution</strong></th>
+<th style="text-align: center;"><strong>Speed-up w.r.t. baseline</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">Textbook</td>
+<td style="text-align: center;">128 395</td>
+<td style="text-align: center;">58 s</td>
+<td style="text-align: center;">1</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">No-copy</td>
+<td style="text-align: center;">128 396</td>
+<td style="text-align: center;">30 s</td>
+<td style="text-align: center;">1.9</td>
+</tr>
+</tbody>
+</table>
+<p>This one-line change makes our solver compute the solution twice as fast! But don’t get too excited, it is somewhat expected if you think of it. A <code>copy</code> is roughly as expensive as computing a Jacobi update itself. As a consequence, in the time frame it took our baseline implementation to peform a Jacobi update followed by a copy, the <code>nocopy_solver</code> performed no copy (hence the name) but two updates. And boom, twice as fast. This is the first but probably most important take-away message:</p>
+<blockquote class="blockquote">
+<p><strong>Avoir copies like the plague and re-use intermediate results as much as possible.</strong></p>
+</blockquote>
+<p>This is not specific to <code>Fortran</code> and is true for pretty much any programming language you use.</p>
+</section>
+<section id="further-optimizations" class="level3">
+<h3 class="anchored" data-anchor-id="further-optimizations">Further optimizations</h3>
+<p>While the no-copy trick is fairly general, let us turn now to somewhat Jacobi-specific optimization tricks starting with the Jacobi kernel itself. Let <img src="https://latex.codecogs.com/png.latex?v"> be the current approximate solution and <img src="https://latex.codecogs.com/png.latex?u"> the new one being computed. Recall that the update rule is as follows</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0A%20%20%20%20u_%7Bi,%20j%7D%20=%20%5Cdfrac%7B1%7D%7B4%7D%20%5Cleft(%20b_%7Bi,%20j%7D%20%5Ccdot%20%5CDelta%20x%5E2%20-%20(v_%7Bi+1,%20j%7D%20+%20v_%7Bi-1,%20j%7D%20+%20v_%7Bi,%20j+1%7D%20+%20v_%7Bi,%20j-1%7D)%20%5Cright)%0A"></p>
+<p>for all <img src="https://latex.codecogs.com/png.latex?i"> and <img src="https://latex.codecogs.com/png.latex?j"> corresponding to points in the interior of the computational domain. One crucial observation is that there are no dependencies between the entries of <img src="https://latex.codecogs.com/png.latex?u">: they can be update in any abitrary order, not necessarily the lexicographic one. In particular, we could let the compiler decide on its own what is the most efficient way to do this update based on its internal mechanics. The 2008 standard introduced a particular construct conveying precisely this: the <code>do concurrent</code>. Below is the Jacobi kernel rewritten using this construct.</p>
+<div class="sourceCode" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode numberSource fortran number-lines code-with-copy"><code class="sourceCode fortranfixed"><span id="cb6-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">pure</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">subroutine</span> doconcurrent_kernel(nx, ny, u, v, b, dx)</span>
+<span id="cb6-2">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">implicit</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">none</span>(<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">external</span>)</span>
+<span id="cb6-3">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">integer(ilp)</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">intent(in)</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">::</span> nx, ny</span>
+<span id="cb6-4">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">real(dp)</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">intent(out)</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">::</span> u(nx, ny)</span>
+<span id="cb6-5">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">real(dp)</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">intent(in)</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">::</span> v(nx, ny), b(nx, ny), dx</span>
+<span id="cb6-6">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">integer</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">::</span> i, j</span>
+<span id="cb6-7">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">do</span> concurrent(i<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>:nx <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, j<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>:ny <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)</span>
+<span id="cb6-8">        <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">! Jacobi update.</span></span>
+<span id="cb6-9">        u(i, j) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.25_dp</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span>(b(i, j)<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span>dx<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">**</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span> v(i <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, j) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span> v(i <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, j) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">&amp;</span></span>
+<span id="cb6-10">                                         <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span> v(i, j <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span> v(i, j <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>))</span>
+<span id="cb6-11">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">end do</span></span>
+<span id="cb6-12"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">end subroutine</span> doconcurrent_kernel</span></code></pre></div>
+<p>For now, it does not actually improve the computational performances of our kernel. For serial computations, it mostly is a syntactic sugar letting someone reading the code know that this loop could technically be computed in parallel with no problem. It might help the compiler optimize a bit, but the kernel being so simple I haven’t seen much changes. It’ll be different though once we go to multithreaded computations but that’s a story for slightly later.</p>
+<p>The main source of computational improvement is located on line 25:</p>
+<div class="sourceCode" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode numberSource fortran number-lines code-with-copy"><code class="sourceCode fortranfixed"><span id="cb7-1">    l2_norm <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> norm2(u<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span>v)</span></code></pre></div>
+<p>There is nothing particularly wrong with this line. In practice however, the Jacobi method is quite slow to converge and computing the residual norm at every iteration incurs extra computational costs which are unecessary. We would be much better off by checking the residual only once in a while. We could replace it with</p>
+<div class="sourceCode" id="cb8" style="background: #f1f3f5;"><pre class="sourceCode numberSource fortran number-lines code-with-copy"><code class="sourceCode fortranfixed"><span id="cb8-1">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> (<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">mod</span>(iteration, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1000</span>)) l2_norm <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> norm2(u <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span> v)</span></code></pre></div>
+<p>or using the newest <code>do concurrent</code> construct</p>
+<div class="sourceCode" id="cb9" style="background: #f1f3f5;"><pre class="sourceCode numberSource fortran number-lines code-with-copy"><code class="sourceCode fortranfixed"><span id="cb9-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> (<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">mod</span>(iteration, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1000</span>)) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">then</span></span>
+<span id="cb9-2">    l2_norm <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.0_dp</span></span>
+<span id="cb9-3">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">do</span> concurrent(i<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>:nx<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, j<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>:ny<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>) reduce(<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span>:l2_norm)</span>
+<span id="cb9-4">        l2_norm <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> l2_norm <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> (u(i, j) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span> v(i, j))<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">**</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span></span>
+<span id="cb9-5">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">enddo</span></span>
+<span id="cb9-6">    l2_norm <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">sqrt</span>(l2_norm)</span>
+<span id="cb9-7"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">endif</span></span></code></pre></div>
+<p>Either way is fine, <code>norm2</code> is an intrinsic <code>Fortran</code> function and its implementation has already been optimized by the compiler vendors. Checking the residual norm every 1000 iterations is arbitrary. It has been chosen out of simplicity considering that the method takes 128 000 iterations to converge on our particular problem. In practice, you might actually pass this as an extra argument to the solver to let the user decide. Here is the updated solver.</p>
+<div class="sourceCode" id="cb10" style="background: #f1f3f5;"><pre class="sourceCode numberSource fortran number-lines code-with-copy"><code class="sourceCode fortranfixed"><span id="cb10-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">function</span> doconcurrent_solver(b, tol, maxiter) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">result</span>(u)</span>
+<span id="cb10-2">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">implicit</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">none</span>(<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">external</span>)</span>
+<span id="cb10-3">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">real(dp)</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">intent(in)</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">::</span> b(:, :), tol</span>
+<span id="cb10-4">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">integer</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">intent(in)</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">::</span> maxiter</span>
+<span id="cb10-5">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">real(dp)</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">allocatable</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">::</span> u(:, :)</span>
+<span id="cb10-6">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">! Internal variables.</span></span>
+<span id="cb10-7">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">integer</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">::</span> nx, ny, i, j, iteration</span>
+<span id="cb10-8">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">real(dp)</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">allocatable</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">::</span> v(:, :)</span>
+<span id="cb10-9">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">real(dp)</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">::</span> dx, l2_norm</span>
+<span id="cb10-10">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">! Initialize variables</span></span>
+<span id="cb10-11">    nx <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">size</span>(b, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>); ny <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">size</span>(b, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>); dx <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1.0_dp</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">/</span>(nx <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)</span>
+<span id="cb10-12">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> (nx <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/=</span> ny) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">then</span></span>
+<span id="cb10-13">        error <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">stop</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Number of points in each direction need to be equal."</span></span>
+<span id="cb10-14">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">endif</span></span>
+<span id="cb10-15">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">allocate</span> (u(nx, ny), source<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.0_dp</span>)</span>
+<span id="cb10-16">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">allocate</span> (v(nx, ny), source<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.0_dp</span>)</span>
+<span id="cb10-17">    l2_norm <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1.0_dp</span></span>
+<span id="cb10-18">    iteration <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span></span>
+<span id="cb10-19">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">do</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">while</span> ((iteration <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&lt;</span> maxiter) <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.and.</span> (l2_norm <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&gt;</span> tol))</span>
+<span id="cb10-20">        <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">! Jacobi kernel (no-copy).</span></span>
+<span id="cb10-21">        <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">call</span> doconcurrent_kernel(nx, ny, v, u, b, dx)</span>
+<span id="cb10-22">        <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">call</span> doconcurrent_kernel(nx, ny, u, v, b, dx)</span>
+<span id="cb10-23">        <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">! Compute error norm.</span></span>
+<span id="cb10-24">        <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> (<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">mod</span>(iteration, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1000</span>) <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>) l2_norm <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> error_norm(u, v)</span>
+<span id="cb10-25">        <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">! Update iteration counter.</span></span>
+<span id="cb10-26">        iteration <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> iteration <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span></span>
+<span id="cb10-27">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">end do</span></span>
+<span id="cb10-28">    l2_norm <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> error_norm(u, v) <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">! Sanity check</span></span>
+<span id="cb10-29">    <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">print</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Do-concurrent solver :"</span></span>
+<span id="cb10-30">    <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">print</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"    - Number of iterations :"</span>, iteration</span>
+<span id="cb10-31">    <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">print</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"    - l2-norm of the error :"</span>, l2_norm</span>
+<span id="cb10-32"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">end function</span></span>
+<span id="cb10-33"></span>
+<span id="cb10-34"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">pure</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">real(dp)</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">function</span> error_norm(u, v) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">result</span>(l2_norm)</span>
+<span id="cb10-35">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">implicit</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">none</span></span>
+<span id="cb10-36">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">real(dp)</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">intent(in)</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">::</span> u(:, :), v(:, :)</span>
+<span id="cb10-37">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">integer</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">::</span> i, j</span>
+<span id="cb10-38">    l2_norm <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.0_dp</span></span>
+<span id="cb10-39">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">do</span> concurrent(i<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>:<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">size</span>(u, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, j<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>:<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">size</span>(u, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>)<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>) reduce(<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span>:l2_norm)</span>
+<span id="cb10-40">        l2_norm <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> l2_norm <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> (u(i, j) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span> v(i, j))<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">**</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span></span>
+<span id="cb10-41">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">end do</span></span>
+<span id="cb10-42">    l2_norm <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">sqrt</span>(l2_norm)</span>
+<span id="cb10-43"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">end function</span></span></code></pre></div>
+<p><strong>Performances –</strong> Again, the new solver is just as readable as the previous ones. No big changes here, but look at the performances below!</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: center;"><strong>Solver</strong></th>
+<th style="text-align: center;"><strong># of iterations</strong></th>
+<th style="text-align: center;"><strong>Time to solution</strong></th>
+<th style="text-align: center;"><strong>Speed-up w.r.t. baseline</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">Textbook</td>
+<td style="text-align: center;">128 395</td>
+<td style="text-align: center;">58 s</td>
+<td style="text-align: center;">1</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">No-copy</td>
+<td style="text-align: center;">128 396</td>
+<td style="text-align: center;">30 s</td>
+<td style="text-align: center;">1.9</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">do concurrent</td>
+<td style="text-align: center;">129 002</td>
+<td style="text-align: center;">16 s</td>
+<td style="text-align: center;">3.6</td>
+</tr>
+</tbody>
+</table>
+<p>The new solver is 3 to 4 times faster than our baseline! This is quite remarkable given that we changed only a couple of lines compared to the original textbook implementation. Things are not always so clear cut for more complex algorithms, but still. And here is our second take-way:</p>
+<blockquote class="blockquote">
+<p><strong>Compute just what you need, not more.</strong></p>
+</blockquote>
+<p>Here, computing the residual norm for each iteration was clearly a non-negligible and non-necessary bottleneck. At this point, there is no more low-hanging fruit for optimization. You might think this is it. A 3.6x speed-up is good enough and you may call it a day. But you know what? There’s more. We can reach a 20x to 30x speed-up without changing anything else to the code!</p>
+</section>
+<section id="multithreaded-performances" class="level3">
+<h3 class="anchored" data-anchor-id="multithreaded-performances">Multithreaded performances</h3>
+<p>Computers these days tend to have built-in parallel computing capabilities. Yet, we haven’t leverage these so far. Let’s change that. I will not get into a discussion about openMP vs MPI or GPU offloading. I will keep things very practical instead. Remember when I said we can perform the Jacobi update in any <img src="https://latex.codecogs.com/png.latex?i,%20j"> order we want? The Jacobi update rule is embarassingly parallel. That is precisely what the <code>do concurrent</code> construct is conveying. And compilers can leverage this for increased computational performances. For our solver, it is a simple as changing the <code>gfortran</code> compilation options from</p>
+<pre><code>-O3 -mtune=native -march=native</code></pre>
+<p>to</p>
+<pre><code>-O3 -mtune=native -march=native -ftree-parallelize-loop=n</code></pre>
+<p>where <code>n</code> is the number of processes/threads to be used. And that’s it. Litterally. And look at these performances!</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: center;"><strong>Number of threads</strong></th>
+<th style="text-align: center;"><strong>Time to solution</strong></th>
+<th style="text-align: center;"><strong>Speed-up w.r.t. baseline</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">16 s</td>
+<td style="text-align: center;">3.6</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">8.6 s</td>
+<td style="text-align: center;">6.7</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">4</td>
+<td style="text-align: center;">4.1 s</td>
+<td style="text-align: center;">14.1</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">8</td>
+<td style="text-align: center;">2.1 s</td>
+<td style="text-align: center;">27.6</td>
+</tr>
+</tbody>
+</table>
+<p>As promised, we finish with a linear solver computing the solution of a system with a quarter million of unknowns in less than 3 seconds and not a single openMP pragma or MPI call. The code is the <strong>exact same as before</strong>. The only thing that changed is the addition of the new compilation option. And that is enough to reach a 27x speed-up compared to our original textbook implementation!<sup>2</sup> Pretty good considering we changed only a handful of lines of code and added only one extra compilation option, innit? There would be a lot more to say about the different parallel computing paradigms and the associated neaty greedy details, but this post is already sufficiently long as it is so I’ll stop right there. I’ll leave you with a cautionnary quote by the famous <a href="https://en.wikipedia.org/wiki/Donald_Knuth">Donald Knuth</a> though</p>
+<blockquote class="blockquote">
+<p>The real problem is that programmers have spent far too much time worrying about efficiency in the wrong places and at the wrong times; premature optimization is the root of all evil (or at least most of it) in programming.</p>
+</blockquote>
+<!--Include social share buttons-->
+<!-- 
+AddToAny check more: https://www.addtoany.com/buttons/for/website 
+Using includes will make edits easier, will only need to add or remove button here if needed.
+https://quarto.org/docs/authoring/includes.html
+-->
+<div class="a2a_kit a2a_kit_size_32 a2a_default_style">
+<p><a class="a2a_dd" href="https://www.addtoany.com/share"></a> <a class="a2a_button_linkedin"></a> <a class="a2a_button_bluesky"></a> <a class="a2a_button_facebook"></a> <a class="a2a_button_copy_link"></a> <a class="a2a_button_email"></a></p>
+</div>
+<script async="" src="https://static.addtoany.com/menu/page.js"></script>
+
+
+</section>
+</section>
+
+
+<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p>We need to invert the matrix <img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7BD%7D"> at each iteration. While this operation requires <img src="https://latex.codecogs.com/png.latex?%5Cmathcal%7BO%7D(n%5E3)"> flops for a general matrix, <img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7BD%7D"> here is diagonal. Hence, its inverse is straightforward to compute and only requires <img src="https://latex.codecogs.com/png.latex?n"> flops. Likewise, the matrix-vector product <img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7BRx%7D_t"> requires in general <img src="https://latex.codecogs.com/png.latex?%5Cmathcal%7BO%7D(n%5E2)"> flops. In most applications though, the matrix <img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7BA%7D"> is sparse and so is <img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7BR%7D">, typically reducing the number of floating points operations down to <img src="https://latex.codecogs.com/png.latex?%5Cmathcal%7BO%7D(n)"> as well. For a sparse linear system, each iteration of the Jacobi method hence requires <img src="https://latex.codecogs.com/png.latex?%5Cmathcal%7BO%7D(n)"> flops. The question then is how many iterations does it take to converge?↩︎</p></li>
+<li id="fn2"><p>If you run the code on your own computer, you may get different results as it depends on the number of cores you have, how fast they are, etc. But still, you should get pretty much the same trend.↩︎</p></li>
+</ol>
+</section></div> ]]></description>
+  <category>blog</category>
+  <guid>https://loiseaujc.github.io/posts/blog-title/jacobi_experiments.html</guid>
+  <pubDate>Mon, 22 Sep 2025 22:00:00 GMT</pubDate>
+  <media:content url="https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Fortran_acs_cover.jpeg/250px-Fortran_acs_cover.jpeg" medium="image" type="image/jpeg"/>
+</item>
 <item>
   <title>Is Fortran better than Python for teaching the basics of numerical linear algebra?</title>
   <dc:creator>Jean-Christophe Loiseau</dc:creator>
@@ -1249,6 +2726,68 @@ https://quarto.org/docs/authoring/includes.html
  ]]></description>
   <category>blog</category>
   <guid>https://loiseaujc.github.io/posts/blog-title/fortran_vs_python.html</guid>
+  <pubDate>Mon, 08 Sep 2025 22:00:00 GMT</pubDate>
+  <media:content url="https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Fortran_acs_cover.jpeg/250px-Fortran_acs_cover.jpeg" medium="image" type="image/jpeg"/>
+</item>
+<item>
+  <title>First steps with Elan, an educational programming language</title>
+  <dc:creator>Jean-Christophe Loiseau</dc:creator>
+  <link>https://loiseaujc.github.io/posts/blog-title/first_step_with_elan.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<p>A few days after discussing <a href="https://loiseaujc.github.io/posts/blog-title/fortran_vs_python.html">the merits of <code>Fortran</code> for teaching numerical linear algebra</a>, I got curious as to what is the state of educational programming languages.</p>
+<pre><code>function solve(r as Array2D&lt;of Float&gt;, b as Array&lt;of Float&gt;) returns Array&lt;of Float&gt;
+  let n be r.columns()
+  variable x set to new Array&lt;of Float&gt;(n, 0.0)
+  for i from n - 1 to 0 step -1
+    set x to x.withPut(i, b[i])
+    for j from n - 1 to i + 1 step -1
+      set x to x.withPut(i, x[i] - r[j, i]*x[j])
+    end for
+    set x to x.withPut(i, x[i]/r[i, i])
+  end for
+  return x
+end function
+
+main
+  let n be 3
+  variable r set to new Array2D&lt;of Float&gt;(n, n, 0.0)
+  variable b set to new Array&lt;of Float&gt;(n, 0.0)
+  # Enter the matrix R.
+  call r.put(0, 0, 1.0)
+  call r.put(1, 0, -2.0)
+  call r.put(2, 0, 1.0)
+  call r.put(1, 1, 1.0)
+  call r.put(2, 1, 6.0)
+  call r.put(2, 2, 1.0)
+  print r
+  # Enter the right-hand side vector b.
+  call b.put(0, 4.0)
+  call b.put(1, -1.0)
+  call b.put(2, 2.0)
+  print b
+  # Solve the linear system
+  print solve(r, b)
+end main</code></pre>
+<!--Include social share buttons-->
+<!-- 
+AddToAny check more: https://www.addtoany.com/buttons/for/website 
+Using includes will make edits easier, will only need to add or remove button here if needed.
+https://quarto.org/docs/authoring/includes.html
+-->
+<div class="a2a_kit a2a_kit_size_32 a2a_default_style">
+<p><a class="a2a_dd" href="https://www.addtoany.com/share"></a> <a class="a2a_button_linkedin"></a> <a class="a2a_button_bluesky"></a> <a class="a2a_button_facebook"></a> <a class="a2a_button_copy_link"></a> <a class="a2a_button_email"></a></p>
+</div>
+<script async="" src="https://static.addtoany.com/menu/page.js"></script>
+
+
+
+ ]]></description>
+  <category>blog</category>
+  <guid>https://loiseaujc.github.io/posts/blog-title/first_step_with_elan.html</guid>
   <pubDate>Mon, 08 Sep 2025 22:00:00 GMT</pubDate>
   <media:content url="https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Fortran_acs_cover.jpeg/250px-Fortran_acs_cover.jpeg" medium="image" type="image/jpeg"/>
 </item>
