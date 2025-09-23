@@ -75,7 +75,6 @@ On this site I keep a list of [my publications](posts.qmd#category=paper), the [
 
 ![](https://fortran-lang.org/_static/fortran-logo-256x256.png){width=1em} [`stdlib`](https://github.com/fortran-lang/stdlib) -- Community-driven development of a standard library for Fortran.
 
-
 :::
 
 
