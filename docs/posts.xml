@@ -78,7 +78,7 @@
 <blockquote class="blockquote">
 <p><strong>Proof (part 2) –</strong> Let <img src="https://latex.codecogs.com/png.latex?2%5Cmathbf%7BD%7D%20-%20%5Cmathbf%7BA%7D"> be symmetric positive definite. Then <img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7Bv%7D%5ET%20%5Cleft(%202%5Cmathbf%7BD%7D%20-%20%5Cmathbf%7BA%7D%20%5Cright)%20%5Cmathbf%7Bv%7D%20%3E%200"> and thus <img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7Bv%7D%5ET%20%5Cleft(%20%5Cmathbf%7BD%7D%20-%20%5Cmathbf%7BA%7D%20%5Cright)%20%5Cmathbf%7Bv%7D%20%3E%20-%20%5Cmathbf%7Bv%7D%5ET%20%5Cmathbf%7BDv%7D."> From part 1, we know that <img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7Bv%7D%5ET%20%5Cleft(%20%5Cmathbf%7BD%7D%20-%20%5Cmathbf%7BA%7D%20%5Cright)%20%5Cmathbf%7Bv%7D%20=%20%5Cmu%20%5Cmathbf%7Bv%7D%5ET%20%5Cmathbf%7BDv%7D">. Hence <img src="https://latex.codecogs.com/png.latex?%5Cmu%20%5Cmathbf%7Bv%7D%5ET%20%5Cmathbf%7BDv%7D%20%3E%20-%20%5Cmathbf%7Bv%7D%5ET%5Cmathbf%7BDv%7D"> implying <img src="https://latex.codecogs.com/png.latex?-1%20%3C%20%5Cmu">. Combined with part 1, we thus have <img src="https://latex.codecogs.com/png.latex?-1%20%3C%20%5Cmu%20%3C%201">, i.e.&nbsp;the eigenvalues of <img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7BI%7D%20-%20%5Cmathbf%7BD%7D%5E%7B-1%7D%5Cmathbf%7BA%7D"> are inside the unit circle (and real) and the Jacobi iteration converges.</p>
 </blockquote>
-<p>Note that the condition “<img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7BA%7D"> and <img src="https://latex.codecogs.com/png.latex?2%5Cmathbf%7BD%7D%20-%20%5Cmathbf%7BA%7D"> being symmetric positive definite” is sufficient although not necessary to guarantee the convergence of the Jacobi method. Another classical sufficient but not necessary condition is that <img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7BA%7D"> is strictly row diagonally dominant. Again, it is relatively easy to prove but since I’m the teacher here, I’ll end this theoretical analysis with the nefarious: <em>This is left as an exercise for the reader.</em></p>
+<p>Note that the condition “<img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7BA%7D"> and <img src="https://latex.codecogs.com/png.latex?2%5Cmathbf%7BD%7D%20-%20%5Cmathbf%7BA%7D"> being symmetric positive definite” is sufficient although not necessary to guarantee the convergence of the Jacobi method. Another classical sufficient but non-necessary condition is that <img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7BA%7D"> is strictly row diagonally dominant. Again, it is relatively easy to prove but since I’m the teacher here, I’ll end this theoretical analysis with the nefarious: <em>This is left as an exercise for the reader.</em></p>
 </section>
 <section id="alright-it-converges.-but-how-fast" class="level3">
 <h3 class="anchored" data-anchor-id="alright-it-converges.-but-how-fast">Alright, it converges. But how fast?</h3>
@@ -547,7 +547,7 @@ font-style: inherit;">end function</span></span></code></pre></div>
 background-color: null;
 font-weight: bold;
 font-style: inherit;">=</span> v</span></code></pre></div>
-<p>It is the update of our current estimate of the solution with the one we’ve just computed. It essentially is a <code>copy</code> operation. Given how simple our Jacobi kernel is, it acutally takes almost as long as computing a Jacobi update. So let’s get rid of it by simply performing an additional call to the Jacobi kernel with role of <code>u</code> and <code>v</code> being flipped.</p>
+<p>It is the update of our current estimate of the solution with the one we’ve just computed. It essentially is a <code>copy</code> operation. Given how simple our Jacobi kernel is, it acutally takes almost as long as computing a Jacobi update. So let’s get rid of it by simply performing an additional call to the Jacobi kernel with the role of <code>u</code> and <code>v</code> being flipped.</p>
 <div class="sourceCode" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode numberSource fortran number-lines code-with-copy"><code class="sourceCode fortranfixed"><span id="cb5-1"><span class="kw" style="color: #003B4F;
 background-color: null;
 font-weight: bold;
@@ -771,7 +771,7 @@ font-style: inherit;">"    - l2-norm of the error :"</span>, l2_norm</span>
 background-color: null;
 font-weight: bold;
 font-style: inherit;">end function</span></span></code></pre></div>
-<p><strong>Performances –</strong> Code-wise, very little has changed compared to our baseline implementation. The <code>nocopy_solver</code> slightlty departs from the pseudo-code but is still as readable. Peformance-wise, it is a different story.</p>
+<p><strong>Performances –</strong> Code-wise, very little has changed compared to our baseline implementation. The <code>nocopy_solver</code> slightly departs from the pseudo-code but is still as readable. Peformance-wise, it is a different story.</p>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 25%">
@@ -1042,7 +1042,7 @@ font-style: inherit;">sqrt</span>(l2_norm)</span>
 background-color: null;
 font-weight: bold;
 font-style: inherit;">endif</span></span></code></pre></div>
-<p>Either way is fine, <code>norm2</code> is an intrinsic <code>Fortran</code> function and its implementation has already been optimized by the compiler vendors. Checking the residual norm every 1000 iterations is arbitrary. It has been chosen out of simplicity considering that the method takes 128 000 iterations to converge on our particular problem. In practice, you might actually pass this as an extra argument to the solver to let the user decide. Here is the updated solver.</p>
+<p>Either way is fine, <code>norm2</code> is an intrinsic <code>Fortran</code> function and its implementation has already been optimized by the compiler vendors anyway. Checking the residual norm every 1000 iterations is arbitrary. It has been chosen out of simplicity considering that the method takes 128 000 iterations to converge for our particular problem. In practice, you might actually pass this as an extra argument to the solver to let the user decide. Here is the updated solver.</p>
 <div class="sourceCode" id="cb10" style="background: #f1f3f5;"><pre class="sourceCode numberSource fortran number-lines code-with-copy"><code class="sourceCode fortranfixed"><span id="cb10-1"><span class="kw" style="color: #003B4F;
 background-color: null;
 font-weight: bold;
@@ -1420,10 +1420,10 @@ font-style: inherit;">end function</span></span></code></pre></div>
 </section>
 <section id="multithreaded-performances" class="level3">
 <h3 class="anchored" data-anchor-id="multithreaded-performances">Multithreaded performances</h3>
-<p>Computers these days tend to have built-in parallel computing capabilities. Yet, we haven’t leverage these so far. Let’s change that. I will not get into a discussion about openMP vs MPI or GPU offloading. I will keep things very practical instead. Remember when I said we can perform the Jacobi update in any <img src="https://latex.codecogs.com/png.latex?i,%20j"> order we want? The Jacobi update rule is embarassingly parallel. That is precisely what the <code>do concurrent</code> construct is conveying. And compilers can leverage this for increased computational performances. For our solver, it is a simple as changing the <code>gfortran</code> compilation options from</p>
+<p>Computers these days tend to have built-in parallel computing capabilities. Yet, we haven’t leverage these so far. Let’s change that. I will not get into a discussion about openMP vs MPI or GPU offloading. I will keep things very practical instead. Remember when I said we can perform the Jacobi update in any <img src="https://latex.codecogs.com/png.latex?i,%20j"> order we want? The Jacobi update rule is embarassingly parallel. That is precisely what the <code>do concurrent</code> construct is conveying. And compilers can leverage this for increased computational performances. For our solver, it is as simple as changing the <code>gfortran</code> compilation options from</p>
 <pre><code>-O3 -mtune=native -march=native</code></pre>
 <p>to</p>
-<pre><code>-O3 -mtune=native -march=native -ftree-parallelize-loop=n</code></pre>
+<pre><code>-O3 -mtune=native -march=native -ftree-parallelize-loops=n</code></pre>
 <p>where <code>n</code> is the number of processes/threads to be used. And that’s it. Litterally. And look at these performances!</p>
 <table class="caption-top table">
 <colgroup>
@@ -2726,68 +2726,6 @@ https://quarto.org/docs/authoring/includes.html
  ]]></description>
   <category>blog</category>
   <guid>https://loiseaujc.github.io/posts/blog-title/fortran_vs_python.html</guid>
-  <pubDate>Mon, 08 Sep 2025 22:00:00 GMT</pubDate>
-  <media:content url="https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Fortran_acs_cover.jpeg/250px-Fortran_acs_cover.jpeg" medium="image" type="image/jpeg"/>
-</item>
-<item>
-  <title>First steps with Elan, an educational programming language</title>
-  <dc:creator>Jean-Christophe Loiseau</dc:creator>
-  <link>https://loiseaujc.github.io/posts/blog-title/first_step_with_elan.html</link>
-  <description><![CDATA[ 
-
-
-
-
-<p>A few days after discussing <a href="https://loiseaujc.github.io/posts/blog-title/fortran_vs_python.html">the merits of <code>Fortran</code> for teaching numerical linear algebra</a>, I got curious as to what is the state of educational programming languages.</p>
-<pre><code>function solve(r as Array2D&lt;of Float&gt;, b as Array&lt;of Float&gt;) returns Array&lt;of Float&gt;
-  let n be r.columns()
-  variable x set to new Array&lt;of Float&gt;(n, 0.0)
-  for i from n - 1 to 0 step -1
-    set x to x.withPut(i, b[i])
-    for j from n - 1 to i + 1 step -1
-      set x to x.withPut(i, x[i] - r[j, i]*x[j])
-    end for
-    set x to x.withPut(i, x[i]/r[i, i])
-  end for
-  return x
-end function
-
-main
-  let n be 3
-  variable r set to new Array2D&lt;of Float&gt;(n, n, 0.0)
-  variable b set to new Array&lt;of Float&gt;(n, 0.0)
-  # Enter the matrix R.
-  call r.put(0, 0, 1.0)
-  call r.put(1, 0, -2.0)
-  call r.put(2, 0, 1.0)
-  call r.put(1, 1, 1.0)
-  call r.put(2, 1, 6.0)
-  call r.put(2, 2, 1.0)
-  print r
-  # Enter the right-hand side vector b.
-  call b.put(0, 4.0)
-  call b.put(1, -1.0)
-  call b.put(2, 2.0)
-  print b
-  # Solve the linear system
-  print solve(r, b)
-end main</code></pre>
-<!--Include social share buttons-->
-<!-- 
-AddToAny check more: https://www.addtoany.com/buttons/for/website 
-Using includes will make edits easier, will only need to add or remove button here if needed.
-https://quarto.org/docs/authoring/includes.html
--->
-<div class="a2a_kit a2a_kit_size_32 a2a_default_style">
-<p><a class="a2a_dd" href="https://www.addtoany.com/share"></a> <a class="a2a_button_linkedin"></a> <a class="a2a_button_bluesky"></a> <a class="a2a_button_facebook"></a> <a class="a2a_button_copy_link"></a> <a class="a2a_button_email"></a></p>
-</div>
-<script async="" src="https://static.addtoany.com/menu/page.js"></script>
-
-
-
- ]]></description>
-  <category>blog</category>
-  <guid>https://loiseaujc.github.io/posts/blog-title/first_step_with_elan.html</guid>
   <pubDate>Mon, 08 Sep 2025 22:00:00 GMT</pubDate>
   <media:content url="https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Fortran_acs_cover.jpeg/250px-Fortran_acs_cover.jpeg" medium="image" type="image/jpeg"/>
 </item>

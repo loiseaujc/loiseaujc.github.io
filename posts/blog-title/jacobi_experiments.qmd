@@ -138,7 +138,7 @@ This is where the condition on $2\mathbf{D} - \mathbf{A}$ comes into play.
 > implying $-1 < \mu$. Combined with part 1, we thus have $-1 < \mu < 1$, i.e. the eigenvalues of $\mathbf{I} - \mathbf{D}^{-1}\mathbf{A}$ are inside the unit circle (and real) and the Jacobi iteration converges.
 
 Note that the condition "$\mathbf{A}$ and $2\mathbf{D} - \mathbf{A}$ being symmetric positive definite" is sufficient although not necessary to guarantee the convergence of the Jacobi method.
-Another classical sufficient but not necessary condition is that $\mathbf{A}$ is strictly row diagonally dominant.
+Another classical sufficient but non-necessary condition is that $\mathbf{A}$ is strictly row diagonally dominant.
 Again, it is relatively easy to prove but since I'm the teacher here, I'll end this theoretical analysis with the nefarious: *This is left as an exercise for the reader.*
 
 ### Alright, it converges. But how fast?
@@ -427,7 +427,7 @@ Our Jacobi kernel is so simple that there ain't much room for improvement so let
 It is the update of our current estimate of the solution with the one we've just computed.
 It essentially is a `copy` operation.
 Given how simple our Jacobi kernel is, it acutally takes almost as long as computing a Jacobi update.
-So let's get rid of it by simply performing an additional call to the Jacobi kernel with role of `u` and `v` being flipped.
+So let's get rid of it by simply performing an additional call to the Jacobi kernel with the role of `u` and `v` being flipped.
 
 ```fortran
 function nocopy_solver(b, tol, maxiter) result(u)
@@ -467,7 +467,7 @@ end function
 ```
 
 **Performances --** Code-wise, very little has changed compared to our baseline implementation.
-The `nocopy_solver` slightlty departs from the pseudo-code but is still as readable.
+The `nocopy_solver` slightly departs from the pseudo-code but is still as readable.
 Peformance-wise, it is a different story.
 
 | **Solver** | **# of iterations** | **Time to solution** | **Speed-up w.r.t. baseline** |
@@ -549,9 +549,9 @@ if (mod(iteration, 1000)) then
 endif
 ```
 
-Either way is fine, `norm2` is an intrinsic `Fortran` function and its implementation has already been optimized by the compiler vendors.
+Either way is fine, `norm2` is an intrinsic `Fortran` function and its implementation has already been optimized by the compiler vendors anyway.
 Checking the residual norm every 1000 iterations is arbitrary.
-It has been chosen out of simplicity considering that the method takes 128 000 iterations to converge on our particular problem.
+It has been chosen out of simplicity considering that the method takes 128 000 iterations to converge for our particular problem.
 In practice, you might actually pass this as an extra argument to the solver to let the user decide.
 Here is the updated solver.
 
@@ -636,7 +636,7 @@ Remember when I said we can perform the Jacobi update in any $i, j$ order we wan
 The Jacobi update rule is embarassingly parallel.
 That is precisely what the `do concurrent` construct is conveying.
 And compilers can leverage this for increased computational performances.
-For our solver, it is a simple as changing the `gfortran` compilation options from
+For our solver, it is as simple as changing the `gfortran` compilation options from
 
 ```
 -O3 -mtune=native -march=native
@@ -645,7 +645,7 @@ For our solver, it is a simple as changing the `gfortran` compilation options fr
 to
 
 ```
--O3 -mtune=native -march=native -ftree-parallelize-loop=n
+-O3 -mtune=native -march=native -ftree-parallelize-loops=n
 ```
 
 where `n` is the number of processes/threads to be used.

@@ -420,7 +420,7 @@ window.Quarto = {
 <blockquote class="blockquote">
 <p><strong>Proof (part 2) –</strong> Let <span class="math inline">\(2\mathbf{D} - \mathbf{A}\)</span> be symmetric positive definite. Then <span class="math display">\[\mathbf{v}^T \left( 2\mathbf{D} - \mathbf{A} \right) \mathbf{v} &gt; 0\]</span> and thus <span class="math display">\[\mathbf{v}^T \left( \mathbf{D} - \mathbf{A} \right) \mathbf{v} &gt; - \mathbf{v}^T \mathbf{Dv}.\]</span> From part 1, we know that <span class="math inline">\(\mathbf{v}^T \left( \mathbf{D} - \mathbf{A} \right) \mathbf{v} = \mu \mathbf{v}^T \mathbf{Dv}\)</span>. Hence <span class="math display">\[\mu \mathbf{v}^T \mathbf{Dv} &gt; - \mathbf{v}^T\mathbf{Dv}\]</span> implying <span class="math inline">\(-1 &lt; \mu\)</span>. Combined with part 1, we thus have <span class="math inline">\(-1 &lt; \mu &lt; 1\)</span>, i.e.&nbsp;the eigenvalues of <span class="math inline">\(\mathbf{I} - \mathbf{D}^{-1}\mathbf{A}\)</span> are inside the unit circle (and real) and the Jacobi iteration converges.</p>
 </blockquote>
-<p>Note that the condition “<span class="math inline">\(\mathbf{A}\)</span> and <span class="math inline">\(2\mathbf{D} - \mathbf{A}\)</span> being symmetric positive definite” is sufficient although not necessary to guarantee the convergence of the Jacobi method. Another classical sufficient but not necessary condition is that <span class="math inline">\(\mathbf{A}\)</span> is strictly row diagonally dominant. Again, it is relatively easy to prove but since I’m the teacher here, I’ll end this theoretical analysis with the nefarious: <em>This is left as an exercise for the reader.</em></p>
+<p>Note that the condition “<span class="math inline">\(\mathbf{A}\)</span> and <span class="math inline">\(2\mathbf{D} - \mathbf{A}\)</span> being symmetric positive definite” is sufficient although not necessary to guarantee the convergence of the Jacobi method. Another classical sufficient but non-necessary condition is that <span class="math inline">\(\mathbf{A}\)</span> is strictly row diagonally dominant. Again, it is relatively easy to prove but since I’m the teacher here, I’ll end this theoretical analysis with the nefarious: <em>This is left as an exercise for the reader.</em></p>
 </section>
 <section id="alright-it-converges.-but-how-fast" class="level3">
 <h3 class="anchored" data-anchor-id="alright-it-converges.-but-how-fast">Alright, it converges. But how fast?</h3>
@@ -606,7 +606,7 @@ u_{i, j}^{(t+1)} = \dfrac{1}{4} \left( \Delta x^2 \cdot f_{i, j} - u_{i+1, j}^{(
 <h3 class="anchored" data-anchor-id="you-shall-not-copy">You shall not copy!</h3>
 <p>Our Jacobi kernel is so simple that there ain’t much room for improvement so let’s look at the solver itself starting with line 26</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode numberSource fortran number-lines code-with-copy"><code class="sourceCode fortranfixed"><span id="cb4-1"><a href="#cb4-1"></a>    u <span class="kw">=</span> v</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>It is the update of our current estimate of the solution with the one we’ve just computed. It essentially is a <code>copy</code> operation. Given how simple our Jacobi kernel is, it acutally takes almost as long as computing a Jacobi update. So let’s get rid of it by simply performing an additional call to the Jacobi kernel with role of <code>u</code> and <code>v</code> being flipped.</p>
+<p>It is the update of our current estimate of the solution with the one we’ve just computed. It essentially is a <code>copy</code> operation. Given how simple our Jacobi kernel is, it acutally takes almost as long as computing a Jacobi update. So let’s get rid of it by simply performing an additional call to the Jacobi kernel with the role of <code>u</code> and <code>v</code> being flipped.</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode numberSource fortran number-lines code-with-copy"><code class="sourceCode fortranfixed"><span id="cb5-1"><a href="#cb5-1"></a><span class="kw">function</span> nocopy_solver(b, tol, maxiter) <span class="kw">result</span>(u)</span>
 <span id="cb5-2"><a href="#cb5-2"></a>    <span class="kw">implicit</span> <span class="kw">none</span></span>
 <span id="cb5-3"><a href="#cb5-3"></a>    <span class="dt">real(dp)</span>, <span class="dt">intent(in)</span> <span class="dt">::</span> b(:, :), tol</span>
@@ -641,7 +641,7 @@ u_{i, j}^{(t+1)} = \dfrac{1}{4} \left( \Delta x^2 \cdot f_{i, j} - u_{i+1, j}^{(
 <span id="cb5-32"><a href="#cb5-32"></a>    <span class="fu">print</span> <span class="kw">*</span>, <span class="st">"    - Number of iterations :"</span>, iteration</span>
 <span id="cb5-33"><a href="#cb5-33"></a>    <span class="fu">print</span> <span class="kw">*</span>, <span class="st">"    - l2-norm of the error :"</span>, l2_norm</span>
 <span id="cb5-34"><a href="#cb5-34"></a><span class="kw">end function</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p><strong>Performances –</strong> Code-wise, very little has changed compared to our baseline implementation. The <code>nocopy_solver</code> slightlty departs from the pseudo-code but is still as readable. Peformance-wise, it is a different story.</p>
+<p><strong>Performances –</strong> Code-wise, very little has changed compared to our baseline implementation. The <code>nocopy_solver</code> slightly departs from the pseudo-code but is still as readable. Peformance-wise, it is a different story.</p>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 25%">
@@ -710,7 +710,7 @@ u_{i, j}^{(t+1)} = \dfrac{1}{4} \left( \Delta x^2 \cdot f_{i, j} - u_{i+1, j}^{(
 <span id="cb9-5"><a href="#cb9-5"></a>    <span class="kw">enddo</span></span>
 <span id="cb9-6"><a href="#cb9-6"></a>    l2_norm <span class="kw">=</span> <span class="bu">sqrt</span>(l2_norm)</span>
 <span id="cb9-7"><a href="#cb9-7"></a><span class="kw">endif</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Either way is fine, <code>norm2</code> is an intrinsic <code>Fortran</code> function and its implementation has already been optimized by the compiler vendors. Checking the residual norm every 1000 iterations is arbitrary. It has been chosen out of simplicity considering that the method takes 128 000 iterations to converge on our particular problem. In practice, you might actually pass this as an extra argument to the solver to let the user decide. Here is the updated solver.</p>
+<p>Either way is fine, <code>norm2</code> is an intrinsic <code>Fortran</code> function and its implementation has already been optimized by the compiler vendors anyway. Checking the residual norm every 1000 iterations is arbitrary. It has been chosen out of simplicity considering that the method takes 128 000 iterations to converge for our particular problem. In practice, you might actually pass this as an extra argument to the solver to let the user decide. Here is the updated solver.</p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode numberSource fortran number-lines code-with-copy"><code class="sourceCode fortranfixed"><span id="cb10-1"><a href="#cb10-1"></a><span class="kw">function</span> doconcurrent_solver(b, tol, maxiter) <span class="kw">result</span>(u)</span>
 <span id="cb10-2"><a href="#cb10-2"></a>    <span class="kw">implicit</span> <span class="kw">none</span>(<span class="kw">external</span>)</span>
 <span id="cb10-3"><a href="#cb10-3"></a>    <span class="dt">real(dp)</span>, <span class="dt">intent(in)</span> <span class="dt">::</span> b(:, :), tol</span>
@@ -799,10 +799,10 @@ u_{i, j}^{(t+1)} = \dfrac{1}{4} \left( \Delta x^2 \cdot f_{i, j} - u_{i+1, j}^{(
 </section>
 <section id="multithreaded-performances" class="level3">
 <h3 class="anchored" data-anchor-id="multithreaded-performances">Multithreaded performances</h3>
-<p>Computers these days tend to have built-in parallel computing capabilities. Yet, we haven’t leverage these so far. Let’s change that. I will not get into a discussion about openMP vs MPI or GPU offloading. I will keep things very practical instead. Remember when I said we can perform the Jacobi update in any <span class="math inline">\(i, j\)</span> order we want? The Jacobi update rule is embarassingly parallel. That is precisely what the <code>do concurrent</code> construct is conveying. And compilers can leverage this for increased computational performances. For our solver, it is a simple as changing the <code>gfortran</code> compilation options from</p>
+<p>Computers these days tend to have built-in parallel computing capabilities. Yet, we haven’t leverage these so far. Let’s change that. I will not get into a discussion about openMP vs MPI or GPU offloading. I will keep things very practical instead. Remember when I said we can perform the Jacobi update in any <span class="math inline">\(i, j\)</span> order we want? The Jacobi update rule is embarassingly parallel. That is precisely what the <code>do concurrent</code> construct is conveying. And compilers can leverage this for increased computational performances. For our solver, it is as simple as changing the <code>gfortran</code> compilation options from</p>
 <pre><code>-O3 -mtune=native -march=native</code></pre>
 <p>to</p>
-<pre><code>-O3 -mtune=native -march=native -ftree-parallelize-loop=n</code></pre>
+<pre><code>-O3 -mtune=native -march=native -ftree-parallelize-loops=n</code></pre>
 <p>where <code>n</code> is the number of processes/threads to be used. And that’s it. Litterally. And look at these performances!</p>
 <table class="caption-top table">
 <colgroup>
