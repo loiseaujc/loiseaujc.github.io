@@ -455,8 +455,6 @@ function nocopy_solver(b, tol, maxiter) result(u)
         call textbook_kernel(nx, ny, u, v, b, dx)
         ! Compute error norm.
         l2_norm = norm2(u - v)
-        ! Update variable.
-        u = v
         ! Update iteration counter.
         iteration = iteration + 2
     end do
@@ -482,7 +480,7 @@ As a consequence, in the time frame it took our baseline implementation to pefor
 And boom, twice as fast.
 This is the first but probably most important take-away message:
 
-> **Avoir copies like the plague and re-use intermediate results as much as possible.**
+> **Avoid copies like the plague and re-use intermediate results as much as possible.**
 
 This is not specific to `Fortran` and is true for pretty much any programming language you use.
 

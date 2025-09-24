@@ -722,15 +722,8 @@ font-weight: bold;
 font-style: inherit;">-</span> v)</span>
 <span id="cb5-26">        <span class="co" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;">! Update variable.</span></span>
-<span id="cb5-27">        u <span class="kw" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">=</span> v</span>
-<span id="cb5-28">        <span class="co" style="color: #5E5E5E;
-background-color: null;
 font-style: inherit;">! Update iteration counter.</span></span>
-<span id="cb5-29">        iteration <span class="kw" style="color: #003B4F;
+<span id="cb5-27">        iteration <span class="kw" style="color: #003B4F;
 background-color: null;
 font-weight: bold;
 font-style: inherit;">=</span> iteration <span class="kw" style="color: #003B4F;
@@ -739,11 +732,11 @@ font-weight: bold;
 font-style: inherit;">+</span> <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">2</span></span>
-<span id="cb5-30">    <span class="kw" style="color: #003B4F;
+<span id="cb5-28">    <span class="kw" style="color: #003B4F;
 background-color: null;
 font-weight: bold;
 font-style: inherit;">end do</span></span>
-<span id="cb5-31">    <span class="fu" style="color: #4758AB;
+<span id="cb5-29">    <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">print</span> <span class="kw" style="color: #003B4F;
 background-color: null;
@@ -751,7 +744,7 @@ font-weight: bold;
 font-style: inherit;">*</span>, <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"No-copy solver  :"</span></span>
-<span id="cb5-32">    <span class="fu" style="color: #4758AB;
+<span id="cb5-30">    <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">print</span> <span class="kw" style="color: #003B4F;
 background-color: null;
@@ -759,7 +752,7 @@ font-weight: bold;
 font-style: inherit;">*</span>, <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"    - Number of iterations :"</span>, iteration</span>
-<span id="cb5-33">    <span class="fu" style="color: #4758AB;
+<span id="cb5-31">    <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">print</span> <span class="kw" style="color: #003B4F;
 background-color: null;
@@ -767,7 +760,7 @@ font-weight: bold;
 font-style: inherit;">*</span>, <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"    - l2-norm of the error :"</span>, l2_norm</span>
-<span id="cb5-34"><span class="kw" style="color: #003B4F;
+<span id="cb5-32"><span class="kw" style="color: #003B4F;
 background-color: null;
 font-weight: bold;
 font-style: inherit;">end function</span></span></code></pre></div>
@@ -804,7 +797,7 @@ font-style: inherit;">end function</span></span></code></pre></div>
 </table>
 <p>This one-line change makes our solver compute the solution twice as fast! But don’t get too excited, it is somewhat expected if you think of it. A <code>copy</code> is roughly as expensive as computing a Jacobi update itself. As a consequence, in the time frame it took our baseline implementation to peform a Jacobi update followed by a copy, the <code>nocopy_solver</code> performed no copy (hence the name) but two updates. And boom, twice as fast. This is the first but probably most important take-away message:</p>
 <blockquote class="blockquote">
-<p><strong>Avoir copies like the plague and re-use intermediate results as much as possible.</strong></p>
+<p><strong>Avoid copies like the plague and re-use intermediate results as much as possible.</strong></p>
 </blockquote>
 <p>This is not specific to <code>Fortran</code> and is true for pretty much any programming language you use.</p>
 </section>

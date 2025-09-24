@@ -632,15 +632,13 @@ u_{i, j}^{(t+1)} = \dfrac{1}{4} \left( \Delta x^2 \cdot f_{i, j} - u_{i+1, j}^{(
 <span id="cb5-23"><a href="#cb5-23"></a>        <span class="kw">call</span> textbook_kernel(nx, ny, u, v, b, dx)</span>
 <span id="cb5-24"><a href="#cb5-24"></a>        <span class="co">! Compute error norm.</span></span>
 <span id="cb5-25"><a href="#cb5-25"></a>        l2_norm <span class="kw">=</span> norm2(u <span class="kw">-</span> v)</span>
-<span id="cb5-26"><a href="#cb5-26"></a>        <span class="co">! Update variable.</span></span>
-<span id="cb5-27"><a href="#cb5-27"></a>        u <span class="kw">=</span> v</span>
-<span id="cb5-28"><a href="#cb5-28"></a>        <span class="co">! Update iteration counter.</span></span>
-<span id="cb5-29"><a href="#cb5-29"></a>        iteration <span class="kw">=</span> iteration <span class="kw">+</span> <span class="dv">2</span></span>
-<span id="cb5-30"><a href="#cb5-30"></a>    <span class="kw">end do</span></span>
-<span id="cb5-31"><a href="#cb5-31"></a>    <span class="fu">print</span> <span class="kw">*</span>, <span class="st">"No-copy solver  :"</span></span>
-<span id="cb5-32"><a href="#cb5-32"></a>    <span class="fu">print</span> <span class="kw">*</span>, <span class="st">"    - Number of iterations :"</span>, iteration</span>
-<span id="cb5-33"><a href="#cb5-33"></a>    <span class="fu">print</span> <span class="kw">*</span>, <span class="st">"    - l2-norm of the error :"</span>, l2_norm</span>
-<span id="cb5-34"><a href="#cb5-34"></a><span class="kw">end function</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb5-26"><a href="#cb5-26"></a>        <span class="co">! Update iteration counter.</span></span>
+<span id="cb5-27"><a href="#cb5-27"></a>        iteration <span class="kw">=</span> iteration <span class="kw">+</span> <span class="dv">2</span></span>
+<span id="cb5-28"><a href="#cb5-28"></a>    <span class="kw">end do</span></span>
+<span id="cb5-29"><a href="#cb5-29"></a>    <span class="fu">print</span> <span class="kw">*</span>, <span class="st">"No-copy solver  :"</span></span>
+<span id="cb5-30"><a href="#cb5-30"></a>    <span class="fu">print</span> <span class="kw">*</span>, <span class="st">"    - Number of iterations :"</span>, iteration</span>
+<span id="cb5-31"><a href="#cb5-31"></a>    <span class="fu">print</span> <span class="kw">*</span>, <span class="st">"    - l2-norm of the error :"</span>, l2_norm</span>
+<span id="cb5-32"><a href="#cb5-32"></a><span class="kw">end function</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p><strong>Performances –</strong> Code-wise, very little has changed compared to our baseline implementation. The <code>nocopy_solver</code> slightly departs from the pseudo-code but is still as readable. Peformance-wise, it is a different story.</p>
 <table class="caption-top table">
 <colgroup>
@@ -674,7 +672,7 @@ u_{i, j}^{(t+1)} = \dfrac{1}{4} \left( \Delta x^2 \cdot f_{i, j} - u_{i+1, j}^{(
 </table>
 <p>This one-line change makes our solver compute the solution twice as fast! But don’t get too excited, it is somewhat expected if you think of it. A <code>copy</code> is roughly as expensive as computing a Jacobi update itself. As a consequence, in the time frame it took our baseline implementation to peform a Jacobi update followed by a copy, the <code>nocopy_solver</code> performed no copy (hence the name) but two updates. And boom, twice as fast. This is the first but probably most important take-away message:</p>
 <blockquote class="blockquote">
-<p><strong>Avoir copies like the plague and re-use intermediate results as much as possible.</strong></p>
+<p><strong>Avoid copies like the plague and re-use intermediate results as much as possible.</strong></p>
 </blockquote>
 <p>This is not specific to <code>Fortran</code> and is true for pretty much any programming language you use.</p>
 </section>
