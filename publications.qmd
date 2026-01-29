@@ -24,9 +24,9 @@ tbl-cap-location: bottom
 
 | Citations | h-index | i-10 index |
 | :---: | :---: | :---: |
-| 2229 | 20 | 26 |
+| 2467 | 21 | 27 |
 
-: Total citations as of September 2025 from [Google Scholar](https://scholar.google.com/citations?user=4rvzkMEAAAAJ&hl=en) {{< ai google-scholar size=xl color=black >}}
+: Total citations as of January 2026 from [Google Scholar](https://scholar.google.com/citations?user=4rvzkMEAAAAJ&hl=en) {{< ai google-scholar size=xl color=black >}}
 
 List of publications in reversed chronological order (most recent first). For each, a link to the journal version is given along with the corresponding arXiv preprint (if not open access).
 
@@ -35,6 +35,9 @@ List of publications in reversed chronological order (most recent first). For ea
 ---
 
 ---
+
+J. S. Kern, R. S. Frantz, and **J.-Ch. Loiseau** (2026). `LightKrylov` : Lightweight implementation of Krylov subspace techniques in modern Fortran. *Journal of Open Source Software*, 11(117), 9623. \[[PDF](https://joss.theoj.org/papers/10.21105/joss.09623)\]
+<span class="__dimensions_badge_embed__" data-doi="10.21105/joss.09623" data-style="large_rectangle"></span> <div data-badge-popover="right" data-badge-type="1" data-doi="10.21105/joss.09623" data-hide-no-mentions="true" class="altmetric-embed"></div>
 
 R. A. S. Frantz<sup>GS</sup>\*, C. Mimeau, M. Salihoglu<sup>GS</sup>, **J.-Ch. Loiseau**, & J.-Ch. Robinet (2025). Bifurcation sequence in the wakes of a sphere and a cube. *Journal of Fluid Mechanics*, vol. 1018.
 \[[PDF](https://www.cambridge.org/core/journals/journal-of-fluid-mechanics/article/bifurcation-sequence-in-the-wakes-of-a-sphere-and-a-cube/FD3454216F8CDCD9F6CCDA3ECCB78EBA)\]
