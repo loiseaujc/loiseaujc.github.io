@@ -1,5 +1,9 @@
 [
   {
+    "listing": "/people.html",
+    "items": []
+  },
+  {
     "listing": "/posts.html",
     "items": [
       "/posts/blog-title/jacobi_experiments.html",
@@ -13,12 +17,11 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/blog-title/gauss_seidel_vs_jacobi.html",
       "/posts/blog-title/jacobi_experiments.html",
-      "/posts/blog-title/fortran_vs_python.html"
+      "/posts/blog-title/fortran_vs_python.html",
+      "/posts/news-title/website_migration.html",
+      "/posts/event-title/bari_euromech.html"
     ]
-  },
-  {
-    "listing": "/people.html",
-    "items": []
   }
 ]

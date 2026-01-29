@@ -39,6 +39,8 @@ List of publications in reversed chronological order (most recent first). For ea
 J. S. Kern, R. S. Frantz, and **J.-Ch. Loiseau** (2026). `LightKrylov` : Lightweight implementation of Krylov subspace techniques in modern Fortran. *Journal of Open Source Software*, 11(117), 9623. \[[PDF](https://joss.theoj.org/papers/10.21105/joss.09623)\]
 <span class="__dimensions_badge_embed__" data-doi="10.21105/joss.09623" data-style="large_rectangle"></span> <div data-badge-popover="right" data-badge-type="1" data-doi="10.21105/joss.09623" data-hide-no-mentions="true" class="altmetric-embed"></div>
 
+<center><hr style="width:50%"></center>
+
 R. A. S. Frantz<sup>GS</sup>\*, C. Mimeau, M. Salihoglu<sup>GS</sup>, **J.-Ch. Loiseau**, & J.-Ch. Robinet (2025). Bifurcation sequence in the wakes of a sphere and a cube. *Journal of Fluid Mechanics*, vol. 1018.
 \[[PDF](https://www.cambridge.org/core/journals/journal-of-fluid-mechanics/article/bifurcation-sequence-in-the-wakes-of-a-sphere-and-a-cube/FD3454216F8CDCD9F6CCDA3ECCB78EBA)\]
 <span class="__dimensions_badge_embed__" data-doi="10.1017/jfm.2025.10469" data-style="large_rectangle"></span> <div data-badge-popover="right" data-badge-type="1" data-doi="10.1017/jfm.2025.10469" data-hide-no-mentions="true" class="altmetric-embed"></div>

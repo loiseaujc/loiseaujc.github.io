@@ -7,10 +7,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Dr.&nbsp;Jean-Christophe Loiseau">
-<meta name="dcterms.date" content="2025-09-09">
+<meta name="dcterms.date" content="2025-11-03">
 <meta name="description" content="Quarto Academic Website Template adapted by Dr.&nbsp;Gang He">
 
-<title>Migrating from Jekyll &amp; AcademicPages to Quarto – Dr.&nbsp;Jean-Christophe Loiseau</title>
+<title>Gauss-Seidel: is it really twice as fast as Jacobi? – Dr.&nbsp;Jean-Christophe Loiseau</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -39,10 +39,10 @@ ul.task-list li input[type="checkbox"] {
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-c8ad9e5dbd60b7b70b38521ab19b7da4.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-7ffecba3d65d0ceb76f4c7db622b63c9.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-1ee360906b6d3a8f8997a20d502c176f.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-ee646ce384f049f4eccff96e17073bcf.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <link href="../../site_libs/quarto-contrib/fontawesome6-1.2.0/all.min.css" rel="stylesheet">
 <link href="../../site_libs/quarto-contrib/fontawesome6-1.2.0/latex-fontsize.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
@@ -71,6 +71,15 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-1GNWFLTF2M"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-1GNWFLTF2M', { 'anonymize_ip': true});
+</script>
 
 <!-- 
 Load Academicons v1: https://jpswalsh.github.io/academicons/
@@ -91,23 +100,22 @@ https://badge.dimensions.ai/
 <script async="" src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
 
 <script type="text/javascript" src="//cdn.plu.mx/widget-popup.js"></script>
+<meta name="quarto:status" content="draft">
 
 
 <link rel="stylesheet" href="../../styles.css">
-<meta property="og:title" content="Migrating from Jekyll &amp; AcademicPages to Quarto – Dr.&nbsp;Jean-Christophe Loiseau">
-<meta property="og:description" content="Making my life easier">
-<meta property="og:image" content="https://loiseaujc.github.io//files/images/placeholder3.JPG">
+<meta property="og:title" content="Gauss-Seidel: is it really twice as fast as Jacobi? – Dr.&nbsp;Jean-Christophe Loiseau">
+<meta property="og:image" content="https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Fortran_acs_cover.jpeg/250px-Fortran_acs_cover.jpeg">
 <meta property="og:site_name" content="Dr. Jean-Christophe Loiseau">
-<meta name="twitter:title" content="Migrating from Jekyll &amp; AcademicPages to Quarto – Dr.&nbsp;Jean-Christophe Loiseau">
-<meta name="twitter:description" content="Making my life easier">
-<meta name="twitter:image" content="https://loiseaujc.github.io//files/images/placeholder3.JPG">
+<meta name="twitter:title" content="Gauss-Seidel: is it really twice as fast as Jacobi? – Dr.&nbsp;Jean-Christophe Loiseau">
+<meta name="twitter:image" content="https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Fortran_acs_cover.jpeg/250px-Fortran_acs_cover.jpeg">
 <meta name="twitter:card" content="summary_large_image">
 </head>
 
 <body class="nav-fixed quarto-light">
 
 <div id="quarto-search-results"></div>
-  <header id="quarto-header" class="headroom fixed-top">
+  <header id="quarto-header" class="headroom fixed-top"><div id="quarto-draft-alert" class="alert alert-warning"><i class="bi bi-pencil-square"></i>Draft</div>
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
@@ -223,7 +231,19 @@ https://badge.dimensions.ai/
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#summary" id="toc-summary" class="nav-link active" data-scroll-target="#summary">Summary</a></li>
+  <li><a href="#solving-a-linear-system-with-the-gauss-seidel-method" id="toc-solving-a-linear-system-with-the-gauss-seidel-method" class="nav-link active" data-scroll-target="#solving-a-linear-system-with-the-gauss-seidel-method">Solving a linear system with the Gauss-Seidel method?</a>
+  <ul class="collapse">
+  <li><a href="#a-brief-overview" id="toc-a-brief-overview" class="nav-link" data-scroll-target="#a-brief-overview">A brief overview</a></li>
+  <li><a href="#fair-enough-but-does-it-actually-converge" id="toc-fair-enough-but-does-it-actually-converge" class="nav-link" data-scroll-target="#fair-enough-but-does-it-actually-converge">Fair enough, but does it actually converge?</a></li>
+  <li><a href="#alright-it-converges.-but-how-fast" id="toc-alright-it-converges.-but-how-fast" class="nav-link" data-scroll-target="#alright-it-converges.-but-how-fast">Alright, it converges. But how fast?</a></li>
+  </ul></li>
+  <li><a href="#the-poissons-equation-on-the-unit-square" id="toc-the-poissons-equation-on-the-unit-square" class="nav-link" data-scroll-target="#the-poissons-equation-on-the-unit-square">The Poisson’s equation on the unit square</a></li>
+  <li><a href="#let-fortran-shine" id="toc-let-fortran-shine" class="nav-link" data-scroll-target="#let-fortran-shine">Let <code>Fortran</code> shine!</a>
+  <ul class="collapse">
+  <li><a href="#baseline-implementation" id="toc-baseline-implementation" class="nav-link" data-scroll-target="#baseline-implementation">Baseline implementation</a></li>
+  <li><a href="#redblack-coloring" id="toc-redblack-coloring" class="nav-link" data-scroll-target="#redblack-coloring">Red/Black coloring</a></li>
+  <li><a href="#multithreaded-performances" id="toc-multithreaded-performances" class="nav-link" data-scroll-target="#multithreaded-performances">Multithreaded performances</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -232,10 +252,9 @@ https://badge.dimensions.ai/
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Migrating from Jekyll &amp; AcademicPages to Quarto</h1>
-<p class="subtitle lead">Making my life easier</p>
+<h1 class="title">Gauss-Seidel: is it really twice as fast as Jacobi?</h1>
   <div class="quarto-categories">
-    <div class="quarto-category">news</div>
+    <div class="quarto-category">blog</div>
   </div>
   </div>
 
@@ -253,7 +272,7 @@ https://badge.dimensions.ai/
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">September 9, 2025</p>
+      <p class="date">November 3, 2025</p>
     </div>
   </div>
   
@@ -265,9 +284,31 @@ https://badge.dimensions.ai/
 </header>
 
 
-<section id="summary" class="level2">
-<h2 class="anchored" data-anchor-id="summary">Summary</h2>
-<p>About the news</p>
+<section id="solving-a-linear-system-with-the-gauss-seidel-method" class="level2">
+<h2 class="anchored" data-anchor-id="solving-a-linear-system-with-the-gauss-seidel-method">Solving a linear system with the Gauss-Seidel method?</h2>
+<section id="a-brief-overview" class="level3">
+<h3 class="anchored" data-anchor-id="a-brief-overview">A brief overview</h3>
+</section>
+<section id="fair-enough-but-does-it-actually-converge" class="level3">
+<h3 class="anchored" data-anchor-id="fair-enough-but-does-it-actually-converge">Fair enough, but does it actually converge?</h3>
+</section>
+<section id="alright-it-converges.-but-how-fast" class="level3">
+<h3 class="anchored" data-anchor-id="alright-it-converges.-but-how-fast">Alright, it converges. But how fast?</h3>
+</section>
+</section>
+<section id="the-poissons-equation-on-the-unit-square" class="level2">
+<h2 class="anchored" data-anchor-id="the-poissons-equation-on-the-unit-square">The Poisson’s equation on the unit square</h2>
+</section>
+<section id="let-fortran-shine" class="level2">
+<h2 class="anchored" data-anchor-id="let-fortran-shine">Let <code>Fortran</code> shine!</h2>
+<section id="baseline-implementation" class="level3">
+<h3 class="anchored" data-anchor-id="baseline-implementation">Baseline implementation</h3>
+</section>
+<section id="redblack-coloring" class="level3">
+<h3 class="anchored" data-anchor-id="redblack-coloring">Red/Black coloring</h3>
+</section>
+<section id="multithreaded-performances" class="level3">
+<h3 class="anchored" data-anchor-id="multithreaded-performances">Multithreaded performances</h3>
 <!--Include social share buttons-->
 <!-- 
 AddToAny check more: https://www.addtoany.com/buttons/for/website 
@@ -280,6 +321,7 @@ https://quarto.org/docs/authoring/includes.html
 <script async="" src="https://static.addtoany.com/menu/page.js"></script>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->
@@ -687,6 +729,35 @@ https://quarto.org/docs/authoring/includes.html
     }
   });
   </script>
+<input type="hidden" id="giscus-base-theme" value="light">
+<input type="hidden" id="giscus-alt-theme" value="dark">
+<script>
+  function loadGiscus() {
+    // Function to get the theme based on body class
+    const getTheme = () => {
+      let baseTheme = document.getElementById('giscus-base-theme').value;
+      let altTheme = document.getElementById('giscus-alt-theme').value;
+      return document.body.classList.contains('quarto-dark') ? altTheme : baseTheme;
+    };
+    const script = document.createElement("script");
+    script.src = "https://giscus.app/client.js";
+    script.async = true;
+    script.dataset.repo = "loiseaujc/loiseaujc.github.io";
+    script.dataset.repoId = "R_kgDOPsMNvw";
+    script.dataset.category = "General";
+    script.dataset.categoryId = "DIC_kwDOPsMNv84CvT6M";
+    script.dataset.mapping = "title";
+    script.dataset.reactionsEnabled = "1";
+    script.dataset.emitMetadata = "0";
+    script.dataset.inputPosition = "top";
+    script.dataset.theme = getTheme();
+    script.dataset.lang = "en";
+    script.crossOrigin = "anonymous";
+    // Append the script to the desired div instead of at the end of the body
+    document.getElementById("quarto-content").appendChild(script);
+  }
+  loadGiscus();
+</script>
 </div> <!-- /content -->
 <footer class="footer">
   <div class="nav-footer">

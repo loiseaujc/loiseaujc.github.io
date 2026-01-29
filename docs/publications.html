@@ -72,6 +72,15 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-1GNWFLTF2M"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-1GNWFLTF2M', { 'anonymize_ip': true});
+</script>
 
 <!-- 
 Load Academicons v1: https://jpswalsh.github.io/academicons/
@@ -266,7 +275,7 @@ https://badge.dimensions.ai/
 <script type="text/javascript" src="//cdn.plu.mx/widget-popup.js"></script>
 <!-- ![](https://drganghe.github.io/files/images/highly-cited-paper-badge.png "ESI Highly Cited Paper"){width=20 fig-alt="Highly cited paper"} ESI [Highly Cited Paper](https://webofscience.help.clarivate.com/en-us/Content/esi-highly-cited-papers.html) (top 1%); ![](https://drganghe.github.io/files/images/hot-paper-badge.png "ESI Hot Paper"){width=20 fig-alt="Hot paper"} ESI [Hot Paper](https://webofscience.help.clarivate.com/en-us/Content/esi-hot-papers.html) (top 0.1%)  -->
 <table class="table">
-<caption>Total citations as of September 2025 from <a href="https://scholar.google.com/citations?user=4rvzkMEAAAAJ&amp;hl=en">Google Scholar</a> <i class="ai  ai-google-scholar ai-xl" style="color:black"></i></caption>
+<caption>Total citations as of January 2026 from <a href="https://scholar.google.com/citations?user=4rvzkMEAAAAJ&amp;hl=en">Google Scholar</a> <i class="ai  ai-google-scholar ai-xl" style="color:black"></i></caption>
 <thead>
 <tr class="header">
 <th style="text-align: center;">Citations</th>
@@ -276,9 +285,9 @@ https://badge.dimensions.ai/
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: center;">2229</td>
-<td style="text-align: center;">20</td>
-<td style="text-align: center;">26</td>
+<td style="text-align: center;">2467</td>
+<td style="text-align: center;">21</td>
+<td style="text-align: center;">27</td>
 </tr>
 </tbody>
 </table>
@@ -286,6 +295,13 @@ https://badge.dimensions.ai/
 <p><u><em>Notes</em></u> : * corresponding author; <sup>GS</sup> graduate student advisee; <sup>VS</sup> visiting scholar.</p>
 <hr>
 <hr>
+J. S. Kern, R. S. Frantz, and <strong>J.-Ch. Loiseau</strong> (2026). <code>LightKrylov</code> : Lightweight implementation of Krylov subspace techniques in modern Fortran. <em>Journal of Open Source Software</em>, 11(117), 9623. [<a href="https://joss.theoj.org/papers/10.21105/joss.09623">PDF</a>] <span class="__dimensions_badge_embed__" data-doi="10.21105/joss.09623" data-style="large_rectangle"></span>
+<div class="altmetric-embed" data-badge-popover="right" data-badge-type="1" data-doi="10.21105/joss.09623" data-hide-no-mentions="true">
+
+</div>
+<center>
+<hr style="width:50%">
+</center>
 R. A. S. Frantz<sup>GS</sup>*, C. Mimeau, M. Salihoglu<sup>GS</sup>, <strong>J.-Ch. Loiseau</strong>, &amp; J.-Ch. Robinet (2025). Bifurcation sequence in the wakes of a sphere and a cube. <em>Journal of Fluid Mechanics</em>, vol.&nbsp;1018. [<a href="https://www.cambridge.org/core/journals/journal-of-fluid-mechanics/article/bifurcation-sequence-in-the-wakes-of-a-sphere-and-a-cube/FD3454216F8CDCD9F6CCDA3ECCB78EBA">PDF</a>] <span class="__dimensions_badge_embed__" data-doi="10.1017/jfm.2025.10469" data-style="large_rectangle"></span>
 <div class="altmetric-embed" data-badge-popover="right" data-badge-type="1" data-doi="10.1017/jfm.2025.10469" data-hide-no-mentions="true">
 
@@ -896,6 +912,35 @@ https://quarto.org/docs/authoring/includes.html
     }
   });
   </script>
+<input type="hidden" id="giscus-base-theme" value="light">
+<input type="hidden" id="giscus-alt-theme" value="dark">
+<script>
+  function loadGiscus() {
+    // Function to get the theme based on body class
+    const getTheme = () => {
+      let baseTheme = document.getElementById('giscus-base-theme').value;
+      let altTheme = document.getElementById('giscus-alt-theme').value;
+      return document.body.classList.contains('quarto-dark') ? altTheme : baseTheme;
+    };
+    const script = document.createElement("script");
+    script.src = "https://giscus.app/client.js";
+    script.async = true;
+    script.dataset.repo = "loiseaujc/loiseaujc.github.io";
+    script.dataset.repoId = "R_kgDOPsMNvw";
+    script.dataset.category = "General";
+    script.dataset.categoryId = "DIC_kwDOPsMNv84CvT6M";
+    script.dataset.mapping = "title";
+    script.dataset.reactionsEnabled = "1";
+    script.dataset.emitMetadata = "0";
+    script.dataset.inputPosition = "top";
+    script.dataset.theme = getTheme();
+    script.dataset.lang = "en";
+    script.crossOrigin = "anonymous";
+    // Append the script to the desired div instead of at the end of the body
+    document.getElementById("quarto-content").appendChild(script);
+  }
+  loadGiscus();
+</script>
 </div> <!-- /content -->
 <footer class="footer">
   <div class="nav-footer">

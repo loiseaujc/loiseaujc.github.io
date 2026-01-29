@@ -1,0 +1,35 @@
+```
+function solve(r as Array2D<of Float>, b as Array<of Float>) returns Array<of Float>
+  let n be r.columns()
+  variable x set to new Array<of Float>(n, 0.0)
+  for i from n - 1 to 0 step -1
+    set x to x.withPut(i, b[i])
+    for j from n - 1 to i + 1 step -1
+      set x to x.withPut(i, x[i] - r[j, i]*x[j])
+    end for
+    set x to x.withPut(i, x[i]/r[i, i])
+  end for
+  return x
+end function
+
+main
+  let n be 3
+  variable r set to new Array2D<of Float>(n, n, 0.0)
+  variable b set to new Array<of Float>(n, 0.0)
+  # Enter the matrix R.
+  call r.put(0, 0, 1.0)
+  call r.put(1, 0, -2.0)
+  call r.put(2, 0, 1.0)
+  call r.put(1, 1, 1.0)
+  call r.put(2, 1, 6.0)
+  call r.put(2, 2, 1.0)
+  print r
+  # Enter the right-hand side vector b.
+  call b.put(0, 4.0)
+  call b.put(1, -1.0)
+  call b.put(2, 2.0)
+  print b
+  # Solve the linear system
+  print solve(r, b)
+end main
+```

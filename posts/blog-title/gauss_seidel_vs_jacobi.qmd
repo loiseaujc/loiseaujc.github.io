@@ -1,0 +1,31 @@
+---
+title: "Gauss-Seidel: is it really twice as fast as Jacobi?"
+author: "Jean-Christophe Loiseau"
+date: "2025-11-03"
+categories: [blog]
+image : "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Fortran_acs_cover.jpeg/250px-Fortran_acs_cover.jpeg"
+#css: /custom.css
+draft: true
+format: html
+---
+
+## Solving a linear system with the Gauss-Seidel method?
+
+### A brief overview
+
+### Fair enough, but does it actually converge?
+
+### Alright, it converges. But how fast?
+
+## The Poisson's equation on the unit square
+
+## Let `Fortran` shine!
+
+### Baseline implementation
+
+### Red/Black coloring
+
+### Multithreaded performances
+
+<!--Include social share buttons-->
+{{< include /files/includes/_socialshare.qmd >}}
