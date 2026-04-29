@@ -1,0 +1,26 @@
+[
+  {
+    "listing": "/people.html",
+    "items": []
+  },
+  {
+    "listing": "/posts.html",
+    "items": [
+      "/posts/news-title/ensam_podcast.html",
+      "/posts/blog-title/jacobi_experiments.html",
+      "/posts/blog-title/fortran_vs_python.html"
+    ]
+  },
+  {
+    "listing": "/projects.html",
+    "items": []
+  },
+  {
+    "listing": "/index.html",
+    "items": [
+      "/posts/news-title/ensam_podcast.html",
+      "/posts/blog-title/jacobi_experiments.html",
+      "/posts/blog-title/fortran_vs_python.html"
+    ]
+  }
+]
