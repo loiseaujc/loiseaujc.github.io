@@ -53,13 +53,6 @@ listing:   # Comment the listing section and delete corresponding lines in the i
 
 :::{#hero-heading}
 
-
-:::{.callout-warning}
-Site still under construction. Bare with me.
-:::
-
-## Bio
-
 I'm an Assitant Professor of applied mathematics and fluid dynamics at [Arts et Métiers Institute of Technology](https://artsetmetiers.fr/en) (Paris, France).
 I split my time between teaching to (mechanical) engineering students and doing research on topics such as transition to turbulence, flow control and data-driven modelling.
 
