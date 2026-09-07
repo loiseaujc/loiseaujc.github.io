@@ -60,6 +60,8 @@ On this site I keep a list of [my publications](posts.qmd#category=paper), the [
 
 ## Selected Projects
 
+{{< fa brands python size=1xl >}} [`HydroGym`](https://github.com/dynamicslab/hydrogym) -- Standardized environments for benchmarking reinforcement learning for flow control.
+
 {{< fa brands python size=1xl >}} [`PySINDy`](https://github.com/dynamicslab/pysindy) -- Sparse identification of nonlinear dynamical systems from data.
 
 ![](https://fortran-lang.org/_static/fortran-logo-256x256.png){width=1em} [`LightKrylov`](https://github.com/nekStab/LightKrylov) -- Implementation of Krylov methods in modern Fortran.

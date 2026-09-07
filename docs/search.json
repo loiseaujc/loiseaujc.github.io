@@ -214,7 +214,7 @@
     "href": "index.html",
     "title": "Jean-Christophe Loiseau, PhD",
     "section": "",
-    "text": "E-mail\n  \n  \n    \n     GitHub\n  \n  \n    \n     LinkedIn\n  \n  \n      ORCID\n  \n  \n      Google Scholar\n  \n  \n      Research Gate\n  \n\n  \n  \nI’m an Assitant Professor of applied mathematics and fluid dynamics at Arts et Métiers Institute of Technology (Paris, France). I split my time between teaching to (mechanical) engineering students and doing research on topics such as transition to turbulence, flow control and data-driven modelling.\nOn this site I keep a list of my publications, the courses I teach, the open-source softwares I develop or contribute to, as well as a technical blog.\n\n\n PySINDy – Sparse identification of nonlinear dynamical systems from data.\n LightKrylov – Implementation of Krylov methods in modern Fortran.\n LightConvex – Convex programming in modern Fortran.\n stdlib – Community-driven development of a standard library for Fortran."
+    "text": "E-mail\n  \n  \n    \n     GitHub\n  \n  \n    \n     LinkedIn\n  \n  \n      ORCID\n  \n  \n      Google Scholar\n  \n  \n      Research Gate\n  \n\n  \n  \nI’m an Assitant Professor of applied mathematics and fluid dynamics at Arts et Métiers Institute of Technology (Paris, France). I split my time between teaching to (mechanical) engineering students and doing research on topics such as transition to turbulence, flow control and data-driven modelling.\nOn this site I keep a list of my publications, the courses I teach, the open-source softwares I develop or contribute to, as well as a technical blog.\n\n\n HydroGym – Standardized environments for benchmarking reinforcement learning for flow control.\n PySINDy – Sparse identification of nonlinear dynamical systems from data.\n LightKrylov – Implementation of Krylov methods in modern Fortran.\n LightConvex – Convex programming in modern Fortran.\n stdlib – Community-driven development of a standard library for Fortran."
   },
   {
     "objectID": "index.html#bio",
@@ -228,7 +228,7 @@
     "href": "index.html#selected-projects",
     "title": "Jean-Christophe Loiseau, PhD",
     "section": "",
-    "text": "PySINDy – Sparse identification of nonlinear dynamical systems from data.\n LightKrylov – Implementation of Krylov methods in modern Fortran.\n LightConvex – Convex programming in modern Fortran.\n stdlib – Community-driven development of a standard library for Fortran."
+    "text": "HydroGym – Standardized environments for benchmarking reinforcement learning for flow control.\n PySINDy – Sparse identification of nonlinear dynamical systems from data.\n LightKrylov – Implementation of Krylov methods in modern Fortran.\n LightConvex – Convex programming in modern Fortran.\n stdlib – Community-driven development of a standard library for Fortran."
   },
   {
     "objectID": "index.html#recent-posts",
