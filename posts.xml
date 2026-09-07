@@ -15,39 +15,7 @@
 <link>https://loiseaujc.github.io/posts.html</link>
 </image>
 <generator>quarto-1.7.34</generator>
-<lastBuildDate>Tue, 28 Apr 2026 22:00:00 GMT</lastBuildDate>
-<item>
-  <title>Podcast: Paroles d’Arts et Métiers</title>
-  <dc:creator>Jean-Christophe Loiseau</dc:creator>
-  <link>https://loiseaujc.github.io/posts/news-title/ensam_podcast.html</link>
-  <description><![CDATA[ 
-
-
-
-
-<center>
-<hr width="50%" hr="">
-</center>
-<p><img src="https://s3-site.artsetmetiers.fr/public/inline-images/Pr%C3%A9sentation%20Podcast%20-%20Paroles%20d%27Arts%20et%20M%C3%A9tiers.jpg" class="img-fluid" style="width:100.0%"></p>
-<!--Include social share buttons-->
-<!-- 
-AddToAny check more: https://www.addtoany.com/buttons/for/website 
-Using includes will make edits easier, will only need to add or remove button here if needed.
-https://quarto.org/docs/authoring/includes.html
--->
-<div class="a2a_kit a2a_kit_size_32 a2a_default_style">
-<p><a class="a2a_dd" href="https://www.addtoany.com/share"></a> <a class="a2a_button_linkedin"></a> <a class="a2a_button_bluesky"></a> <a class="a2a_button_facebook"></a> <a class="a2a_button_copy_link"></a> <a class="a2a_button_email"></a></p>
-</div>
-<script async="" src="https://static.addtoany.com/menu/page.js"></script>
-
-
-
- ]]></description>
-  <category>news</category>
-  <guid>https://loiseaujc.github.io/posts/news-title/ensam_podcast.html</guid>
-  <pubDate>Tue, 28 Apr 2026 22:00:00 GMT</pubDate>
-  <media:content url="https://www.startpage.com/av/proxy-image?piurl=https%3A%2F%2Fdp-www.s3.ensam.eu%2Fpublic%2Fstyles%2Fvignette_actu_480_177_%2Fpublic%2F2025-07%2FVignette_Podcast%252019%25201.jpg%3Fitok%3DhLDprzc4&amp;sp=1777455065Te774cf6bfba4e62c51caa2c01c32ed26c4b23ebf457cb346e68e02fc0f4e35cc" medium="image"/>
-</item>
+<lastBuildDate>Mon, 22 Sep 2025 22:00:00 GMT</lastBuildDate>
 <item>
   <title>Jacobi method: From a naïve implementation to a modern Fortran multithreaded one</title>
   <dc:creator>Jean-Christophe Loiseau</dc:creator>
