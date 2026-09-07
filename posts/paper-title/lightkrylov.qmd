@@ -8,7 +8,7 @@ author:
   - name: Jean-Christophe Loiseau
 date: "2026-01-29"
 categories: [paper]
-image: "https://upload.wikimedia.org/wikipedia/commons/e/e1/Alexey_Krylov_1910s.JPG?utm_source=fr.wikipedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled"
+image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQTcztYR1fxZqI2zk6pNGRiiR7Q-FIJCIStOg2TwQh0FA&s"
 citation:
   type: article-journal
   container-title: "Journal of Open Source Software"

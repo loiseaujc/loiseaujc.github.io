@@ -17,7 +17,7 @@ author:
   - name: Steven L. Brunton
 date: "2022-01-29"
 categories: [paper]
-image: "https://www.researchgate.net/publication/347692023/figure/fig3/AS:974707545341954@1609399796608/Schematic-of-the-sparse-identification-of-nonlinear-dynamics-SINDy-algorithm-25-as.png"
+image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQTcztYR1fxZqI2zk6pNGRiiR7Q-FIJCIStOg2TwQh0FA&s"
 citation:
   type: article-journal
   container-title: "Journal of Open Source Software"

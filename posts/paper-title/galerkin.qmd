@@ -7,7 +7,7 @@ author:
   - name: Steven L. Brunton
 date: "2018-01-10"
 categories: [paper]
-image: "https://static.cambridge.org/covers/FLM_0_0_0/journal-of-fluid-mechanics.jpg"
+image: "https://static.cambridge.org/covers/FLM_0_838_0/cover.jpg?send-default-cover=false"
 citation:
   type: article-journal
   container-title: "Journal of Fluid Mechanics"
