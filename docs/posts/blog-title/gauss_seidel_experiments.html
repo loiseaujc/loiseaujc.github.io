@@ -7,9 +7,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Dr.&nbsp;Jean-Christophe Loiseau">
+<meta name="dcterms.date" content="2025-09-23">
 <meta name="description" content="Quarto Academic Website Template adapted by Dr.&nbsp;Gang He">
 
-<title>Jean-Christophe Loiseau, PhD – Dr.&nbsp;Jean-Christophe Loiseau</title>
+<title>Gauss-Seidel is faster than Jacobi. Or is it? – Dr.&nbsp;Jean-Christophe Loiseau</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -25,28 +26,25 @@ ul.task-list li input[type="checkbox"] {
 </style>
 
 
-<script src="site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="site_libs/quarto-nav/headroom.min.js"></script>
-<script src="site_libs/clipboard/clipboard.min.js"></script>
-<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="site_libs/quarto-search/fuse.min.js"></script>
-<script src="site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="./">
-<script src="site_libs/quarto-listing/list.min.js"></script>
-<script src="site_libs/quarto-listing/quarto-listing.js"></script>
-<script src="site_libs/quarto-html/quarto.js" type="module"></script>
-<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="site_libs/quarto-html/popper.min.js"></script>
-<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
-<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-7ffecba3d65d0ceb76f4c7db622b63c9.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-ee646ce384f049f4eccff96e17073bcf.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
-<link href="site_libs/quarto-contrib/fontawesome6-1.2.0/all.min.css" rel="stylesheet">
-<link href="site_libs/quarto-contrib/fontawesome6-1.2.0/latex-fontsize.css" rel="stylesheet">
-<link href="site_libs/quarto-contrib/academicons-1.9.2/all.css" rel="stylesheet">
-<link href="site_libs/quarto-contrib/academicons-1.9.2/size.css" rel="stylesheet">
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-7ffecba3d65d0ceb76f4c7db622b63c9.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-ee646ce384f049f4eccff96e17073bcf.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/quarto-contrib/fontawesome6-1.2.0/all.min.css" rel="stylesheet">
+<link href="../../site_libs/quarto-contrib/fontawesome6-1.2.0/latex-fontsize.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -73,35 +71,6 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
-<script>
-
-  window.document.addEventListener("DOMContentLoaded", function (_event) {
-    const listingTargetEl = window.document.querySelector('#listing-recent-posts .list');
-    if (!listingTargetEl) {
-      // No listing discovered, do not attach.
-      return; 
-    }
-
-    const options = {
-      valueNames: ['listing-image','listing-date','listing-title','listing-subtitle',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
-      
-      searchColumns: ["listing-title","listing-author","listing-date","listing-image","listing-description"],
-    };
-
-    window['quarto-listings'] = window['quarto-listings'] || {};
-    window['quarto-listings']['listing-recent-posts'] = new List('listing-recent-posts', options);
-
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  });
-
-  window.addEventListener('hashchange',() => {
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  })
-  </script>
 <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-1GNWFLTF2M"></script>
 
 <script type="text/javascript">
@@ -131,6 +100,7 @@ https://badge.dimensions.ai/
 <script async="" src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
 
 <script type="text/javascript" src="//cdn.plu.mx/widget-popup.js"></script>
+<meta name="quarto:status" content="draft">
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
@@ -162,25 +132,25 @@ window.Quarto = {
 };
 </script>
 
-<link rel="stylesheet" href="styles.css">
-<meta property="og:title" content="Jean-Christophe Loiseau, PhD – Dr.&nbsp;Jean-Christophe Loiseau">
+<link rel="stylesheet" href="../../styles.css">
+<meta property="og:title" content="Gauss-Seidel is faster than Jacobi. Or is it? – Dr.&nbsp;Jean-Christophe Loiseau">
 <meta property="og:description" content="Quarto Academic Website Template adapted by Dr.&nbsp;Gang He">
-<meta property="og:image" content="https://loiseaujc.github.io/files/images/profile_pic.jpg">
+<meta property="og:image" content="https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Fortran_acs_cover.jpeg/250px-Fortran_acs_cover.jpeg">
 <meta property="og:site_name" content="Dr. Jean-Christophe Loiseau">
-<meta name="twitter:title" content="Jean-Christophe Loiseau, PhD – Dr.&nbsp;Jean-Christophe Loiseau">
+<meta name="twitter:title" content="Gauss-Seidel is faster than Jacobi. Or is it? – Dr.&nbsp;Jean-Christophe Loiseau">
 <meta name="twitter:description" content="Quarto Academic Website Template adapted by Dr.&nbsp;Gang He">
-<meta name="twitter:image" content="https://loiseaujc.github.io/files/images/profile_pic.jpg">
+<meta name="twitter:image" content="https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Fortran_acs_cover.jpeg/250px-Fortran_acs_cover.jpeg">
 <meta name="twitter:card" content="summary_large_image">
 </head>
 
 <body class="nav-fixed quarto-light">
 
 <div id="quarto-search-results"></div>
-  <header id="quarto-header" class="headroom fixed-top">
+  <header id="quarto-header" class="headroom fixed-top"><div id="quarto-draft-alert" class="alert alert-warning"><i class="bi bi-pencil-square"></i>Draft</div>
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
-    <a class="navbar-brand" href="./index.html">
+    <a class="navbar-brand" href="../../index.html">
     <span class="navbar-title">Dr.&nbsp;Jean-Christophe Loiseau</span>
     </a>
   </div>
@@ -196,15 +166,15 @@ window.Quarto = {
     </a>
     <ul class="dropdown-menu" aria-labelledby="nav-menu-about">    
         <li>
-    <a class="dropdown-item" href="./posts.html#category=news">
+    <a class="dropdown-item" href="../../posts.html#category=news">
  <span class="dropdown-text">News</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="./posts.html#category=event">
+    <a class="dropdown-item" href="../../posts.html#category=event">
  <span class="dropdown-text">Events</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="./contact.html">
+    <a class="dropdown-item" href="../../contact.html">
  <span class="dropdown-text">Contact</span></a>
   </li>  
     </ul>
@@ -215,21 +185,21 @@ window.Quarto = {
     </a>
     <ul class="dropdown-menu" aria-labelledby="nav-menu-research">    
         <li>
-    <a class="dropdown-item" href="./publications.html">
+    <a class="dropdown-item" href="../../publications.html">
  <span class="dropdown-text">List of Publications</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="./posts.html#category=paper">
+    <a class="dropdown-item" href="../../posts.html#category=paper">
  <span class="dropdown-text">Selected Papers</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="./projects.html">
+    <a class="dropdown-item" href="../../projects.html">
  <span class="dropdown-text">Grants</span></a>
   </li>  
     </ul>
   </li>
   <li class="nav-item">
-    <a class="nav-link" href="./teaching.html"> 
+    <a class="nav-link" href="../../teaching.html"> 
 <span class="menu-text">Teaching</span></a>
   </li>  
   <li class="nav-item dropdown ">
@@ -238,23 +208,23 @@ window.Quarto = {
     </a>
     <ul class="dropdown-menu" aria-labelledby="nav-menu-outreach">    
         <li>
-    <a class="dropdown-item" href="./posts.html#category=presentation">
+    <a class="dropdown-item" href="../../posts.html#category=presentation">
  <span class="dropdown-text">Presentations</span></a>
   </li>  
     </ul>
   </li>
   <li class="nav-item">
-    <a class="nav-link" href="./people.html"> 
+    <a class="nav-link" href="../../people.html"> 
 <span class="menu-text">Group</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./posts.html#category=blog"> 
+    <a class="nav-link" href="../../posts.html#category=blog"> 
 <span class="menu-text">Blog</span></a>
   </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item">
-    <a class="nav-link" href="./files/nsf-biosketch.pdf"> 
+    <a class="nav-link" href="../../files/nsf-biosketch.pdf"> 
 <span class="menu-text">CV</span></a>
   </li>  
   <li class="nav-item compact">
@@ -267,7 +237,7 @@ window.Quarto = {
 <span class="menu-text"><i class="fa-brands fa-bluesky" aria-label="bluesky"></i></span></a>
   </li>  
   <li class="nav-item compact">
-    <a class="nav-link" href="./posts.xml" target="_blank"> <i class="bi bi-rss" role="img">
+    <a class="nav-link" href="../../posts.xml" target="_blank"> <i class="bi bi-rss" role="img">
 </i> 
 <span class="menu-text"></span></a>
   </li>  
@@ -284,130 +254,142 @@ window.Quarto = {
     </nav>
 </header>
 <!-- content -->
-<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#solving-the-2d-poisson-equation-with-the-gauss-seidel-method" id="toc-solving-the-2d-poisson-equation-with-the-gauss-seidel-method" class="nav-link active" data-scroll-target="#solving-the-2d-poisson-equation-with-the-gauss-seidel-method">Solving the 2D Poisson equation with the Gauss-Seidel method</a>
+  <ul class="collapse">
+  <li><a href="#a-brief-overview" id="toc-a-brief-overview" class="nav-link" data-scroll-target="#a-brief-overview">A brief overview</a></li>
+  <li><a href="#fair-enough-but-does-it-actually-converge" id="toc-fair-enough-but-does-it-actually-converge" class="nav-link" data-scroll-target="#fair-enough-but-does-it-actually-converge">Fair enough, but does it actually converge?</a></li>
+  <li><a href="#alright-it-converges.-but-how-fast" id="toc-alright-it-converges.-but-how-fast" class="nav-link" data-scroll-target="#alright-it-converges.-but-how-fast">Alright, it converges. But how fast?</a></li>
+  </ul></li>
+  <li><a href="#numerical-experiments-with-fortran" id="toc-numerical-experiments-with-fortran" class="nav-link" data-scroll-target="#numerical-experiments-with-fortran">Numerical experiments with <code>Fortran</code></a></li>
+  <li><a href="#what-did-go-wrong" id="toc-what-did-go-wrong" class="nav-link" data-scroll-target="#what-did-go-wrong">What did go wrong?</a></li>
+  <li><a href="#can-we-make-things-better" id="toc-can-we-make-things-better" class="nav-link" data-scroll-target="#can-we-make-things-better">Can we make things better?</a></li>
+  <li><a href="#cutting-this-long-story-short" id="toc-cutting-this-long-story-short" class="nav-link" data-scroll-target="#cutting-this-long-story-short">Cutting this long story short</a></li>
+  </ul>
+</nav>
+    </div>
 <!-- main -->
-<main class="content column-page" id="quarto-document-content">
+<main class="content" id="quarto-document-content">
 
-
-
-
-<div class="quarto-about-trestles column-page">
-  <div class="about-entity">
-    <img src="files/images/profile_pic.jpg" class="about-image
-  rounded " style="width: 70%;">
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Jean-Christophe Loiseau, PhD</h1>
-</div>
-<div class="quarto-title-meta column-page">
+<h1 class="title">Gauss-Seidel is faster than Jacobi. Or is it?</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">blog</div>
   </div>
+  </div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Jean-Christophe Loiseau </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">September 23, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
 </header>
-    <div class="about-links">
-  <a href="mailto:jean-christophe.loiseau@ensam.eu" class="about-link" rel="" target="">
-    <i class="bi bi-envelope"></i>
-     <span class="about-link-text">E-mail</span>
-  </a>
-  <a href="https://www.github.com/loiseaujc" class="about-link" rel="" target="_blank">
-    <i class="bi bi-github"></i>
-     <span class="about-link-text">GitHub</span>
-  </a>
-  <a href="https://linkedin.com" class="about-link" rel="" target="_blank">
-    <i class="bi bi-linkedin"></i>
-     <span class="about-link-text">LinkedIn</span>
-  </a>
-  <a href="https://orcid.org/0000-0002-7244-8416" class="about-link" rel="" target="_blank">
-     <span class="about-link-text"><i class="ai  ai-orcid"></i> ORCID</span>
-  </a>
-  <a href="https://scholar.google.com/citations?user=4rvzkMEAAAAJ&amp;hl=fr" class="about-link" rel="" target="_blank">
-     <span class="about-link-text"><i class="ai  ai-google-scholar"></i> Google Scholar</span>
-  </a>
-  <a href="https://www.researchgate.net/profile/Jean-Christophe-Loiseau" class="about-link" rel="" target="_blank">
-     <span class="about-link-text"><i class="ai  ai-researchgate"></i> Research Gate</span>
-  </a>
-</div>
-  </div>
-  <div class="about-contents"><div id="hero-heading">
-<div class="callout callout-style-default callout-warning callout-titled">
+
+
+<p>In a previous <a href="https://loiseaujc.github.io/posts/blog-title/jacobi_experiments.html">post</a>, I went through some details about how one could write an efficient Jacobi solver in modern <code>Fortran</code> to solve the 2D Poisson equation. Justifiably, colleagues and readers mentionned that using the <a href="https://en.wikipedia.org/wiki/Gauss%E2%80%93Seidel_method">Gauss-Seidel method</a> instead should lead to an even faster solver with very minimal modifications to my previous code. So let’s put this to a test.</p>
+<p><strong>TL-DR -</strong> While the Gauss-Seidel method theoretically (and empirically) requires twice as less iterations as the Jacobi method to solve our test problem, it does not necessarilly translate into a solver running twice as fast because of how good compilers are at leveraging modern CPU instructions.</p>
+<section id="solving-the-2d-poisson-equation-with-the-gauss-seidel-method" class="level2">
+<h2 class="anchored" data-anchor-id="solving-the-2d-poisson-equation-with-the-gauss-seidel-method">Solving the 2D Poisson equation with the Gauss-Seidel method</h2>
+<p>Consider a system of linear equations</p>
+<p><span class="math display">\[
+\mathbf{Ax} = \mathbf{b}
+\]</span></p>
+<p>where <span class="math inline">\(\mathbf{A}\)</span> is an invertible <span class="math inline">\(n \times n\)</span> matrix. In the rest of this post, we’ll assume that this problem arises from the finite-difference discretization of the two-dimensional Poisson equation on the unit-square (see <a href="https://loiseaujc.github.io/posts/blog-title/jacobi_experiments.html#discretizing-the-problem">here</a> for more details). If you ever had a numerical linear algebra, the <a href="https://loiseaujc.github.io/posts/blog-title/jacobi_experiments.html">Jacobi method</a> is probably the first <em>iterative method</em> you’ve seen to solve this kind of problems. You may even remember your lecturer telling you that, even though easy to implement and analyse, the Jacobi method can be terribly slow. And this is usually the stepping stone for introducing the <a href="https://en.wikipedia.org/wiki/Gauss%E2%80%93Seidel_method">Gauss-Seidel method</a>.</p>
+<section id="a-brief-overview" class="level3">
+<h3 class="anchored" data-anchor-id="a-brief-overview">A brief overview</h3>
+<p>While the Jacobi method relies on the additive decomposition:</p>
+<p><span class="math display">\[
+\mathbf{A} = \mathbf{D} + \mathbf{R},
+\]</span></p>
+<p>where <span class="math inline">\(\mathbf{D}\)</span> is the diagonal component of <span class="math inline">\(\mathbf{A}\)</span>, and <span class="math inline">\(\mathbf{R}\)</span> the remainder, the Gauss-Seidel method relies on the following decomposition:</p>
+<p><span class="math display">\[
+\mathbf{A} = \mathbf{D} + \mathbf{L} + \mathbf{U}.
+\]</span></p>
+<p>As before <span class="math inline">\(\mathbf{D}\)</span> is the diagonal component of <span class="math inline">\(\mathbf{A}\)</span>, while the matrices <span class="math inline">\(\mathbf{L}\)</span> and <span class="math inline">\(\mathbf{U}\)</span> are its strictly lower and upper triangular parts, respectively. Starting from an initial guess <span class="math inline">\(\mathbf{x}_0\)</span>, the Gauss-Seidel method uses the following recurrence relation</p>
+<p><span class="math display">\[
+    \mathbf{x}_{t+1} = \left( \mathbf{D} + \mathbf{L} \right)^{-1} \left( \mathbf{b} - \mathbf{Ux}_t \right),
+\]</span></p>
+<p>where subscript <span class="math inline">\(t\)</span> is the iteration number. This is in essence very similar to the Jacobi update rule <span class="math inline">\(\mathbf{x}_{t+1} = \mathbf{D}^{-1} \left( \mathbf{b} - \mathbf{Rx}_t \right)\)</span> except that <span class="math inline">\(\left( \mathbf{D} + \mathbf{L} \right)^{-1}\)</span> is a somexwhat better approximation of <span class="math inline">\(\mathbf{A}^{-1}\)</span>. It is thus reasonnable to expect the Gauss-Seidel method to converge faster than the Jacobi one.</p>
+<div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Warning
+Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Site still under construction. Bare with me.</p>
+<p><strong>Practical tip -</strong> Never ever compute <span class="math inline">\(\left( \mathbf{D} + \mathbf{L} \right)^{-1}\)</span>. It is an <span class="math inline">\(n \times n\)</span> matrix and computing its inverse requires <span class="math inline">\(\mathcal{O}(n^3)\)</span> operations, just as expensive as computing <span class="math inline">\(\mathbf{A}^{-1}\)</span> and thus defeating the whole point of iterative methods. Instead, realize that <span class="math inline">\(\mathbf{D} + \mathbf{L}\)</span> is a lower triangular matrix and solve the linear system</p>
+<p><span class="math display">\[
+\left( \mathbf{D} + \mathbf{L} \right) \mathbf{x}_{t+1} = \mathbf{b} - \mathbf{Ux}_t
+\]</span></p>
+<p>using forward substitution instead. In general, it’ll require <span class="math inline">\(\mathcal{O}(n^2)\)</span> operations or even only <span class="math inline">\(\mathcal{O}(n)\)</span> if <span class="math inline">\(\mathbf{A}\)</span> is sparse. This is a substantial speed-up!</p>
 </div>
 </div>
-<section id="bio" class="level2">
-<h2 data-anchor-id="bio">Bio</h2>
-<p>I’m an Assitant Professor of applied mathematics and fluid dynamics at <a href="https://artsetmetiers.fr/en">Arts et Métiers Institute of Technology</a> (Paris, France). I split my time between teaching to (mechanical) engineering students and doing research on topics such as transition to turbulence, flow control and data-driven modelling.</p>
-<p>On this site I keep a list of <a href="./posts.html#category=paper">my publications</a>, the <a href="./teaching.html">courses</a> I teach, the <a href="">open-source softwares</a> I develop or contribute to, as well as a <a href="./posts.html#category=blog">technical blog</a>.</p>
 </section>
-<section id="selected-projects" class="level2">
-<h2 data-anchor-id="selected-projects">Selected Projects</h2>
-<p><i class="fa-brands fa-python fa-1xl" aria-label="python"></i> <a href="https://github.com/dynamicslab/pysindy"><code>PySINDy</code></a> – Sparse identification of nonlinear dynamical systems from data.</p>
-<p><img src="https://fortran-lang.org/_static/fortran-logo-256x256.png" class="img-fluid" style="width:1em"> <a href="https://github.com/nekStab/LightKrylov"><code>LightKrylov</code></a> – Implementation of Krylov methods in modern Fortran.</p>
-<p><img src="https://fortran-lang.org/_static/fortran-logo-256x256.png" class="img-fluid" style="width:1em"> <a href="https://github.com/loiseaujc/LightConvex"><code>LightConvex</code></a> – Convex programming in modern Fortran.</p>
-<p><img src="https://fortran-lang.org/_static/fortran-logo-256x256.png" class="img-fluid" style="width:1em"> <a href="https://github.com/fortran-lang/stdlib"><code>stdlib</code></a> – Community-driven development of a standard library for Fortran.</p>
+<section id="fair-enough-but-does-it-actually-converge" class="level3">
+<h3 class="anchored" data-anchor-id="fair-enough-but-does-it-actually-converge">Fair enough, but does it actually converge?</h3>
+<p>Alright, so Gauss-Seidel is a variation on the theme of Jacobi methods, but does it actually converge as well? As in the previous <a href="https://loiseaujc.github.io/posts/blog-title/jacobi_experiments.html#fair-enough-but-does-it-actually-converge">post</a>, we’ll assume <span class="math inline">\(\mathbf{A}\)</span> is symmetric positive definite. This will give use a sufficient albeit non-necessarry condition but will make things easier.</p>
+<p>Let us begin by rewritting the Gauss-Seidel update rule as</p>
+<p><span class="math display">\[
+\begin{aligned}
+    \mathbf{x}_{t+1} &amp; = \left( \mathbf{D} + \mathbf{L} \right)^{-1} \left( \mathbf{b} - \mathbf{Ux}_t \right) \\
+                    &amp; = \mathbf{x}_t - \left( \mathbf{D} + \mathbf{L} \right)^{-1} \left( \mathbf{Ax}_t - \mathbf{b} \right) \\
+                    &amp; = \left( \mathbf{I} - \left( \mathbf{D} + \mathbf{L} \right)^{-1} \mathbf{A} \right) \mathbf{x}_t + \left( \mathbf{D} + \mathbf{L} \right)^{-1} \mathbf{b}.
+\end{aligned}
+\]</span></p>
+<p>Now, let <span class="math inline">\(\mathbf{x}_{\star}\)</span> be the true solution of the system (i.e.&nbsp;<span class="math inline">\(\mathbf{x}_{\star} = \mathbf{A}^{-1} \mathbf{b}\)</span>), and <span class="math inline">\(\mathbf{e}_t = \mathbf{x}_t - \mathbf{x}_{\star}\)</span> be the error vector. The dynamics of this error vector are governed by</p>
+<p><span class="math display">\[
+    \mathbf{e}_{t+1} = \left( \mathbf{I} - \left( \mathbf{D} + \mathbf{L} \right)^{-1} \mathbf{A} \right) \mathbf{e}_t.
+\]</span></p>
+<p>Obviously, if <span class="math inline">\(\displaystyle \lim_{t \to \infty} \| \mathbf{e}_t \| = 0\)</span> then <span class="math inline">\(\displaystyle \lim_{t \to \infty} \mathbf{x}_t = \mathbf{x}_{\star}\)</span> and the Gauss-Seidel method converges to the true solution. Clearly, this will hold provided the spectral radius of the iteration matrix <span class="math inline">\(\mathbf{I} - \left( \mathbf{D} + \mathbf{L} \right)^{-1} \mathbf{A}\)</span> is less than one. The problem of convergence thus reduces to the question of <em>what are the conditions on <span class="math inline">\(\mathbf{A}\)</span>, <span class="math inline">\(\mathbf{D}\)</span> and <span class="math inline">\(\mathbf{L}\)</span> to guarantee that this spectral radius is less than one?</em></p>
+<blockquote class="blockquote">
+<p><strong>Theorem n°1 –</strong> Convergence of the Gauss-Seidel method</p>
+<p>If <span class="math inline">\(\mathbf{A}\)</span> is symmetric positive definite, the Gauss-Seidel iteration converges to the solution of <span class="math inline">\(\mathbf{Ax} = \mathbf{b}\)</span>.</p>
+</blockquote>
 </section>
-</div></div>
-</div>
-
-<!-- Delete the following section and delete corresponding lines in the yaml part to remove the recent posts -->
-<section id="recent-posts" class="level2">
-<h2 data-anchor-id="recent-posts">Recent Posts</h2>
-<p>Check out the latest &nbsp;<a href="./posts.html#category=paper">Papers</a>&nbsp;, &nbsp;<a href="./posts.html#category=news">News</a>&nbsp;, &nbsp;<a href="./posts.html#category=event">Events</a>&nbsp;, and &nbsp;<a href="./posts.html">More »</a></p>
-<div id="listing-recent-posts" class="quarto-listing quarto-listing-container-grid">
-<div class="list grid quarto-listing-cols-3">
-<div class="g-col-1" data-index="0" data-categories="YmxvZw==" data-listing-date-sort="1758578400000" data-listing-file-modified-sort="1777455680458" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="29" data-listing-word-count-sort="5634">
-<a href="./posts/blog-title/jacobi_experiments.html" class="quarto-grid-link">
-<div class="quarto-grid-item card h-100 card-left">
-<p class="card-img-top">
-<img loading="lazy" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Fortran_acs_cover.jpeg/250px-Fortran_acs_cover.jpeg" class="thumbnail-image card-img" style="height: 150px;">
-</p>
-<div class="card-body post-contents">
-<h5 class="no-anchor card-title listing-title">
-Jacobi method: From a naïve implementation to a modern Fortran multithreaded one
-</h5>
-<div class="card-attribution card-text-small end">
-<div class="listing-date">
-Sep 23, 2025
-</div>
-</div>
-</div>
-</div></a>
-</div>
-<div class="g-col-1" data-index="1" data-categories="YmxvZw==" data-listing-date-sort="1757368800000" data-listing-file-modified-sort="1777455680458" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="24" data-listing-word-count-sort="4724">
-<a href="./posts/blog-title/fortran_vs_python.html" class="quarto-grid-link">
-<div class="quarto-grid-item card h-100 card-left">
-<p class="card-img-top">
-<img loading="lazy" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Fortran_acs_cover.jpeg/250px-Fortran_acs_cover.jpeg" class="thumbnail-image card-img" style="height: 150px;">
-</p>
-<div class="card-body post-contents">
-<h5 class="no-anchor card-title listing-title">
-Is Fortran better than Python for teaching the basics of numerical linear algebra?
-</h5>
-<div class="card-attribution card-text-small end">
-<div class="listing-date">
-Sep 9, 2025
-</div>
-</div>
-</div>
-</div></a>
-</div>
-</div>
-<div class="listing-no-matching d-none">No matching items</div>
-</div>
-<p align="right">
-<a href="./posts.html">All Posts »</a>
-</p>
-
-
+<section id="alright-it-converges.-but-how-fast" class="level3">
+<h3 class="anchored" data-anchor-id="alright-it-converges.-but-how-fast">Alright, it converges. But how fast?</h3>
+</section>
+</section>
+<section id="numerical-experiments-with-fortran" class="level2">
+<h2 class="anchored" data-anchor-id="numerical-experiments-with-fortran">Numerical experiments with <code>Fortran</code></h2>
+</section>
+<section id="what-did-go-wrong" class="level2">
+<h2 class="anchored" data-anchor-id="what-did-go-wrong">What did go wrong?</h2>
+</section>
+<section id="can-we-make-things-better" class="level2">
+<h2 class="anchored" data-anchor-id="can-we-make-things-better">Can we make things better?</h2>
+</section>
+<section id="cutting-this-long-story-short" class="level2">
+<h2 class="anchored" data-anchor-id="cutting-this-long-story-short">Cutting this long story short</h2>
 
 
 </section>
@@ -415,6 +397,13 @@ Sep 9, 2025
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
     const isCodeAnnotation = (el) => {
       for (const clz of el.classList) {
         if (clz.startsWith('code-annotation-')) {                     
@@ -863,7 +852,7 @@ Sep 9, 2025
 </a>
   </li>  
     <li class="nav-item compact">
-    <a class="nav-link" href="./posts.xml" target="_blank">
+    <a class="nav-link" href="../../posts.xml" target="_blank">
       <i class="bi bi-rss" role="img">
 </i> 
     </a>
