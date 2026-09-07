@@ -50,7 +50,7 @@ website:
 
     right: 
       - text: CV
-        href: files/nsf-biosketch.pdf
+        href: files/cv_loiseau.pdf
       - icon: github
         href: https://github.com/loiseaujc
         target: _blank
