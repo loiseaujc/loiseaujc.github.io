@@ -36,6 +36,11 @@ List of publications in reversed chronological order (most recent first). For ea
 
 ---
 
+C. Lagemann, S. Mokbel, M. Gondrum, M. Rüttgers, Y. Wang, P. Suarez, L. Paehler, D. A. Bezgin, A. B. Buhendwa, J. L. Callaham, S. Ahnert, N. Zolman, X. Shao, **J.-Ch. Loiseau**, N. A. Adams, M. Meinke, W. Schröder, K. Lagemann, E. Lagemann, R. Vinuasa, and S. L. Brunton (2026). The HydroGym reinforcement learning platform for fluid dynamics. *Nature*. \[[PDF](https://www.nature.com/articles/s41586-026-10917-6)\]
+<span class="__dimensions_badge_embed__" data-doi="10.1038/s41586-026-10917-6" data-style="large_rectangle"></span> <div data-badge-popover="right" data-badge-type="1" data-doi="10.1038/s41586-026-10917-6" data-hide-no-mentions="true" class="altmetric-embed"></div>
+
+<center><hr style="width:50%"></center>
+
 J. S. Kern, R. S. Frantz, and **J.-Ch. Loiseau** (2026). `LightKrylov` : Lightweight implementation of Krylov subspace techniques in modern Fortran. *Journal of Open Source Software*, 11(117), 9623. \[[PDF](https://joss.theoj.org/papers/10.21105/joss.09623)\]
 <span class="__dimensions_badge_embed__" data-doi="10.21105/joss.09623" data-style="large_rectangle"></span> <div data-badge-popover="right" data-badge-type="1" data-doi="10.21105/joss.09623" data-hide-no-mentions="true" class="altmetric-embed"></div>
 
