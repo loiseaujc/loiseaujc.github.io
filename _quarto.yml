@@ -39,10 +39,10 @@ website:
             href: projects.qmd                                
       - text: Teaching
         href: teaching.qmd
-      - text: Outreach
-        menu:        
-        - text: Presentations
-          href: posts.qmd#category=presentation                   
+      # - text: Outreach
+      #   menu:        
+      #   - text: Presentations
+      #     href: posts.qmd#category=presentation                   
       - text: Group
         href: people.qmd
       - text: Blog
