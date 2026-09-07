@@ -1,0 +1,50 @@
+---
+title: "Investigation of the roughness-induced transition: global stability analyses and direct numerical simulations"
+description: "Solving very large-scale eigenvalue problems for understanding transition to turbulence"
+subtitle: "*Journal of Fluid Mechanics*"
+author: 
+  - name: Jean-Christophe Loiseau
+  - name: Jean-Christophe Robinet
+  - name: Stefania Cherubini
+  - name: Emmanuel Leriche
+date: "2014-11-04"
+categories: [paper]
+image: "https://static.cambridge.org/covers/FLM_0_0_0/journal-of-fluid-mechanics.jpg"
+citation:
+  type: article-journal
+  container-title: "Journal of Fluid Mechanics"
+  doi: "10.1017/jfm.2014.589"
+  available-date: "2014-11-04"
+  issued: "2014-11-10"
+  volume: 760
+  page: 175-211
+  url: https://www.cambridge.org/core/journals/journal-of-fluid-mechanics/article/abs/investigation-of-the-roughnessinduced-transition-global-stability-analyses-and-direct-numerical-simulations
+google-scholar: true
+---
+
+<!--Include academic icons or bottons-->
+
+{{< include /files/includes/_academic.qmd >}}
+
+## Abstract
+
+The linear global instability and resulting transition to turbulence induced by an isolated cylindrical roughness element of height $h$ and diameter $d$ immersed within an incompressible boundary layer flow along a flat plate is investigated using the joint application of direct numerical simulations and fully three-dimensional global stability analyses.
+For the range of parameters investigated, base flow computations show that the roughness element induces a wake composed of a central low-speed region surrounded by a three-dimensional shear layer and a pair of low- and high-speed streaks on each of its sides.
+Results from the global stability analyses highlight the unstable nature of the central low-speed region and its crucial importance in the laminar-turbulent transition process.
+It is able to sustain two different global instabilities: a sinuous and a varicose one.
+Each of these globally unstable modes is related to a different physical mechanism.
+While the varicose mode has its root in the instability of the whole three-dimensional shear layer surrounding the central low-speed region, the sinuous instability turns out to be similar to the von Kàrmàn instability in the two-dimensional cylinder wake and has its root in the lateral shear layers of the separated zone.
+The aspect ratio of the roughness element plays a key role in the selection of the dominant instability: whereas the flow over thin cylindrical roughness elements transitions due to a sinuous instability of the near-wake region, for larger roughness elements the varicose instability of the central low-speed region turns out to be the dominant one.
+Direct numerical simulations of the flow past an aspect ratio $\eta = 1$ roughness element sustaining only the sinuous instability have revealed that the bifurcation occuring in this particular case is supercritical.
+Finally, comparison of the transition thresholds predicted by global linear stability analyses with von Doenhoff-Braslow transition diagram provides qualitatively good agreement.
+
+## Links
+
+Published [paper](https://www.cambridge.org/core/journals/journal-of-fluid-mechanics/article/abs/constrained-sparse-galerkin-regression/0E18A4A55FF5AC1401D236C0E4D1CAAE)
+
+
+```{=html}
+<script type="text/javascript" src="https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js"></script><div class="altmetric-embed" data-badge-popover="right" data-badge-type="donut" data-doi="10.1017/jfm.2014.589"></div>
+
+<span class="__dimensions_badge_embed__" data-doi="10.1017/jfm.2014.589" data-hide-zero-citations="true" data-style="small_circle"></span><script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
+```

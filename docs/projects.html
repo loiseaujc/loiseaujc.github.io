@@ -82,9 +82,9 @@ ul.task-list li input[type="checkbox"] {
     }
 
     const options = {
-      valueNames: ['listing-image','listing-title','listing-author','listing-subtitle','listing-description','listing-funding','listing-started','listing-ended',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-title-sort'] }],
+      valueNames: ['listing-image','listing-title','listing-subtitle','listing-role','listing-funding','listing-started','listing-ended',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-title-sort'] }],
       
-      searchColumns: ["listing-image","listing-title","listing-author","listing-subtitle","listing-description","listing-started","listing-ended","listing-funding"],
+      searchColumns: ["listing-image","listing-title","listing-subtitle","listing-role","listing-started","listing-ended","listing-funding"],
     };
 
     window['quarto-listings'] = window['quarto-listings'] || {};
@@ -164,11 +164,11 @@ window.Quarto = {
 <link rel="stylesheet" href="styles.css">
 <meta property="og:title" content="Projects – Dr.&nbsp;Jean-Christophe Loiseau">
 <meta property="og:description" content="Funded projects">
-<meta property="og:image" content="https://nsf-gov-resources.nsf.gov/styles/featured_content_tablet/s3/2023-10/NSF_Official_logo_Med_Res_600ppi_rectangle.png">
+<meta property="og:image" content="https://quarto.org/quarto.png">
 <meta property="og:site_name" content="Dr. Jean-Christophe Loiseau">
 <meta name="twitter:title" content="Projects – Dr.&nbsp;Jean-Christophe Loiseau">
 <meta name="twitter:description" content="Funded projects">
-<meta name="twitter:image" content="https://nsf-gov-resources.nsf.gov/styles/featured_content_tablet/s3/2023-10/NSF_Official_logo_Med_Res_600ppi_rectangle.png">
+<meta name="twitter:image" content="https://quarto.org/quarto.png">
 <meta name="twitter:card" content="summary_large_image">
 </head>
 
@@ -324,14 +324,11 @@ window.Quarto = {
       <option value="listing-title-sort" data-direction="asc">
         Title
       </option>
-      <option value="listing-author" data-direction="asc">
-        Team
-      </option>
       <option value="listing-subtitle" data-direction="asc">
         Funder
       </option>
-      <option value="listing-description" data-direction="asc">
-        Description
+      <option value="listing-role" data-direction="asc">
+        Role
       </option>
       <option value="listing-started" data-direction="asc">
         Start
@@ -362,15 +359,11 @@ window.Quarto = {
 </th>
 
 <th>
-<a class="sort" data-sort="listing-author" onclick="if (this.classList.contains('sort-asc')) { this.classList.add('sort-desc'); this.classList.remove('sort-asc') } else { this.classList.add('sort-asc'); this.classList.remove('sort-desc')} return false;">Team</a>
-</th>
-
-<th>
 <a class="sort" data-sort="listing-subtitle" onclick="if (this.classList.contains('sort-asc')) { this.classList.add('sort-desc'); this.classList.remove('sort-asc') } else { this.classList.add('sort-asc'); this.classList.remove('sort-desc')} return false;">Funder</a>
 </th>
 
 <th>
-<a class="sort" data-sort="listing-description" onclick="if (this.classList.contains('sort-asc')) { this.classList.add('sort-desc'); this.classList.remove('sort-asc') } else { this.classList.add('sort-asc'); this.classList.remove('sort-desc')} return false;">Description</a>
+<a class="sort" data-sort="listing-role" onclick="if (this.classList.contains('sort-asc')) { this.classList.add('sort-desc'); this.classList.remove('sort-asc') } else { this.classList.add('sort-asc'); this.classList.remove('sort-desc')} return false;">Role</a>
 </th>
 
 <th>
@@ -389,30 +382,77 @@ window.Quarto = {
 </thead>
 <tbody class="list">
 
-<tr data-index="0" data-listing-title-sort="Exploring ">
+<tr data-index="0" data-listing-title-sort="BENEFIT">
 <td>
-<span class="listing-image"><img loading="lazy" src="https://nsf-gov-resources.nsf.gov/styles/featured_content_tablet/s3/2023-10/NSF_Official_logo_Med_Res_600ppi_rectangle.png" style="height: 30px;"></span>
+<span class="listing-image"><img loading="lazy" src="https://umr-merit.ird.fr/storage/2022/03/logo-ANR.png" style="height: 30px;"></span>
 </td>
 <td>
-<a href="https://www.nsf.gov/" class="title listing-title">Exploring </a>
+<a href="https://anr-benefit.github.io/" class="title listing-title">BENEFIT</a>
 </td>
 <td>
-<span class="listing-author">Academic Website</span>
+<span class="listing-subtitle">ANR</span>
 </td>
 <td>
-<span class="listing-subtitle">Funder</span>
+<span class="listing-role">Partner</span>
 </td>
 <td>
-<span class="listing-description">The goal of this project is to investigate .</span>
+<span class="listing-funding">635 000 €</span>
 </td>
 <td>
-<span class="listing-funding">$0</span>
+<span class="listing-started">2026</span>
 </td>
 <td>
-<span class="listing-started">2024</span>
+<span class="listing-ended">2029</span>
+</td>
+
+</tr>
+
+<tr data-index="1" data-listing-title-sort="CONMAN">
+<td>
+<span class="listing-image"><img loading="lazy" src="https://umr-merit.ird.fr/storage/2022/03/logo-ANR.png" style="height: 30px;"></span>
 </td>
 <td>
-<span class="listing-ended">2025</span>
+<a href="https://loiseaujc.github.io/ANR-CONMAN/" class="title listing-title">CONMAN</a>
+</td>
+<td>
+<span class="listing-subtitle">ANR</span>
+</td>
+<td>
+<span class="listing-role">PI</span>
+</td>
+<td>
+<span class="listing-funding">290 000 €</span>
+</td>
+<td>
+<span class="listing-started">2023</span>
+</td>
+<td>
+<span class="listing-ended">2026</span>
+</td>
+
+</tr>
+
+<tr data-index="2" data-listing-title-sort="PERSEUS">
+<td>
+<span class="listing-image"><img loading="lazy" src="https://upload.wikimedia.org/wikipedia/en/thumb/3/34/Clean_Sky_Logo.png/250px-Clean_Sky_Logo.png?utm_source=en.wikipedia.org&amp;utm_campaign=parser&amp;utm_content=thumbnail" style="height: 30px;"></span>
+</td>
+<td>
+<a href="https://perseus.artsetmetiers.fr/home/" class="title listing-title">PERSEUS</a>
+</td>
+<td>
+<span class="listing-subtitle">Clean Sky</span>
+</td>
+<td>
+<span class="listing-role">Partner</span>
+</td>
+<td>
+<span class="listing-funding">x €</span>
+</td>
+<td>
+<span class="listing-started">2020</span>
+</td>
+<td>
+<span class="listing-ended">2023</span>
 </td>
 
 </tr>

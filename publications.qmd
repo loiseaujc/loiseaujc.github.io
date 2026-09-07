@@ -24,9 +24,9 @@ tbl-cap-location: bottom
 
 | Citations | h-index | i-10 index |
 | :---: | :---: | :---: |
-| 2467 | 21 | 27 |
+| 2835 | 23 | 28 |
 
-: Total citations as of January 2026 from [Google Scholar](https://scholar.google.com/citations?user=4rvzkMEAAAAJ&hl=en) {{< ai google-scholar size=xl color=black >}}
+: Total citations as of September 2026 from [Google Scholar](https://scholar.google.com/citations?user=4rvzkMEAAAAJ&hl=en) {{< ai google-scholar size=xl color=black >}}
 
 List of publications in reversed chronological order (most recent first). For each, a link to the journal version is given along with the corresponding arXiv preprint (if not open access).
 

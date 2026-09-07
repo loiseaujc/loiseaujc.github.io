@@ -1,0 +1,46 @@
+---
+title: "LightKrylov: Lightweight implementation of Krylov subspace techniques in modern Fortran"
+description: "Reviving the Fortran Linear Algebra ecosystem"
+subtitle: "*Journal of Open Source Software*"
+author: 
+  - name: J. Simon Kern
+  - name: Ricardo S. Frantz
+  - name: Jean-Christophe Loiseau
+date: "2026-01-29"
+categories: [paper]
+image: "https://upload.wikimedia.org/wikipedia/commons/e/e1/Alexey_Krylov_1910s.JPG?utm_source=fr.wikipedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled"
+citation:
+  type: article-journal
+  container-title: "Journal of Open Source Software"
+  doi: "10.21105/joss.09623"
+  available-date: "2026-01-29"
+  issued: "2026-01-29"
+  volume: 11
+  issue: 117
+  page: 9623
+  url: https://joss.theoj.org/papers/10.21105/joss.09623
+google-scholar: true
+---
+
+<!--Include academic icons or bottons-->
+
+{{< include /files/includes/_academic.qmd >}}
+
+
+## Abstract
+
+Direct solvers for linear algebraic systems scale cubically in the problem's dimension, rapidly becoming intractable for large-scale problems, while sparse factorization may still require quadratic storage du fill-in.
+Krylov techniques avoid these costs by needing only a routine that computes a matrix-vector product, iteratively building a subspace from which the solution is obtained.
+`LightKrylov` is a Fortran package providing a suite of such Krylov methods along with an easy-to-use high level API based on `abstract types`.
+It is primarily intended for applications where the linear operator of interest is only available implicitly via a matrix-vector subroutine and enables users to maximally re-use existing components of their code base (including parallelization), thus requiring a minimal set of changes without sacrificing computational performance.
+
+## Links
+
+Published [paper](https://joss.theoj.org/papers/10.21105/joss.09623)
+
+
+```{=html}
+<script type="text/javascript" src="https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js"></script><div class="altmetric-embed" data-badge-popover="right" data-badge-type="donut" data-doi="10.21105/joss.09623"></div>
+
+<span class="__dimensions_badge_embed__" data-doi="10.21105/joss.09623" data-hide-zero-citations="true" data-style="small_circle"></span><script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
+```

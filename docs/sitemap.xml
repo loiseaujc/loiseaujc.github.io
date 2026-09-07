@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://loiseaujc.github.io/people.html</loc>
-    <lastmod>2026-04-29T09:41:20.458Z</lastmod>
+    <lastmod>2026-09-07T11:53:56.031Z</lastmod>
   </url>
   <url>
     <loc>https://loiseaujc.github.io/posts.html</loc>
@@ -14,11 +14,11 @@
   </url>
   <url>
     <loc>https://loiseaujc.github.io/projects.html</loc>
-    <lastmod>2026-04-29T09:41:20.462Z</lastmod>
+    <lastmod>2026-09-07T12:06:07.802Z</lastmod>
   </url>
   <url>
     <loc>https://loiseaujc.github.io/publications.html</loc>
-    <lastmod>2026-09-07T10:20:35.725Z</lastmod>
+    <lastmod>2026-09-07T13:18:10.116Z</lastmod>
   </url>
   <url>
     <loc>https://loiseaujc.github.io/contact.html</loc>
@@ -35,5 +35,29 @@
   <url>
     <loc>https://loiseaujc.github.io/index.html</loc>
     <lastmod>2026-04-29T09:41:20.458Z</lastmod>
+  </url>
+  <url>
+    <loc>https://loiseaujc.github.io/posts/paper-title/mock.html</loc>
+    <lastmod>2026-09-07T12:15:06.290Z</lastmod>
+  </url>
+  <url>
+    <loc>https://loiseaujc.github.io/posts/paper-title/hydrogym.html</loc>
+    <lastmod>2026-09-07T12:36:22.571Z</lastmod>
+  </url>
+  <url>
+    <loc>https://loiseaujc.github.io/posts/paper-title/lightkrylov.html</loc>
+    <lastmod>2026-09-07T12:46:28.083Z</lastmod>
+  </url>
+  <url>
+    <loc>https://loiseaujc.github.io/posts/paper-title/pysindy.html</loc>
+    <lastmod>2026-09-07T12:54:57.854Z</lastmod>
+  </url>
+  <url>
+    <loc>https://loiseaujc.github.io/posts/paper-title/galerkin.html</loc>
+    <lastmod>2026-09-07T13:09:25.629Z</lastmod>
+  </url>
+  <url>
+    <loc>https://loiseaujc.github.io/posts/paper-title/roughness.html</loc>
+    <lastmod>2026-09-07T13:16:13.685Z</lastmod>
   </url>
 </urlset>

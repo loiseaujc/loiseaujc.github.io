@@ -1,0 +1,17 @@
+---
+title: "Podcast: Paroles d'Arts et Métiers"
+author: "Jean-Christophe Loiseau"
+date: "2026-04-29"
+categories: [news]
+image: "https://www.startpage.com/av/proxy-image?piurl=https%3A%2F%2Fdp-www.s3.ensam.eu%2Fpublic%2Fstyles%2Fvignette_actu_480_177_%2Fpublic%2F2025-07%2FVignette_Podcast%252019%25201.jpg%3Fitok%3DhLDprzc4&sp=1777455065Te774cf6bfba4e62c51caa2c01c32ed26c4b23ebf457cb346e68e02fc0f4e35cc"
+#css: /custom.css
+draft: true
+---
+
+<center><hr width="50%" /hr></center>
+
+![](https://s3-site.artsetmetiers.fr/public/inline-images/Pr%C3%A9sentation%20Podcast%20-%20Paroles%20d%27Arts%20et%20M%C3%A9tiers.jpg){width=100%}
+
+<!--Include social share buttons-->
+
+{{< include /files/includes/_socialshare.qmd >}}

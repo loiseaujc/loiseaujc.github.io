@@ -1,0 +1,111 @@
+---
+title: "Gauss-Seidel is faster than Jacobi. Or is it?"
+author: "Jean-Christophe Loiseau"
+date: "2025-09-23"
+categories: [blog]
+image : "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Fortran_acs_cover.jpeg/250px-Fortran_acs_cover.jpeg"
+#css: /custom.css
+draft: true
+format: html
+---
+
+In a previous [post](https://loiseaujc.github.io/posts/blog-title/jacobi_experiments.html), I went through some details about how one could write an efficient Jacobi solver in modern `Fortran` to solve the 2D Poisson equation.
+Justifiably, colleagues and readers mentionned that using the [Gauss-Seidel method](https://en.wikipedia.org/wiki/Gauss%E2%80%93Seidel_method) instead should lead to an even faster solver with very minimal modifications to my previous code.
+So let's put this to a test.
+
+**TL-DR -** While the Gauss-Seidel method theoretically (and empirically) requires twice as less iterations as the Jacobi method to solve our test problem, it does not necessarilly translate into a solver running twice as fast because of how good compilers are at leveraging modern CPU instructions.
+
+## Solving the 2D Poisson equation with the Gauss-Seidel method
+
+Consider a system of linear equations
+
+$$
+\mathbf{Ax} = \mathbf{b}
+$$
+
+where $\mathbf{A}$ is an invertible $n \times n$ matrix.
+In the rest of this post, we'll assume that this problem arises from the finite-difference discretization of the two-dimensional Poisson equation on the unit-square (see [here](https://loiseaujc.github.io/posts/blog-title/jacobi_experiments.html#discretizing-the-problem) for more details).
+If you ever had a numerical linear algebra, the [Jacobi method](https://loiseaujc.github.io/posts/blog-title/jacobi_experiments.html) is probably the first *iterative method* you've seen to solve this kind of problems.
+You may even remember your lecturer telling you that, even though easy to implement and analyse, the Jacobi method can be terribly slow.
+And this is usually the stepping stone for introducing the [Gauss-Seidel method](https://en.wikipedia.org/wiki/Gauss%E2%80%93Seidel_method).
+
+### A brief overview
+
+While the Jacobi method relies on the additive decomposition:
+
+$$
+\mathbf{A} = \mathbf{D} + \mathbf{R},
+$$
+
+where $\mathbf{D}$ is the diagonal component of $\mathbf{A}$, and $\mathbf{R}$ the remainder, the Gauss-Seidel method relies on the following decomposition:
+
+$$
+\mathbf{A} = \mathbf{D} + \mathbf{L} + \mathbf{U}.
+$$
+
+As before $\mathbf{D}$ is the diagonal component of $\mathbf{A}$, while the matrices $\mathbf{L}$ and $\mathbf{U}$ are its strictly lower and upper triangular parts, respectively.
+Starting from an initial guess $\mathbf{x}_0$, the Gauss-Seidel method uses the following recurrence relation
+
+$$
+    \mathbf{x}_{t+1} = \left( \mathbf{D} + \mathbf{L} \right)^{-1} \left( \mathbf{b} - \mathbf{Ux}_t \right),
+$$
+
+where subscript $t$ is the iteration number.
+This is in essence very similar to the Jacobi update rule $\mathbf{x}_{t+1} = \mathbf{D}^{-1} \left( \mathbf{b} - \mathbf{Rx}_t \right)$ except that $\left( \mathbf{D} + \mathbf{L} \right)^{-1}$ is a somexwhat better approximation of $\mathbf{A}^{-1}$.
+It is thus reasonnable to expect the Gauss-Seidel method to converge faster than the Jacobi one.
+
+:::{.callout-note}
+**Practical tip -** Never ever compute $\left( \mathbf{D} + \mathbf{L} \right)^{-1}$.
+It is an $n \times n$ matrix and computing its inverse requires $\mathcal{O}(n^3)$ operations, just as expensive as computing $\mathbf{A}^{-1}$ and thus defeating the whole point of iterative methods.
+Instead, realize that $\mathbf{D} + \mathbf{L}$ is a lower triangular matrix and solve the linear system
+
+$$
+\left( \mathbf{D} + \mathbf{L} \right) \mathbf{x}_{t+1} = \mathbf{b} - \mathbf{Ux}_t
+$$
+
+using forward substitution instead.
+In general, it'll require $\mathcal{O}(n^2)$ operations or even only $\mathcal{O}(n)$ if $\mathbf{A}$ is sparse.
+This is a substantial speed-up!
+:::
+
+### Fair enough, but does it actually converge?
+
+Alright, so Gauss-Seidel is a variation on the theme of Jacobi methods, but does it actually converge as well?
+As in the previous [post](https://loiseaujc.github.io/posts/blog-title/jacobi_experiments.html#fair-enough-but-does-it-actually-converge), we'll assume $\mathbf{A}$ is symmetric positive definite.
+This will give use a sufficient albeit non-necessarry condition but will make things easier.
+
+Let us begin by rewritting the Gauss-Seidel update rule as
+
+$$
+\begin{aligned}
+    \mathbf{x}_{t+1} & = \left( \mathbf{D} + \mathbf{L} \right)^{-1} \left( \mathbf{b} - \mathbf{Ux}_t \right) \\
+                    & = \mathbf{x}_t - \left( \mathbf{D} + \mathbf{L} \right)^{-1} \left( \mathbf{Ax}_t - \mathbf{b} \right) \\
+                    & = \left( \mathbf{I} - \left( \mathbf{D} + \mathbf{L} \right)^{-1} \mathbf{A} \right) \mathbf{x}_t + \left( \mathbf{D} + \mathbf{L} \right)^{-1} \mathbf{b}.
+\end{aligned}
+$$
+
+Now, let $\mathbf{x}_{\star}$ be the true solution of the system (i.e. $\mathbf{x}_{\star} = \mathbf{A}^{-1} \mathbf{b}$), and $\mathbf{e}_t = \mathbf{x}_t - \mathbf{x}_{\star}$ be the error vector.
+The dynamics of this error vector are governed by
+
+$$
+    \mathbf{e}_{t+1} = \left( \mathbf{I} - \left( \mathbf{D} + \mathbf{L} \right)^{-1} \mathbf{A} \right) \mathbf{e}_t.
+$$
+
+Obviously, if $\displaystyle \lim_{t \to \infty} \| \mathbf{e}_t \| = 0$ then $\displaystyle \lim_{t \to \infty} \mathbf{x}_t = \mathbf{x}_{\star}$ and the Gauss-Seidel method converges to the true solution.
+Clearly, this will hold provided the spectral radius of the iteration matrix $\mathbf{I} - \left( \mathbf{D} + \mathbf{L} \right)^{-1} \mathbf{A}$ is less than one.
+The problem of convergence thus reduces to the question of *what are the conditions on $\mathbf{A}$, $\mathbf{D}$ and $\mathbf{L}$ to guarantee that this spectral radius is less than one?*
+
+> **Theorem n°1 --** Convergence of the Gauss-Seidel method
+>
+> If $\mathbf{A}$ is symmetric positive definite, the Gauss-Seidel iteration converges to the solution of $\mathbf{Ax} = \mathbf{b}$.
+
+
+### Alright, it converges. But how fast?
+
+## Numerical experiments with `Fortran`
+
+## What did go wrong?
+
+## Can we make things better?
+
+## Cutting this long story short

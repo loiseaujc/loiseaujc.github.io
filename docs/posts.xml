@@ -15,7 +15,155 @@
 <link>https://loiseaujc.github.io/posts.html</link>
 </image>
 <generator>quarto-1.7.34</generator>
-<lastBuildDate>Mon, 22 Sep 2025 22:00:00 GMT</lastBuildDate>
+<lastBuildDate>Tue, 18 Aug 2026 22:00:00 GMT</lastBuildDate>
+<item>
+  <title>The HydroGym reinforcement learning platform for fluid dynamics</title>
+  <dc:creator>Christian Lagemann</dc:creator>
+  <dc:creator>Sajeda Mokbel</dc:creator>
+  <dc:creator>Miro Gondrum</dc:creator>
+  <dc:creator>Mario Rüttgers</dc:creator>
+  <dc:creator>Yuning Wang</dc:creator>
+  <dc:creator>Pol Suarez</dc:creator>
+  <dc:creator>Ludger Paehler</dc:creator>
+  <dc:creator>Deniz A. Bezgin</dc:creator>
+  <dc:creator>Aaron B. Buhendwa</dc:creator>
+  <dc:creator>Jared L. Callaham</dc:creator>
+  <dc:creator>Samuel Ahnert</dc:creator>
+  <dc:creator>Nicholas Zolman</dc:creator>
+  <dc:creator>Xiao Shao</dc:creator>
+  <dc:creator>Jean-Christophe Loiseau</dc:creator>
+  <dc:creator>Nikolaus A. Adams</dc:creator>
+  <dc:creator>Matthias Meinke</dc:creator>
+  <dc:creator>Wolgang Schröder</dc:creator>
+  <dc:creator>Kai Lagemann</dc:creator>
+  <dc:creator>Esther Lagemann</dc:creator>
+  <dc:creator>Ricardo Vinuesa</dc:creator>
+  <dc:creator>Steven L. Brunton</dc:creator>
+  <link>https://loiseaujc.github.io/posts/paper-title/hydrogym.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<!--Include academic icons or bottons-->
+<!-- 
+Load Academicons v1: https://jpswalsh.github.io/academicons/
+-->
+<p><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css"></p>
+<p><link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css"></p>
+<!---
+The following code are needed to show dimension citation and altmetrics.
+https://api.altmetric.com/embeds.html
+https://badge.dimensions.ai/
+--->
+<script type="text/javascript" src="https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js"></script>
+<script async="" src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
+<script type="text/javascript" src="//cdn.plu.mx/widget-popup.js"></script>
+<section id="abstract" class="level2">
+<h2 class="anchored" data-anchor-id="abstract">Abstract</h2>
+<p>Effective control of fluid flows is critical across transportation, energy and medicine, where it can increase lift, reduce drag, enhance mixing and attenuate noise. Yet fluids are notoriously difficult to control because they involve high-dimensional, nonlinear and multiscale dynamics that resist conventional approaches. Reinforcement learning has driven remarkable progress in fields such as protein folding and complex games, which have shared benchmarks and standaridized environments. Fluid dynamics has lacked such infrastructure, so each controller is typically tuned to a single geometry and operating condition, making progress difficult to accumulate, transfer and compare. Here we introduce HydroGym, a solver-independent reinforcement learning platform providing more than 60 validated, openly available flow control environments spanning from canonical laminar flows to complex turbulent flows, with systematic progression in the Reynolds number up to <img src="https://latex.codecogs.com/png.latex?Re%20=%204%20%5Ctimes%2010%5E5">, and Mach number variations in two and three dimensions. Across these environments, agents repeatedly discover robust control principles, including boundary layer manipulation, disruption of acoustic feedback and reorganization of turbulent wakes. Critically, we demonstrate a proof of concept of zero-shot transfer, in which agents that are trained exclusively in inexpensive surrogate environments are deployed to challenging real-world scenarios such as three-dimensional wing section. We achieve a 38% reduction in local skin friction while reducing exploration costs by four orders of magnitude compared with direct on-wing optimization. As this transfer exploits shared near-wall physics, the breadth of generalization remains open, suggesting a new pathway for research toward policy generalization across computationally prohibitive simulation environments. By offering a common, extensible foundation for reproducible research, HydroGym moves flow control from isolated case studies toward a cohesive community effort.</p>
+</section>
+<section id="links" class="level2">
+<h2 class="anchored" data-anchor-id="links">Links</h2>
+<p>Published <a href="https://www.nature.com/articles/s41586-026-10917-6">paper</a></p>
+<script type="text/javascript" src="https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js"></script><div class="altmetric-embed" data-badge-popover="right" data-badge-type="donut" data-doi="10.1038/s41586-026-10917-6"></div>
+
+<span class="__dimensions_badge_embed__" data-doi="10.1038/s41586-026-10917-6" data-hide-zero-citations="true" data-style="small_circle"></span><script async="" src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" id="quarto-citation"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@article{lagemann2026,
+  author = {Lagemann, Christian and Mokbel, Sajeda and Gondrum, Miro and
+    Rüttgers, Mario and Wang, Yuning and Suarez, Pol and Paehler, Ludger
+    and A. Bezgin, Deniz and B. Buhendwa, Aaron and L. Callaham, Jared
+    and Ahnert, Samuel and Zolman, Nicholas and Shao, Xiao and Loiseau,
+    Jean-Christophe and A. Adams, Nikolaus and Meinke, Matthias and
+    Schröder, Wolgang and Lagemann, Kai and Lagemann, Esther and
+    Vinuesa, Ricardo and L. Brunton, Steven},
+  title = {The {HydroGym} Reinforcement Learning Platform for Fluid
+    Dynamics},
+  journal = {Nature},
+  date = {2026-08-19},
+  url = {https://www.nature.com/articles/s41586-026-10917-6},
+  doi = {10.1038/s41586-026-10917-6},
+  langid = {en}
+}
+</code></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-lagemann2026" class="csl-entry quarto-appendix-citeas">
+Lagemann, Christian, Sajeda Mokbel, Miro Gondrum, Mario Rüttgers, Yuning
+Wang, Pol Suarez, Ludger Paehler, et al. 2026. <span>“The HydroGym
+Reinforcement Learning Platform for Fluid Dynamics.”</span>
+<em>Nature</em>, August. <a href="https://doi.org/10.1038/s41586-026-10917-6">https://doi.org/10.1038/s41586-026-10917-6</a>.
+</div></div></section></div> ]]></description>
+  <category>paper</category>
+  <guid>https://loiseaujc.github.io/posts/paper-title/hydrogym.html</guid>
+  <pubDate>Tue, 18 Aug 2026 22:00:00 GMT</pubDate>
+  <media:content url="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRg1JIfdGVzB4czRcBOCQYPMuZiwe1R9YOceMQUuWmmdA&amp;s=10" medium="image"/>
+</item>
+<item>
+  <title>LightKrylov: Lightweight implementation of Krylov subspace techniques in modern Fortran</title>
+  <dc:creator>J. Simon Kern</dc:creator>
+  <dc:creator>Ricardo S. Frantz</dc:creator>
+  <dc:creator>Jean-Christophe Loiseau</dc:creator>
+  <link>https://loiseaujc.github.io/posts/paper-title/lightkrylov.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<!--Include academic icons or bottons-->
+<!-- 
+Load Academicons v1: https://jpswalsh.github.io/academicons/
+-->
+<p><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css"></p>
+<p><link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css"></p>
+<!---
+The following code are needed to show dimension citation and altmetrics.
+https://api.altmetric.com/embeds.html
+https://badge.dimensions.ai/
+--->
+<script type="text/javascript" src="https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js"></script>
+<script async="" src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
+<script type="text/javascript" src="//cdn.plu.mx/widget-popup.js"></script>
+<section id="abstract" class="level2">
+<h2 class="anchored" data-anchor-id="abstract">Abstract</h2>
+<p>Direct solvers for linear algebraic systems scale cubically in the problem’s dimension, rapidly becoming intractable for large-scale problems, while sparse factorization may still require quadratic storage du fill-in. Krylov techniques avoid these costs by needing only a routine that computes a matrix-vector product, iteratively building a subspace from which the solution is obtained. <code>LightKrylov</code> is a Fortran package providing a suite of such Krylov methods along with an easy-to-use high level API based on <code>abstract types</code>. It is primarily intended for applications where the linear operator of interest is only available implicitly via a matrix-vector subroutine and enables users to maximally re-use existing components of their code base (including parallelization), thus requiring a minimal set of changes without sacrificing computational performance.</p>
+</section>
+<section id="links" class="level2">
+<h2 class="anchored" data-anchor-id="links">Links</h2>
+<p>Published <a href="https://joss.theoj.org/papers/10.21105/joss.09623">paper</a></p>
+<script type="text/javascript" src="https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js"></script><div class="altmetric-embed" data-badge-popover="right" data-badge-type="donut" data-doi="10.21105/joss.09623"></div>
+
+<span class="__dimensions_badge_embed__" data-doi="10.21105/joss.09623" data-hide-zero-citations="true" data-style="small_circle"></span><script async="" src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" id="quarto-citation"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@article{simon_kern2026,
+  author = {Simon Kern, J. and S. Frantz, Ricardo and Loiseau,
+    Jean-Christophe},
+  title = {LightKrylov: {Lightweight} Implementation of {Krylov}
+    Subspace Techniques in Modern {Fortran}},
+  journal = {Journal of Open Source Software},
+  volume = {11},
+  number = {117},
+  pages = {9623},
+  date = {2026-01-29},
+  url = {https://joss.theoj.org/papers/10.21105/joss.09623},
+  doi = {10.21105/joss.09623},
+  langid = {en}
+}
+</code></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-simon_kern2026" class="csl-entry quarto-appendix-citeas">
+Simon Kern, J., Ricardo S. Frantz, and Jean-Christophe Loiseau. 2026.
+<span>“LightKrylov: Lightweight Implementation of Krylov Subspace
+Techniques in Modern Fortran.”</span> <em>Journal of Open Source
+Software</em> 11 (117): 9623. <a href="https://doi.org/10.21105/joss.09623">https://doi.org/10.21105/joss.09623</a>.
+</div></div></section></div> ]]></description>
+  <category>paper</category>
+  <guid>https://loiseaujc.github.io/posts/paper-title/lightkrylov.html</guid>
+  <pubDate>Wed, 28 Jan 2026 23:00:00 GMT</pubDate>
+  <media:content url="https://upload.wikimedia.org/wikipedia/commons/e/e1/Alexey_Krylov_1910s.JPG?utm_source=fr.wikipedia.org&amp;utm_campaign=imageinfo&amp;utm_content=thumbnail_unscaled" medium="image"/>
+</item>
 <item>
   <title>Jacobi method: From a naïve implementation to a modern Fortran multithreaded one</title>
   <dc:creator>Jean-Christophe Loiseau</dc:creator>
@@ -2721,6 +2869,207 @@ https://quarto.org/docs/authoring/includes.html
   <guid>https://loiseaujc.github.io/posts/blog-title/fortran_vs_python.html</guid>
   <pubDate>Mon, 08 Sep 2025 22:00:00 GMT</pubDate>
   <media:content url="https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Fortran_acs_cover.jpeg/250px-Fortran_acs_cover.jpeg" medium="image" type="image/jpeg"/>
+</item>
+<item>
+  <title>PySINDy: A comprehensive Python package for robust sparse system identification</title>
+  <dc:creator>Alan A. Kaptanoglu</dc:creator>
+  <dc:creator>Brian M. de Silva</dc:creator>
+  <dc:creator>Urban Fasel</dc:creator>
+  <dc:creator>Kadierdan Kaheman</dc:creator>
+  <dc:creator>Andy J. Goldschmidt</dc:creator>
+  <dc:creator>Jared Callaham</dc:creator>
+  <dc:creator>Charles B. Delahunt</dc:creator>
+  <dc:creator>Zachary G. Nicolaou</dc:creator>
+  <dc:creator>Kathleen Champion</dc:creator>
+  <dc:creator>Jean-Christophe Loiseau</dc:creator>
+  <dc:creator>J. Nathan Kutz</dc:creator>
+  <dc:creator>Steven L. Brunton</dc:creator>
+  <link>https://loiseaujc.github.io/posts/paper-title/pysindy.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<!--Include academic icons or bottons-->
+<!-- 
+Load Academicons v1: https://jpswalsh.github.io/academicons/
+-->
+<p><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css"></p>
+<p><link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css"></p>
+<!---
+The following code are needed to show dimension citation and altmetrics.
+https://api.altmetric.com/embeds.html
+https://badge.dimensions.ai/
+--->
+<script type="text/javascript" src="https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js"></script>
+<script async="" src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
+<script type="text/javascript" src="//cdn.plu.mx/widget-popup.js"></script>
+<section id="abstract" class="level2">
+<h2 class="anchored" data-anchor-id="abstract">Abstract</h2>
+<p>Automated data-driven modeling, the process of directly discovering the governing equations of a system from data, is increasingly being used across the scientific community. <code>PySINDy</code> is a Python package that provides tools for applying the sparse identification of nonlinear dynamics (SINDy) approach to data-driven model discovery. In this major update to <code>PySINDy</code>, we implement several advanced features that enable the discovery of more general differential equations from noisy and limited data. The library of candidate terms is extended for the identification of actuated systems, partial differential equations (PDEs), and implicit differential equations. Robust formulations, including the integral form of SINDy, and ensembling techniques, are also implemented to improve performance for real-word data. Finally, we provide a range of new optimization algorithms, including several sparse regression techniques and algorithms to enforce and promote inequality constraints and stability. Together, these updates enable entirely new SINDy model discovery capabilities that have not been reported in the literature, such as constrained PDE identification and ensembling with different sparse regression optimizers.</p>
+</section>
+<section id="links" class="level2">
+<h2 class="anchored" data-anchor-id="links">Links</h2>
+<p>Published <a href="https://joss.theoj.org/papers/10.21105/joss.09623">paper</a></p>
+<script type="text/javascript" src="https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js"></script><div class="altmetric-embed" data-badge-popover="right" data-badge-type="donut" data-doi="10.21105/joss.03994"></div>
+
+<span class="__dimensions_badge_embed__" data-doi="10.21105/joss.03994" data-hide-zero-citations="true" data-style="small_circle"></span><script async="" src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" id="quarto-citation"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@article{a._kaptanoglu2022,
+  author = {A. Kaptanoglu, Alan and M. de Silva, Brian and Fasel, Urban
+    and Kaheman, Kadierdan and J. Goldschmidt, Andy and Callaham, Jared
+    and B. Delahunt, Charles and G. Nicolaou, Zachary and Champion,
+    Kathleen and Loiseau, Jean-Christophe and Nathan Kutz, J. and L.
+    Brunton, Steven},
+  title = {PySINDy: {A} Comprehensive {Python} Package for Robust Sparse
+    System Identification},
+  journal = {Journal of Open Source Software},
+  volume = {7},
+  number = {69},
+  pages = {3994},
+  date = {2022-01-29},
+  url = {https://joss.theoj.org/papers/10.21105/joss.03994},
+  doi = {10.21105/joss.03994},
+  langid = {en}
+}
+</code></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-a._kaptanoglu2022" class="csl-entry quarto-appendix-citeas">
+A. Kaptanoglu, Alan, Brian M. de Silva, Urban Fasel, Kadierdan Kaheman,
+Andy J. Goldschmidt, Jared Callaham, Charles B. Delahunt, et al. 2022.
+<span>“PySINDy: A Comprehensive Python Package for Robust Sparse System
+Identification.”</span> <em>Journal of Open Source Software</em> 7 (69):
+3994. <a href="https://doi.org/10.21105/joss.03994">https://doi.org/10.21105/joss.03994</a>.
+</div></div></section></div> ]]></description>
+  <category>paper</category>
+  <guid>https://loiseaujc.github.io/posts/paper-title/pysindy.html</guid>
+  <pubDate>Fri, 28 Jan 2022 23:00:00 GMT</pubDate>
+  <media:content url="https://www.researchgate.net/publication/347692023/figure/fig3/AS:974707545341954@1609399796608/Schematic-of-the-sparse-identification-of-nonlinear-dynamics-SINDy-algorithm-25-as.png" medium="image" type="image/png"/>
+</item>
+<item>
+  <title>Constrained sparse Galerkin regression</title>
+  <dc:creator>Jean-Christophe Loiseau</dc:creator>
+  <dc:creator>Steven L. Brunton</dc:creator>
+  <link>https://loiseaujc.github.io/posts/paper-title/galerkin.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<!--Include academic icons or bottons-->
+<!-- 
+Load Academicons v1: https://jpswalsh.github.io/academicons/
+-->
+<p><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css"></p>
+<p><link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css"></p>
+<!---
+The following code are needed to show dimension citation and altmetrics.
+https://api.altmetric.com/embeds.html
+https://badge.dimensions.ai/
+--->
+<script type="text/javascript" src="https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js"></script>
+<script async="" src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
+<script type="text/javascript" src="//cdn.plu.mx/widget-popup.js"></script>
+<section id="abstract" class="level2">
+<h2 class="anchored" data-anchor-id="abstract">Abstract</h2>
+<p>The sparse identification of nonlinear dynamics (SINDy) is a recently proposed data-driven modelling framework that uses sparse regression techniques to identify nonlinear low-order models. With the goal of low-order models of a fluid flow, we combine this approach with dimensionality reduction techniques (e.g.&nbsp;proper orthogonal decomposition) and extend it to enforce physical constraints in the regression, e.g.&nbsp;energy-preserving quadratic nonlinearities. The resulting models, hereafter referred to as Galerkin regression models, incorporate many beneficial aspects of Galerkin projection, but without the need for a high-fidelity solver to project the Navier-Stokes equations. Instead, the most parsimonious nonlinear model is determined that is consistent with observed measurement data and satisfies necessary constraints. Galerkin regression models also readily generalize to include higher-order nonlinear terms that model the effect of truncated modes. The effectiveness of such an approach is demonstrated on two canonical flow configurations: the two-dimensional flow past a circular cylinder and the shear-driven cavity flow. For both cases, the accuracy of the identified models compare favourably against reduced-order models obtained from a standard Galerkin projection procedure. Finally, the entire code base for ou constrained sparse Galerkin regression algorithm is freely available online.</p>
+</section>
+<section id="links" class="level2">
+<h2 class="anchored" data-anchor-id="links">Links</h2>
+<p>Published <a href="https://www.cambridge.org/core/journals/journal-of-fluid-mechanics/article/abs/constrained-sparse-galerkin-regression/0E18A4A55FF5AC1401D236C0E4D1CAAE">paper</a></p>
+<script type="text/javascript" src="https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js"></script><div class="altmetric-embed" data-badge-popover="right" data-badge-type="donut" data-doi="10.1017/jfm.2017.823"></div>
+
+<span class="__dimensions_badge_embed__" data-doi="10.1017/jfm.2017.823" data-hide-zero-citations="true" data-style="small_circle"></span><script async="" src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" id="quarto-citation"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@article{loiseau2018,
+  author = {Loiseau, Jean-Christophe and L. Brunton, Steven},
+  title = {Constrained Sparse {Galerkin} Regression},
+  journal = {Journal of Fluid Mechanics},
+  volume = {67},
+  pages = {42-67},
+  date = {2018-03-10},
+  url = {https://www.cambridge.org/core/journals/journal-of-fluid-mechanics/article/abs/constrained-sparse-galerkin-regression/0E18A4A55FF5AC1401D236C0E4D1CAAE},
+  doi = {10.1017/jfm.2017.823},
+  langid = {en}
+}
+</code></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-loiseau2018" class="csl-entry quarto-appendix-citeas">
+Loiseau, Jean-Christophe, and Steven L. Brunton. 2018.
+<span>“Constrained Sparse Galerkin Regression.”</span> <em>Journal of
+Fluid Mechanics</em> 67 (March): 42–67. <a href="https://doi.org/10.1017/jfm.2017.823">https://doi.org/10.1017/jfm.2017.823</a>.
+</div></div></section></div> ]]></description>
+  <category>paper</category>
+  <guid>https://loiseaujc.github.io/posts/paper-title/galerkin.html</guid>
+  <pubDate>Tue, 09 Jan 2018 23:00:00 GMT</pubDate>
+  <media:content url="https://static.cambridge.org/covers/FLM_0_0_0/journal-of-fluid-mechanics.jpg" medium="image" type="image/jpeg"/>
+</item>
+<item>
+  <title>Investigation of the roughness-induced transition: global stability analyses and direct numerical simulations</title>
+  <dc:creator>Jean-Christophe Loiseau</dc:creator>
+  <dc:creator>Jean-Christophe Robinet</dc:creator>
+  <dc:creator>Stefania Cherubini</dc:creator>
+  <dc:creator>Emmanuel Leriche</dc:creator>
+  <link>https://loiseaujc.github.io/posts/paper-title/roughness.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<!--Include academic icons or bottons-->
+<!-- 
+Load Academicons v1: https://jpswalsh.github.io/academicons/
+-->
+<p><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css"></p>
+<p><link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css"></p>
+<!---
+The following code are needed to show dimension citation and altmetrics.
+https://api.altmetric.com/embeds.html
+https://badge.dimensions.ai/
+--->
+<script type="text/javascript" src="https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js"></script>
+<script async="" src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
+<script type="text/javascript" src="//cdn.plu.mx/widget-popup.js"></script>
+<section id="abstract" class="level2">
+<h2 class="anchored" data-anchor-id="abstract">Abstract</h2>
+<p>The linear global instability and resulting transition to turbulence induced by an isolated cylindrical roughness element of height <img src="https://latex.codecogs.com/png.latex?h"> and diameter <img src="https://latex.codecogs.com/png.latex?d"> immersed within an incompressible boundary layer flow along a flat plate is investigated using the joint application of direct numerical simulations and fully three-dimensional global stability analyses. For the range of parameters investigated, base flow computations show that the roughness element induces a wake composed of a central low-speed region surrounded by a three-dimensional shear layer and a pair of low- and high-speed streaks on each of its sides. Results from the global stability analyses highlight the unstable nature of the central low-speed region and its crucial importance in the laminar-turbulent transition process. It is able to sustain two different global instabilities: a sinuous and a varicose one. Each of these globally unstable modes is related to a different physical mechanism. While the varicose mode has its root in the instability of the whole three-dimensional shear layer surrounding the central low-speed region, the sinuous instability turns out to be similar to the von Kàrmàn instability in the two-dimensional cylinder wake and has its root in the lateral shear layers of the separated zone. The aspect ratio of the roughness element plays a key role in the selection of the dominant instability: whereas the flow over thin cylindrical roughness elements transitions due to a sinuous instability of the near-wake region, for larger roughness elements the varicose instability of the central low-speed region turns out to be the dominant one. Direct numerical simulations of the flow past an aspect ratio <img src="https://latex.codecogs.com/png.latex?%5Ceta%20=%201"> roughness element sustaining only the sinuous instability have revealed that the bifurcation occuring in this particular case is supercritical. Finally, comparison of the transition thresholds predicted by global linear stability analyses with von Doenhoff-Braslow transition diagram provides qualitatively good agreement.</p>
+</section>
+<section id="links" class="level2">
+<h2 class="anchored" data-anchor-id="links">Links</h2>
+<p>Published <a href="https://www.cambridge.org/core/journals/journal-of-fluid-mechanics/article/abs/constrained-sparse-galerkin-regression/0E18A4A55FF5AC1401D236C0E4D1CAAE">paper</a></p>
+<script type="text/javascript" src="https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js"></script><div class="altmetric-embed" data-badge-popover="right" data-badge-type="donut" data-doi="10.1017/jfm.2014.589"></div>
+
+<span class="__dimensions_badge_embed__" data-doi="10.1017/jfm.2014.589" data-hide-zero-citations="true" data-style="small_circle"></span><script async="" src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" id="quarto-citation"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@article{loiseau2014,
+  author = {Loiseau, Jean-Christophe and Robinet, Jean-Christophe and
+    Cherubini, Stefania and Leriche, Emmanuel},
+  title = {Investigation of the Roughness-Induced Transition: Global
+    Stability Analyses and Direct Numerical Simulations},
+  journal = {Journal of Fluid Mechanics},
+  volume = {760},
+  pages = {175-211},
+  date = {2014-11-10},
+  url = {https://www.cambridge.org/core/journals/journal-of-fluid-mechanics/article/abs/investigation-of-the-roughnessinduced-transition-global-stability-analyses-and-direct-numerical-simulations},
+  doi = {10.1017/jfm.2014.589},
+  langid = {en}
+}
+</code></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-loiseau2014" class="csl-entry quarto-appendix-citeas">
+Loiseau, Jean-Christophe, Jean-Christophe Robinet, Stefania Cherubini,
+and Emmanuel Leriche. 2014. <span>“Investigation of the
+Roughness-Induced Transition: Global Stability Analyses and Direct
+Numerical Simulations.”</span> <em>Journal of Fluid Mechanics</em> 760
+(November): 175–211. <a href="https://doi.org/10.1017/jfm.2014.589">https://doi.org/10.1017/jfm.2014.589</a>.
+</div></div></section></div> ]]></description>
+  <category>paper</category>
+  <guid>https://loiseaujc.github.io/posts/paper-title/roughness.html</guid>
+  <pubDate>Mon, 03 Nov 2014 23:00:00 GMT</pubDate>
+  <media:content url="https://static.cambridge.org/covers/FLM_0_0_0/journal-of-fluid-mechanics.jpg" medium="image" type="image/jpeg"/>
 </item>
 </channel>
 </rss>

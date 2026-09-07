@@ -1,0 +1,47 @@
+---
+title: "Constrained sparse Galerkin regression"
+description: "A minimal-order model for the canonical cylinder flow"
+subtitle: "*Journal of Fluid Mechanics*"
+author: 
+  - name: Jean-Christophe Loiseau
+  - name: Steven L. Brunton
+date: "2018-01-10"
+categories: [paper]
+image: "https://static.cambridge.org/covers/FLM_0_0_0/journal-of-fluid-mechanics.jpg"
+citation:
+  type: article-journal
+  container-title: "Journal of Fluid Mechanics"
+  doi: "10.1017/jfm.2017.823"
+  available-date: "2018-01-10"
+  issued: "2018-03-10"
+  volume: 67
+  page: 42-67
+  url: https://www.cambridge.org/core/journals/journal-of-fluid-mechanics/article/abs/constrained-sparse-galerkin-regression/0E18A4A55FF5AC1401D236C0E4D1CAAE
+google-scholar: true
+---
+
+<!--Include academic icons or bottons-->
+
+{{< include /files/includes/_academic.qmd >}}
+
+## Abstract
+
+The sparse identification of nonlinear dynamics (SINDy) is a recently proposed data-driven modelling framework that uses sparse regression techniques to identify nonlinear low-order models.
+With the goal of low-order models of a fluid flow, we combine this approach with dimensionality reduction techniques (e.g. proper orthogonal decomposition) and extend it to enforce physical constraints in the regression, e.g. energy-preserving quadratic nonlinearities.
+The resulting models, hereafter referred to as Galerkin regression models, incorporate many beneficial aspects of Galerkin projection, but without the need for a high-fidelity solver to project the Navier-Stokes equations.
+Instead, the most parsimonious nonlinear model is determined that is consistent with observed measurement data and satisfies necessary constraints.
+Galerkin regression models also readily generalize to include higher-order nonlinear terms that model the effect of truncated modes.
+The effectiveness of such an approach is demonstrated on two canonical flow configurations: the two-dimensional flow past a circular cylinder and the shear-driven cavity flow.
+For both cases, the accuracy of the identified models compare favourably against reduced-order models obtained from a standard Galerkin projection procedure.
+Finally, the entire code base for ou constrained sparse Galerkin regression algorithm is freely available online.
+
+## Links
+
+Published [paper](https://www.cambridge.org/core/journals/journal-of-fluid-mechanics/article/abs/constrained-sparse-galerkin-regression/0E18A4A55FF5AC1401D236C0E4D1CAAE)
+
+
+```{=html}
+<script type="text/javascript" src="https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js"></script><div class="altmetric-embed" data-badge-popover="right" data-badge-type="donut" data-doi="10.1017/jfm.2017.823"></div>
+
+<span class="__dimensions_badge_embed__" data-doi="10.1017/jfm.2017.823" data-hide-zero-citations="true" data-style="small_circle"></span><script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
+```

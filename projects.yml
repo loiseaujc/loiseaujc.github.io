@@ -1,13 +1,28 @@
 
-    - path: https://www.nsf.gov/ 
-      image: https://nsf-gov-resources.nsf.gov/styles/featured_content_tablet/s3/2023-10/NSF_Official_logo_Med_Res_600ppi_rectangle.png
-      title: "Exploring "
-      author: Academic Website
-      subtitle: "Funder"
-      description: "The goal of this project is to investigate ."
-      started: "2024"
-      ended: "2025"
-      funding: "$0"
-#      date: "2022-10-26"
-#      categories: [] 
+    - path: https://perseus.artsetmetiers.fr/home/
+      image: https://upload.wikimedia.org/wikipedia/en/thumb/3/34/Clean_Sky_Logo.png/250px-Clean_Sky_Logo.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail
+      title: "PERSEUS"
+      subtitle: "Clean Sky"
+      role: "Partner"
+      started: "2020"
+      ended: "2023"
+      funding: "x €"
+
+    - path: https://loiseaujc.github.io/ANR-CONMAN/
+      image: https://umr-merit.ird.fr/storage/2022/03/logo-ANR.png
+      title: "CONMAN"
+      subtitle: "ANR"
+      role: "PI"
+      started: "2023"
+      ended: "2026"
+      funding: "290 000 €"
+
+    - path: https://anr-benefit.github.io/
+      image: https://umr-merit.ird.fr/storage/2022/03/logo-ANR.png
+      title: "BENEFIT"
+      subtitle: "ANR"
+      role: "Partner"
+      started: "2026"
+      ended: "2029"
+      funding: "635 000 €"
 

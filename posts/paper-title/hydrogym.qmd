@@ -1,0 +1,70 @@
+---
+title: "The HydroGym reinforcement learning platform for fluid dynamics"
+description: "A Python package with standardized environments for benchmarking reinforcement learning for flow control."
+subtitle: "*Nature*"
+author: 
+  - name: Christian Lagemann
+  - name: Sajeda Mokbel
+  - name: Miro Gondrum
+  - name: Mario Rüttgers
+  - name: Yuning Wang
+  - name: Pol Suarez
+  - name: Ludger Paehler
+  - name: Deniz A. Bezgin
+  - name: Aaron B. Buhendwa
+  - name: Jared L. Callaham
+  - name: Samuel Ahnert
+  - name: Nicholas Zolman
+  - name: Xiao Shao
+  - name: Jean-Christophe Loiseau
+  - name: Nikolaus A. Adams
+  - name: Matthias Meinke
+  - name: Wolgang Schröder
+  - name: Kai Lagemann
+  - name: Esther Lagemann
+  - name: Ricardo Vinuesa
+  - name: Steven L. Brunton
+date: "2026-08-19"
+categories: [paper]
+image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRg1JIfdGVzB4czRcBOCQYPMuZiwe1R9YOceMQUuWmmdA&s=10"
+citation:
+  type: article-journal
+  container-title: "Nature"
+  doi: "10.1038/s41586-026-10917-6"
+  available-date: "2026-08-19"
+  issued: "2026-08-19"
+  # volume: 47
+  # issue: 7938
+  # page: 777-80
+  url: https://www.nature.com/articles/s41586-026-10917-6
+google-scholar: true
+---
+
+<!--Include academic icons or bottons-->
+
+{{< include /files/includes/_academic.qmd >}}
+
+
+## Abstract
+
+Effective control of fluid flows is critical across transportation, energy and medicine, where it can increase lift, reduce drag, enhance mixing and attenuate noise.
+Yet fluids are notoriously difficult to control because they involve high-dimensional, nonlinear and multiscale dynamics that resist conventional approaches.
+Reinforcement learning has driven remarkable progress in fields such as protein folding and complex games, which have shared benchmarks and standaridized environments.
+Fluid dynamics has lacked such infrastructure, so each controller is typically tuned to a single geometry and operating condition, making progress difficult to accumulate, transfer and compare.
+Here we introduce HydroGym, a solver-independent reinforcement learning platform providing more than 60 validated, openly available flow control environments spanning from canonical laminar flows to complex turbulent flows, with systematic progression in the Reynolds number up to $Re = 4 \times 10^5$, and Mach number variations in two and three dimensions.
+Across these environments, agents repeatedly discover robust control principles, including boundary layer manipulation, disruption of acoustic feedback and reorganization of turbulent wakes.
+Critically, we demonstrate a proof of concept of zero-shot transfer, in which agents that are trained exclusively in inexpensive surrogate environments are deployed to challenging real-world scenarios such as three-dimensional wing section.
+We achieve a 38% reduction in local skin friction while reducing exploration costs by four orders of magnitude compared with direct on-wing optimization.
+As this transfer exploits shared near-wall physics, the breadth of generalization remains open, suggesting a new pathway for research toward policy generalization across computationally prohibitive simulation environments.
+By offering a common, extensible foundation for reproducible research, HydroGym moves flow control from isolated case studies toward a cohesive community effort.
+
+## Links
+
+Published [paper](https://www.nature.com/articles/s41586-026-10917-6)
+
+
+```{=html}
+<script type="text/javascript" src="https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js"></script><div class="altmetric-embed" data-badge-popover="right" data-badge-type="donut" data-doi="10.1038/s41586-026-10917-6"></div>
+
+<span class="__dimensions_badge_embed__" data-doi="10.1038/s41586-026-10917-6" data-hide-zero-citations="true" data-style="small_circle"></span><script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
+```
