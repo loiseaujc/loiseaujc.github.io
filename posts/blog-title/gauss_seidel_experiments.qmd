@@ -310,7 +310,7 @@ The results are shown below.
 | Jacobi | 138 000 | 0.1 ms | 16 s |
 
 Again, the Gauss-Seidel method requires only half the number of iterations to converge.
-But now, the Jacobi solver is about 5x fast in wall-clock time!
+But now, the Jacobi solver is about 5x faster in wall-clock time!
 This seems surprising, doesn't it?
 Looking at the two update rules
 

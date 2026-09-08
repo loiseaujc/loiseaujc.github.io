@@ -573,7 +573,7 @@ u_{i, j}^{(t+1)} = \dfrac{1}{4} \left( \Delta x^2 \cdot f_{i, j} + u_{i+1, j}^{(
 </tr>
 </tbody>
 </table>
-<p>Again, the Gauss-Seidel method requires only half the number of iterations to converge. But now, the Jacobi solver is about 5x fast in wall-clock time! This seems surprising, doesn’t it? Looking at the two update rules</p>
+<p>Again, the Gauss-Seidel method requires only half the number of iterations to converge. But now, the Jacobi solver is about 5x faster in wall-clock time! This seems surprising, doesn’t it? Looking at the two update rules</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode numberSource fortran number-lines code-with-copy"><code class="sourceCode fortranfixed"><span id="cb5-1"><a href="#cb5-1"></a><span class="co">! Jacobi update</span></span>
 <span id="cb5-2"><a href="#cb5-2"></a>u(i, j) <span class="kw">=</span> <span class="fl">0.25_dp</span><span class="kw">*</span>(b(i, j)<span class="kw">*</span>dx<span class="kw">**</span><span class="dv">2</span> <span class="kw">+</span> v(i<span class="kw">+</span><span class="dv">1</span>, j) <span class="kw">+</span> v(i, j<span class="kw">+</span><span class="dv">1</span>) <span class="kw">&amp;</span></span>
 <span id="cb5-3"><a href="#cb5-3"></a>                                 <span class="kw">+</span> v(i<span class="kw">-</span><span class="dv">1</span>, j) <span class="kw">+</span> v(i, j<span class="kw">-</span><span class="dv">1</span>))</span>
