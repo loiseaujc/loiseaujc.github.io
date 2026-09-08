@@ -163,7 +163,7 @@ It would thus make sense to re-use these improved estimates rather than the old 
 This leads to the update rule
 
 $$
-u_{i, j}^{(t+1)} = \dfrac{1}{4} \left( \Delta x^2 \cdot f_{i, j} + u_{i+1, j}^{(t)} + u_{i, j+1}^{(t)} + u_{i-1, j}^{(t+1)} + u_{i, j-1}^{(t)} \right).
+u_{i, j}^{(t+1)} = \dfrac{1}{4} \left( \Delta x^2 \cdot f_{i, j} + u_{i+1, j}^{(t)} + u_{i, j+1}^{(t)} + u_{i-1, j}^{(t+1)} + u_{i, j-1}^{(t+1)} \right).
 $$
 
 This is precisely the update rule for the Gauss-Seidel method applied to the 2D Poisson equation.
