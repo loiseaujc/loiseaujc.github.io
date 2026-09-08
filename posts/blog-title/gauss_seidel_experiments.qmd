@@ -1,19 +1,19 @@
 ---
 title: "Gauss-Seidel is faster than Jacobi. Or is it?"
 author: "Jean-Christophe Loiseau"
-date: "2025-09-23"
+date: "2026-09-08"
 categories: [blog]
 image : "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Fortran_acs_cover.jpeg/250px-Fortran_acs_cover.jpeg"
 #css: /custom.css
-draft: true
+draft: false
 format: html
 ---
 
 In a previous [post](https://loiseaujc.github.io/posts/blog-title/jacobi_experiments.html), I went through some details about how one could write an efficient Jacobi solver in modern `Fortran` to solve the 2D Poisson equation.
-Justifiably, colleagues and readers mentionned that using the [Gauss-Seidel method](https://en.wikipedia.org/wiki/Gauss%E2%80%93Seidel_method) instead should lead to an even faster solver with very minimal modifications to my previous code.
+Several colleagues and readers mentioned that using the [Gauss-Seidel method](https://en.wikipedia.org/wiki/Gauss%E2%80%93Seidel_method) instead should lead to an even faster solver with very minimal modifications to my previous code.
 So let's put this to a test.
 
-**TL-DR -** While the Gauss-Seidel method theoretically (and empirically) requires twice as less iterations as the Jacobi method to solve our test problem, it does not necessarilly translate into a solver running twice as fast because of how good compilers are at leveraging modern CPU instructions.
+**TL-DR -** While the Gauss-Seidel method theoretically (and empirically) requires half as many iterations as the Jacobi method to solve our test problem, it does not necessarily translate into a solver running twice as fast because of how good compilers are at leveraging modern CPU instructions.
 
 ## Solving the 2D Poisson equation with the Gauss-Seidel method
 
@@ -25,7 +25,7 @@ $$
 
 where $\mathbf{A}$ is an invertible $n \times n$ matrix.
 In the rest of this post, we'll assume that this problem arises from the finite-difference discretization of the two-dimensional Poisson equation on the unit-square (see [here](https://loiseaujc.github.io/posts/blog-title/jacobi_experiments.html#discretizing-the-problem) for more details).
-If you ever had a numerical linear algebra, the [Jacobi method](https://loiseaujc.github.io/posts/blog-title/jacobi_experiments.html) is probably the first *iterative method* you've seen to solve this kind of problems.
+If you've ever had a numerical linear algebra, the [Jacobi method](https://loiseaujc.github.io/posts/blog-title/jacobi_experiments.html) is probably the first *iterative method* you've seen to solve this kind of problems.
 You may even remember your lecturer telling you that, even though easy to implement and analyse, the Jacobi method can be terribly slow.
 And this is usually the stepping stone for introducing the [Gauss-Seidel method](https://en.wikipedia.org/wiki/Gauss%E2%80%93Seidel_method).
 
@@ -51,8 +51,8 @@ $$
 $$
 
 where subscript $t$ is the iteration number.
-This is in essence very similar to the Jacobi update rule $\mathbf{x}_{t+1} = \mathbf{D}^{-1} \left( \mathbf{b} - \mathbf{Rx}_t \right)$ except that $\left( \mathbf{D} + \mathbf{L} \right)^{-1}$ is a somexwhat better approximation of $\mathbf{A}^{-1}$.
-It is thus reasonnable to expect the Gauss-Seidel method to converge faster than the Jacobi one.
+This is in essence very similar to the Jacobi update rule $\mathbf{x}_{t+1} = \mathbf{D}^{-1} \left( \mathbf{b} - \mathbf{Rx}_t \right)$ except that $\left( \mathbf{D} + \mathbf{L} \right)^{-1}$ is a somewhat better approximation of $\mathbf{A}^{-1}$.
+It is thus reasonable to expect the Gauss-Seidel method to converge faster than the Jacobi one.
 
 :::{.callout-note}
 **Practical tip -** Never ever compute $\left( \mathbf{D} + \mathbf{L} \right)^{-1}$.
@@ -72,9 +72,9 @@ This is a substantial speed-up!
 
 Alright, so Gauss-Seidel is a variation on the theme of Jacobi methods, but does it actually converge as well?
 As in the previous [post](https://loiseaujc.github.io/posts/blog-title/jacobi_experiments.html#fair-enough-but-does-it-actually-converge), we'll assume $\mathbf{A}$ is symmetric positive definite.
-This will give use a sufficient albeit non-necessarry condition but will make things easier.
+This will give us a sufficient albeit non-necessary condition but will make things easier.
 
-Let us begin by rewritting the Gauss-Seidel update rule as
+Let us begin by rewriting the Gauss-Seidel update rule as
 
 $$
 \begin{aligned}
@@ -99,13 +99,287 @@ The problem of convergence thus reduces to the question of *what are the conditi
 >
 > If $\mathbf{A}$ is symmetric positive definite, the Gauss-Seidel iteration converges to the solution of $\mathbf{Ax} = \mathbf{b}$.
 
+>   **Proof --** Let $\mathbf{A}$ be symmetric positive definite and $\mu$ be an eigenvalue of $\mathbf{I} - \left( \mathbf{D} + \mathbf{L} \right)^{-1} \mathbf{A}$ with eigenvectors $\mathbf{v}$. Then
+>   $$\left( \mathbf{I} - \left( \mathbf{D} + \mathbf{L} \right)^{-1} \mathbf{A} \right) \mathbf{v} = \mu \mathbf{v}.$$
+>   Rearranging terms yields
+>   $$\left( \mathbf{D} + \mathbf{L} \right) \mathbf{v} = \dfrac{1}{1 - \mu} \mathbf{Av}.$$
+>   Then
+>   $$ \mathbf{v}^* \left( \mathbf{D} + \mathbf{L} \right) \mathbf{v} = \dfrac{1}{1 - \mu} \mathbf{v}^* \mathbf{Av}.$$
+>   Taking the conjugate transpose of the above expression, we can write
+>   $$\mathbf{v}^* \left( \mathbf{D} + \mathbf{L} \right) \mathbf{v} + \mathbf{v}^* \left( \mathbf{D} + \mathbf{L}^* \right) \mathbf{v} = \left( \dfrac{1}{1 - \mu} + \dfrac{1}{1 - \bar{\mu}} \right) \mathbf{v}^* \mathbf{Av},$$
+>   which can be simplified to
+>   $$\mathbf{v}^* \left( \mathbf{A} + \mathbf{D} \right) \mathbf{v} = \dfrac{2 - 2 \Re(\mu)}{\vert 1 - \mu \vert^2} \mathbf{v}^* \mathbf{Av}.$$
+>   After some algebraic manipulations, we obtain
+>   $$ \mathbf{v}^* \mathbf{Dv} = \dfrac{1 - \vert \mu \vert^2}{\vert 1 - \mu \vert^2} \mathbf{v}^* \mathbf{Av}.$$
+>   Since $\mathbf{A}$ and $\mathbf{D}$ are symmetric positive-definite, and $\vert 1 - \mu \vert^2$ is strictly positive, the numerator must also be strictly positive
+>   $$ 1 - \vert \mu \vert^2 > 0 \Rightarrow \vert \mu \vert^2 < 1 \Rightarrow \vert \mu \vert < 1.$$
+>   Hence, the iteration matrix $\mathbf{I} - \left( \mathbf{D} + \mathbf{L} \right)^{-1} \mathbf{A}$ has all of its eigenvalues inside the unit circle and the Gauss-Seidel iteration converges.
+
+Hidden in this proof are two little facts you need to have in mind.
+First, while a sufficient condition for convergence of the Jacobi method was that both $\mathbf{A}$ and $2\mathbf{D} - \mathbf{A}$ were symmetric positive-definite, the Gauss-Seidel method only requires $\mathbf{A}$ to be so.
+Hence, it converges for a wider set of matrices than the Jacobi method.
+Second, while the eigenvalues of the Jacobi method were all purely real, those of Gauss-Seidel can be complex (albeit within the unit disk).
+This will have no consequence whatsoever in the rest of this post, but it might be worth noting it.
 
 ### Alright, it converges. But how fast?
 
+Just like the Jacobi method, the convergence rate of the Gauss-Seidel can be estimated using the [spectral radius](https://en.wikipedia.org/wiki/Spectral_radius) of the iteration matrix $\mathbf{M} = \mathbf{I} - \left( \mathbf{D} + \mathbf{L} \right)^{-1} \mathbf{A}$ (which we've just proved to be smaller than unity).
+Obviously, the smaller $\rho(\mathbf{M})$, the better.
+But the question we are actually interested in is not how quickly does the Gauss-Seidel method converges, but *how fast does it converge relative to Jacobi?*
+
+The answer is actually *it depends*.
+There are actually cases where the Jacobi method converges, while the Gauss-Seidel method diverges.
+In my experience, these are however somewhat pathological cases.
+What can be said for sure is that: if $\mathbf{A}$ is symmetric positive definite and has a tridiagonal (or block tridiagonal) structure, then the Gauss-Seidel method will asymptotically require only half the number of iterations of the Jacobi method to reach the same accuracy.
+The proof is by [David Young](https://en.wikipedia.org/wiki/David_M._Young_Jr.) (1923-2008), one of the pioneers in numerical analysis and scientific computing.
+
 ## Numerical experiments with `Fortran`
 
-## What did go wrong?
+Alright!
+So now that we know the Gauss-Seidel method is theoretically sound, let us implement it in `Fortran` and see how good it is in practice.
+For that purpose, we'll use the same test case as before: the 2D Poisson equation discretized with the standard five-point Laplacian approximation along with homogeneous Dirichlet boundary conditions.
+For more details on the derivation of the discrete problem, you can go back to the post on the Jacobi method ([here](https://loiseaujc.github.io/posts/blog-title/jacobi_experiments.html#the-poissons-equation-on-the-unit-square])).
 
-## Can we make things better?
+### The Gauss-Seidel method for the 2D Poisson equation
 
-## Cutting this long story short
+The discretized equation for the interior nodes reads
+
+$$
+\dfrac{1}{\Delta x^2} \left( u_{i+1, j} + u_{i-1, j} + u_{i, j+1} + u_{i, j-1} - 4 u_{i, j} \right) = - f_{i, j},
+$$
+
+where $\Delta x$ is our uniform grid spacing in each direction, and $f_{i, j}$ is the discretized source term of the equation.
+On the left-hand side, the $u_{ij}$ term corresponds to the diagonal component ($\mathbf{D}$), while all the others are the off-diagonal ones ($\mathbf{L} + \mathbf{L}^\top$).
+Recall that, using the [Jacobi method](https://loiseaujc.github.io/posts/blog-title/jacobi_experiments.html#the-jacobi-method-for-the-2d-poisson-equation), we treat the diagonal term implicitly and the off-diagonal ones explicitly such that the update rule reads
+
+$$
+u_{i, j}^{(t+1)} = \dfrac{1}{4} \left( \Delta x^2 \cdot f_{i, j} + u_{i+1, j}^{(t)} + u_{i-1, j}^{(t)} + u_{i, j+1}^{(t)} + u_{i, j-1}^{(t)} \right)
+$$
+
+where $t$ is the iteration number.
+Suppose now that we loop through the different grid points sequentially, with $i$ being the fastest changing index and $j$ the slowest one.
+Then, once we reach $u_{i, j}$, we already have improved estimates for $u_{i-1, j}^{(t+1)}$ and $u_{i, j-1}^{(t+1)}$.
+It would thus make sense to re-use these improved estimates rather than the old values $u_{i-1, j}^{(t)}$ and $u_{i, j-1}^{(t)}$.
+This leads to the update rule
+
+$$
+u_{i, j}^{(t+1)} = \dfrac{1}{4} \left( \Delta x^2 \cdot f_{i, j} + u_{i+1, j}^{(t)} + u_{i, j+1}^{(t)} + u_{i-1, j}^{(t+1)} + u_{i, j-1}^{(t)} \right).
+$$
+
+This is precisely the update rule for the Gauss-Seidel method applied to the 2D Poisson equation.
+And since we use improved estimates of some of the unknowns at each iteration, it intuitively makes sense to expect a faster convergence than for the Jacobi method.
+Another apparent benefit of the Gauss-Seidel method is that, while we need two different buffers for Jacobi (one to store $\mathbf{u}^{(t)}$ and one for $\mathbf{u}^{(t+1)}$), we can use only one here and update it in-place.
+This should reduce our memory consumption by roughly a factor 2, which is probably a good thing.
+Let's now move on with the actual implementation.
+
+#### The standard computational kernel
+
+Let us start with the simplest implementation of this kernel.
+In the rest, we will use `double precision` arithmetic.
+The `kind` parameter will be defined as
+
+```fortran
+integer, parameter :: dp = selected_real_kind(15, 307)
+```
+
+This is often considered to be a good practice in `Fortran` and guarantees a certain portability of the code across different compilers and platforms.
+Let us now turn our attention to the Gauss-Seidel kernel.
+Our textbook implementation is shown below.
+
+```fortran
+pure subroutine textbook_kernel(nx, ny, u, b, dx)
+    implicit none (type, external)
+    integer, intent(in) :: nx, ny
+    real(dp), intent(inout) :: u(nx, ny)
+    real(dp), intent(in) :: b(nx, ny), dx
+    integer :: i, j
+    do j = 2, ny-1
+        do i = 2, nx-1
+            u(i, j) = 0.25_dp * (b(i, j)*dx**2 + u(i+1, j) + u(i, j+1) &
+                                               + u(i-1, j) + u(i, j-1))
+        enddo
+    enddo
+end subroutine
+```
+
+To the actual solver now.
+As for the [Jacobi method](https://loiseaujc.github.io/posts/blog-title/jacobi_experiments.html#baseline-implementation), we will check the norm of the correction only now and then due to the slow convergence to avoid unnecessary computations.
+
+```fortran
+function solver(b, tol, maxiter) result(u)
+    implicit none
+    real(dp), intent(in)  :: b(:, :), tol
+    integer, intent(in)   :: maxiter
+    real(dp), allocatable :: u(:, :)
+    ! Internal variables.
+    integer               :: nx, ny, i, j, iteration
+    real(dp), allocatable :: v(:, :)
+    real(dp)              :: dx, l2_norm
+
+    ! Initialize variables.
+    nx = size(b, 1) ; ny = size(b, 2)
+    if (nx /= ny) then
+        error stop "Number of points in each direction need to be equal."
+    endif
+    
+    dx = 1.0_dp / (nx -1)
+    allocate(u(nx, ny), v(nx, ny), source=0.0_dp)
+    l2_norm = 1.0_dp
+    iteration = 0
+
+    ! Beginning of the Gauss-Seidel iterative method.
+    do while ((iteration < maxiter) .and. (l2_norm > tol))
+        ! Save previous solution for norm correction computation.
+        if (mod(iteration, 1000) == 0) v = u
+        ! Gauss-Seidel kernel.
+        call textbook_kernel(nx, ny, u, b, dx)
+        ! Compute norm of the correction.
+        if (mod(iteration, 1000) == 0) l2_norm = norm2(u - v)
+        ! Update iteration counter.
+        iteration = iteration + 1
+    enddo
+end function
+```
+
+If you recall the post on the [Jacobi method](https://loiseaujc.github.io/posts/blog-title/jacobi_experiments.html), you'll see that the solver is organized very similarly.
+Even if you ain't familiar with `Fortran`, it is quite readable.
+After having declared and initialized all of the required variables, the Gauss-Seidel method starts from line 23 and proceeds in 2 steps:
+
+1. Perform the Gauss-Seidel update (line 27).
+2. Compute the 2-norm of the correction (lines 25 and 29) every now and then.
+
+This loop keeps on going until the 2-norm of the correction is small enough to claim convergence.
+In all of our experiments, the tolerance is set to $10^{-8}$.
+
+**Performance -** We will use 512 points in each direction with a uniform grid spacing and assume the initial guess to be the zero solution for all of our experiments.
+We thus have slightly more than a quarter million of unknowns, a reasonably large linear system.
+The code is compiled using `gfortran 15.1` and the following options: `-O3 -march=native -mtune=native`.
+The table below summarizes some of the key computational metrics.
+
+| **Solver** | **# of iterations** | **Time/iteration** | **Total** |
+| :---: | :---: | :---: | :---: |
+| Textbook Gauss-Seidel | 74 000 | 1 ms | 80 s |
+
+Note that the time per iteration has been rounded.
+Nonetheless, solving a linear system with a quarter million of unknowns in under two minutes is quite impressive when you think about it.
+It is clearly orders of magnitude faster than if you were to do it by hand (and far less error-prone)!
+But the real question here is *how fast is it compared to the Jacobi method*?
+
+#### Comparison against the Jacobi method
+
+As a reference, we will use the fastest solver we implemented for the Jacobi method.
+This solver uses the following Jacobi kernel
+
+```fortran
+pure subroutine jacobi_kernel(nx, ny, u, v, b, dx)
+    implicit none (type, external)
+    integer, intent(in)   :: nx, ny
+    real(dp), intent(out) :: u(nx, ny)
+    real(dp), intent(in)  :: v(nx, ny), b(nx, ny), dx
+    integer               :: i, j
+    do concurrent(j=2:ny-1, i=2:nx-1)
+        u(i, j) = 0.25_dp*(b(i, j)*dx**2 + v(i+1, j) + v(i-1, j) &
+                                         + v(i, j+1) + v(i, j-1))
+    enddo
+end subroutine
+```
+
+along with the flip-flop trick to avoid any unnecessary copies.
+Let's put it to the test!
+
+We will actually proceed in two steps for the comparisons.
+First, let us tell the compiler to compile both codes using no optimization whatsoever using only the `-O0` option.
+
+| **Solver** | **# of iterations** | **Time/iteration** | **Total** |
+| :---: | :---: | :---: | :---: |
+| Textbook Gauss-Seidel | 74 000 | 2.5 ms | 190 s |
+| Jacobi | 138 000 | 3 ms | 434 s |
+
+As expected, the Gauss-Seidel solver requires roughly half the number of iterations compared to the Jacobi one, which translates into the solution being computed almost twice as fast.
+This looks consistent with the math.
+Right off the bat though, you can note that turning off compiler optimization leads to a slower solver, taking 190 seconds with `-O0` compared to only 80 seconds when compiled with `-O3 -march=native -mtune=native`.
+So clearly, the compiler is doing something useful when optimizing.
+And this is the whole point of using a language like `Fortran` for number crunching.
+
+Let's now rerun our test case but with compiler optimization turned on.
+The results are shown below.
+
+| **Solver** | **# of iterations** | **Time/iteration** | **Total** |
+| :---: | :---: | :---: | :---: |
+| Textbook Gauss-Seidel | 74 000 | 1 ms | 80 s |
+| Jacobi | 138 000 | 0.1 ms | 16 s |
+
+Again, the Gauss-Seidel method requires only half the number of iterations to converge.
+But now, the Jacobi solver is about 5x fast in wall-clock time!
+This seems surprising, doesn't it?
+Looking at the two update rules
+
+```fortran
+! Jacobi update
+u(i, j) = 0.25_dp*(b(i, j)*dx**2 + v(i+1, j) + v(i, j+1) &
+                                 + v(i-1, j) + v(i, j-1))
+
+! Gauss-Seidel update
+u(i, j) = 0.25_dp*(b(i, j)*dx**2 + u(i+1, j) + u(i, j+1) &
+                                 + u(i-1, j) + u(i, j-1))
+```
+
+we can see that they have the exact same number of arithmetic operations, the only difference being that Jacobi uses two buffers while Gauss-Seidel uses only one.
+Our timings would somehow imply that, even though the Jacobi method needs twice as many iterations to converge, each iteration is roughly ten times faster than the Gauss-Seidel one.
+Clearly, something must have gone wrong when the compiler optimized the Gauss-Seidel kernel.
+But what could it be?
+
+### What did go wrong?
+
+Two options here: either there is a critical issue with the compiler or, despite the two kernels being so similar, there is something fundamentally different between them preventing the compiler from optimizing.
+It turns out that the second option is the correct one.
+While a detailed explanation would require us to deep dive into how compilers and modern CPUs work, we will keep things simple and high-level.
+
+In order to understand what is happening, let us consider the equation for `u(i, j)` and unroll the loop for a couple of `i` values.
+For the Gauss-Seidel kernel (dropping the source term for the sake of clarity), this gives
+
+```fortran
+u(i, j)   = 0.25_dp * (u(i+1, j) + u(i-1, j) + u(i, j+1)   + u(i, j-1)  )
+u(i+1, j) = 0.25_dp * (u(i+2, j) + u(i, j)   + u(i+1, j+1) + u(i+1, j-1))
+u(i+2, j) = 0.25_dp * (u(i+3, j) + u(i+1, j) + u(i+2, j+1) + u(i+2, j-1))
+u(i+3, j) = 0.25_dp * (u(i+4, j) + u(i+2, j) + u(i+3, j+1) + u(i+3, j-1))
+```
+
+Updating `u(i+3, j)` (line 4) requires that we already computed `u(i+2, j)` and `u(i+3, j-1)`.
+But updating `u(i+2, j)` (line 3) itself requires `u(i+1, j)` to have been updated.
+Likewise, `u(i+1, j)` (line 2) requires `u(i, j)` to be updated.
+As written, the (lexicographic) Gauss-Seidel method is a sequential process where grid points can be updated only one at a time.
+This is a [loop-carried dependence](https://en.wikipedia.org/wiki/Loop_dependence_analysis) that needs to be preserved, no matter how aggressive the compiler optimization is, in order to guarantee the correctness of the code.
+Unfortunately, there is not much that can be done here (not entirely true though, but that is a story for another time).
+
+Let us now look at the unrolled loop for the Jacobi kernel.
+
+```fortran
+u(i, j)   = 0.25_dp * (v(i+1, j) + v(i-1, j) + v(i, j+1)   + v(i, j-1)  )
+u(i+1, j) = 0.25_dp * (v(i+2, j) + v(i, j)   + v(i+1, j+1) + v(i+1, j-1))
+u(i+2, j) = 0.25_dp * (v(i+3, j) + v(i+1, j) + v(i+2, j+1) + v(i+2, j-1))
+u(i+3, j) = 0.25_dp * (v(i+4, j) + v(i+2, j) + v(i+3, j+1) + v(i+3, j-1))
+```
+
+While very similar to the Gauss-Seidel unrolled kernel, one striking difference is that the left-hand side assignment (the `u` values) depend solely on the `v` values (which are constant over one sweep).
+There is no loop-carried dependence here.
+You could evaluate these four lines in any order you like, it wouldn't change a thing at the end.
+You could actually even evaluate all four lines at once!
+Being able to re-order the computations into whatever order is most convenient and perform multiple evaluations simultaneously (so-called [vectorization](https://en.wikipedia.org/wiki/Automatic_vectorization)) are precisely what allow the compiler to be very aggressive in its optimization and leverage all the features of modern CPU architectures!
+This is what the use of `do concurrent` in the Jacobi kernel conveys.
+And this is why, at the end, despite requiring twice as many iterations to converge, the Jacobi method turns out to be faster.
+Mathematically, the algorithm is not better (it is actually considered to be worse).
+But practically, it is better suited than Gauss-Seidel for modern computers.
+
+
+## Is all hope lost?
+
+Not at all! The failure of textbook Gauss-Seidel on modern hardware is not a mathematical defect.
+It is a **dependency and parallelism problem**. 
+To make Gauss-Seidel fast on modern CPUs, we must eliminate the loop-carried dependency without losing its superior convergence rate.
+This brings us to **grid reordering strategies**:
+
+1. **Red-Black (Checkerboard) Ordering:** By splitting the grid into alternate red and black nodes, we can update half the domain in parallel using pure SIMD sweeps, recovering full SIMD vectorization while keeping the Gauss-Seidel convergence rate.
+2. **Domain Decomposition & Multi-Scale Layouts:** Partitioning the domain into independent blocks allows us to execute localized Gauss-Seidel sweeps inside L1/L2 caches before exchanging boundary data.
+
+In the next post, we will go through the details of the **Red-Black Gauss-Seidel**, implement it in `Fortran` and explore whether we can recover Gauss-Seidel's convergence advantage without sacrificing the hardware efficiency of Jacobi.

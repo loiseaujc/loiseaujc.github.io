@@ -6,6 +6,7 @@
   {
     "listing": "/posts.html",
     "items": [
+      "/posts/blog-title/gauss_seidel_experiments.html",
       "/posts/paper-title/hydrogym.html",
       "/posts/news-title/ensam_podcast.html",
       "/posts/paper-title/lightkrylov.html",
@@ -23,6 +24,7 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/blog-title/gauss_seidel_experiments.html",
       "/posts/paper-title/hydrogym.html",
       "/posts/news-title/ensam_podcast.html",
       "/posts/paper-title/lightkrylov.html",

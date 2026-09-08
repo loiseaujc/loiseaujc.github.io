@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Dr.&nbsp;Jean-Christophe Loiseau">
-<meta name="dcterms.date" content="2025-09-23">
+<meta name="dcterms.date" content="2026-09-08">
 <meta name="description" content="Quarto Academic Website Template adapted by Dr.&nbsp;Gang He">
 
 <title>Gauss-Seidel is faster than Jacobi. Or is it? – Dr.&nbsp;Jean-Christophe Loiseau</title>
@@ -22,6 +22,41 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -100,7 +135,6 @@ https://badge.dimensions.ai/
 <script async="" src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
 
 <script type="text/javascript" src="//cdn.plu.mx/widget-popup.js"></script>
-<meta name="quarto:status" content="draft">
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
@@ -146,7 +180,7 @@ window.Quarto = {
 <body class="nav-fixed quarto-light">
 
 <div id="quarto-search-results"></div>
-  <header id="quarto-header" class="headroom fixed-top"><div id="quarto-draft-alert" class="alert alert-warning"><i class="bi bi-pencil-square"></i>Draft</div>
+  <header id="quarto-header" class="headroom fixed-top">
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
@@ -213,7 +247,7 @@ window.Quarto = {
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item">
-    <a class="nav-link" href="../../files/nsf-biosketch.pdf"> 
+    <a class="nav-link" href="../../files/cv_loiseau.pdf"> 
 <span class="menu-text">CV</span></a>
   </li>  
   <li class="nav-item compact">
@@ -257,10 +291,12 @@ window.Quarto = {
   <li><a href="#fair-enough-but-does-it-actually-converge" id="toc-fair-enough-but-does-it-actually-converge" class="nav-link" data-scroll-target="#fair-enough-but-does-it-actually-converge">Fair enough, but does it actually converge?</a></li>
   <li><a href="#alright-it-converges.-but-how-fast" id="toc-alright-it-converges.-but-how-fast" class="nav-link" data-scroll-target="#alright-it-converges.-but-how-fast">Alright, it converges. But how fast?</a></li>
   </ul></li>
-  <li><a href="#numerical-experiments-with-fortran" id="toc-numerical-experiments-with-fortran" class="nav-link" data-scroll-target="#numerical-experiments-with-fortran">Numerical experiments with <code>Fortran</code></a></li>
+  <li><a href="#numerical-experiments-with-fortran" id="toc-numerical-experiments-with-fortran" class="nav-link" data-scroll-target="#numerical-experiments-with-fortran">Numerical experiments with <code>Fortran</code></a>
+  <ul class="collapse">
+  <li><a href="#the-gauss-seidel-method-for-the-2d-poisson-equation" id="toc-the-gauss-seidel-method-for-the-2d-poisson-equation" class="nav-link" data-scroll-target="#the-gauss-seidel-method-for-the-2d-poisson-equation">The Gauss-Seidel method for the 2D Poisson equation</a></li>
   <li><a href="#what-did-go-wrong" id="toc-what-did-go-wrong" class="nav-link" data-scroll-target="#what-did-go-wrong">What did go wrong?</a></li>
-  <li><a href="#can-we-make-things-better" id="toc-can-we-make-things-better" class="nav-link" data-scroll-target="#can-we-make-things-better">Can we make things better?</a></li>
-  <li><a href="#cutting-this-long-story-short" id="toc-cutting-this-long-story-short" class="nav-link" data-scroll-target="#cutting-this-long-story-short">Cutting this long story short</a></li>
+  </ul></li>
+  <li><a href="#is-all-hope-lost" id="toc-is-all-hope-lost" class="nav-link" data-scroll-target="#is-all-hope-lost">Is all hope lost?</a></li>
   </ul>
 </nav>
     </div>
@@ -289,7 +325,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">September 23, 2025</p>
+      <p class="date">September 8, 2026</p>
     </div>
   </div>
   
@@ -301,15 +337,15 @@ window.Quarto = {
 </header>
 
 
-<p>In a previous <a href="https://loiseaujc.github.io/posts/blog-title/jacobi_experiments.html">post</a>, I went through some details about how one could write an efficient Jacobi solver in modern <code>Fortran</code> to solve the 2D Poisson equation. Justifiably, colleagues and readers mentionned that using the <a href="https://en.wikipedia.org/wiki/Gauss%E2%80%93Seidel_method">Gauss-Seidel method</a> instead should lead to an even faster solver with very minimal modifications to my previous code. So let’s put this to a test.</p>
-<p><strong>TL-DR -</strong> While the Gauss-Seidel method theoretically (and empirically) requires twice as less iterations as the Jacobi method to solve our test problem, it does not necessarilly translate into a solver running twice as fast because of how good compilers are at leveraging modern CPU instructions.</p>
+<p>In a previous <a href="https://loiseaujc.github.io/posts/blog-title/jacobi_experiments.html">post</a>, I went through some details about how one could write an efficient Jacobi solver in modern <code>Fortran</code> to solve the 2D Poisson equation. Several colleagues and readers mentioned that using the <a href="https://en.wikipedia.org/wiki/Gauss%E2%80%93Seidel_method">Gauss-Seidel method</a> instead should lead to an even faster solver with very minimal modifications to my previous code. So let’s put this to a test.</p>
+<p><strong>TL-DR -</strong> While the Gauss-Seidel method theoretically (and empirically) requires half as many iterations as the Jacobi method to solve our test problem, it does not necessarily translate into a solver running twice as fast because of how good compilers are at leveraging modern CPU instructions.</p>
 <section id="solving-the-2d-poisson-equation-with-the-gauss-seidel-method" class="level2">
 <h2 class="anchored" data-anchor-id="solving-the-2d-poisson-equation-with-the-gauss-seidel-method">Solving the 2D Poisson equation with the Gauss-Seidel method</h2>
 <p>Consider a system of linear equations</p>
 <p><span class="math display">\[
 \mathbf{Ax} = \mathbf{b}
 \]</span></p>
-<p>where <span class="math inline">\(\mathbf{A}\)</span> is an invertible <span class="math inline">\(n \times n\)</span> matrix. In the rest of this post, we’ll assume that this problem arises from the finite-difference discretization of the two-dimensional Poisson equation on the unit-square (see <a href="https://loiseaujc.github.io/posts/blog-title/jacobi_experiments.html#discretizing-the-problem">here</a> for more details). If you ever had a numerical linear algebra, the <a href="https://loiseaujc.github.io/posts/blog-title/jacobi_experiments.html">Jacobi method</a> is probably the first <em>iterative method</em> you’ve seen to solve this kind of problems. You may even remember your lecturer telling you that, even though easy to implement and analyse, the Jacobi method can be terribly slow. And this is usually the stepping stone for introducing the <a href="https://en.wikipedia.org/wiki/Gauss%E2%80%93Seidel_method">Gauss-Seidel method</a>.</p>
+<p>where <span class="math inline">\(\mathbf{A}\)</span> is an invertible <span class="math inline">\(n \times n\)</span> matrix. In the rest of this post, we’ll assume that this problem arises from the finite-difference discretization of the two-dimensional Poisson equation on the unit-square (see <a href="https://loiseaujc.github.io/posts/blog-title/jacobi_experiments.html#discretizing-the-problem">here</a> for more details). If you’ve ever had a numerical linear algebra, the <a href="https://loiseaujc.github.io/posts/blog-title/jacobi_experiments.html">Jacobi method</a> is probably the first <em>iterative method</em> you’ve seen to solve this kind of problems. You may even remember your lecturer telling you that, even though easy to implement and analyse, the Jacobi method can be terribly slow. And this is usually the stepping stone for introducing the <a href="https://en.wikipedia.org/wiki/Gauss%E2%80%93Seidel_method">Gauss-Seidel method</a>.</p>
 <section id="a-brief-overview" class="level3">
 <h3 class="anchored" data-anchor-id="a-brief-overview">A brief overview</h3>
 <p>While the Jacobi method relies on the additive decomposition:</p>
@@ -324,7 +360,7 @@ window.Quarto = {
 <p><span class="math display">\[
     \mathbf{x}_{t+1} = \left( \mathbf{D} + \mathbf{L} \right)^{-1} \left( \mathbf{b} - \mathbf{Ux}_t \right),
 \]</span></p>
-<p>where subscript <span class="math inline">\(t\)</span> is the iteration number. This is in essence very similar to the Jacobi update rule <span class="math inline">\(\mathbf{x}_{t+1} = \mathbf{D}^{-1} \left( \mathbf{b} - \mathbf{Rx}_t \right)\)</span> except that <span class="math inline">\(\left( \mathbf{D} + \mathbf{L} \right)^{-1}\)</span> is a somexwhat better approximation of <span class="math inline">\(\mathbf{A}^{-1}\)</span>. It is thus reasonnable to expect the Gauss-Seidel method to converge faster than the Jacobi one.</p>
+<p>where subscript <span class="math inline">\(t\)</span> is the iteration number. This is in essence very similar to the Jacobi update rule <span class="math inline">\(\mathbf{x}_{t+1} = \mathbf{D}^{-1} \left( \mathbf{b} - \mathbf{Rx}_t \right)\)</span> except that <span class="math inline">\(\left( \mathbf{D} + \mathbf{L} \right)^{-1}\)</span> is a somewhat better approximation of <span class="math inline">\(\mathbf{A}^{-1}\)</span>. It is thus reasonable to expect the Gauss-Seidel method to converge faster than the Jacobi one.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -345,8 +381,8 @@ Note
 </section>
 <section id="fair-enough-but-does-it-actually-converge" class="level3">
 <h3 class="anchored" data-anchor-id="fair-enough-but-does-it-actually-converge">Fair enough, but does it actually converge?</h3>
-<p>Alright, so Gauss-Seidel is a variation on the theme of Jacobi methods, but does it actually converge as well? As in the previous <a href="https://loiseaujc.github.io/posts/blog-title/jacobi_experiments.html#fair-enough-but-does-it-actually-converge">post</a>, we’ll assume <span class="math inline">\(\mathbf{A}\)</span> is symmetric positive definite. This will give use a sufficient albeit non-necessarry condition but will make things easier.</p>
-<p>Let us begin by rewritting the Gauss-Seidel update rule as</p>
+<p>Alright, so Gauss-Seidel is a variation on the theme of Jacobi methods, but does it actually converge as well? As in the previous <a href="https://loiseaujc.github.io/posts/blog-title/jacobi_experiments.html#fair-enough-but-does-it-actually-converge">post</a>, we’ll assume <span class="math inline">\(\mathbf{A}\)</span> is symmetric positive definite. This will give us a sufficient albeit non-necessary condition but will make things easier.</p>
+<p>Let us begin by rewriting the Gauss-Seidel update rule as</p>
 <p><span class="math display">\[
 \begin{aligned}
     \mathbf{x}_{t+1} &amp; = \left( \mathbf{D} + \mathbf{L} \right)^{-1} \left( \mathbf{b} - \mathbf{Ux}_t \right) \\
@@ -363,22 +399,216 @@ Note
 <p><strong>Theorem n°1 –</strong> Convergence of the Gauss-Seidel method</p>
 <p>If <span class="math inline">\(\mathbf{A}\)</span> is symmetric positive definite, the Gauss-Seidel iteration converges to the solution of <span class="math inline">\(\mathbf{Ax} = \mathbf{b}\)</span>.</p>
 </blockquote>
+<blockquote class="blockquote">
+<p><strong>Proof –</strong> Let <span class="math inline">\(\mathbf{A}\)</span> be symmetric positive definite and <span class="math inline">\(\mu\)</span> be an eigenvalue of <span class="math inline">\(\mathbf{I} - \left( \mathbf{D} + \mathbf{L} \right)^{-1} \mathbf{A}\)</span> with eigenvectors <span class="math inline">\(\mathbf{v}\)</span>. Then <span class="math display">\[\left( \mathbf{I} - \left( \mathbf{D} + \mathbf{L} \right)^{-1} \mathbf{A} \right) \mathbf{v} = \mu \mathbf{v}.\]</span> Rearranging terms yields <span class="math display">\[\left( \mathbf{D} + \mathbf{L} \right) \mathbf{v} = \dfrac{1}{1 - \mu} \mathbf{Av}.\]</span> Then <span class="math display">\[ \mathbf{v}^* \left( \mathbf{D} + \mathbf{L} \right) \mathbf{v} = \dfrac{1}{1 - \mu} \mathbf{v}^* \mathbf{Av}.\]</span> Taking the conjugate transpose of the above expression, we can write <span class="math display">\[\mathbf{v}^* \left( \mathbf{D} + \mathbf{L} \right) \mathbf{v} + \mathbf{v}^* \left( \mathbf{D} + \mathbf{L}^* \right) \mathbf{v} = \left( \dfrac{1}{1 - \mu} + \dfrac{1}{1 - \bar{\mu}} \right) \mathbf{v}^* \mathbf{Av},\]</span> which can be simplified to <span class="math display">\[\mathbf{v}^* \left( \mathbf{A} + \mathbf{D} \right) \mathbf{v} = \dfrac{2 - 2 \Re(\mu)}{\vert 1 - \mu \vert^2} \mathbf{v}^* \mathbf{Av}.\]</span> After some algebraic manipulations, we obtain <span class="math display">\[ \mathbf{v}^* \mathbf{Dv} = \dfrac{1 - \vert \mu \vert^2}{\vert 1 - \mu \vert^2} \mathbf{v}^* \mathbf{Av}.\]</span> Since <span class="math inline">\(\mathbf{A}\)</span> and <span class="math inline">\(\mathbf{D}\)</span> are symmetric positive-definite, and <span class="math inline">\(\vert 1 - \mu \vert^2\)</span> is strictly positive, the numerator must also be strictly positive <span class="math display">\[ 1 - \vert \mu \vert^2 &gt; 0 \Rightarrow \vert \mu \vert^2 &lt; 1 \Rightarrow \vert \mu \vert &lt; 1.\]</span> Hence, the iteration matrix <span class="math inline">\(\mathbf{I} - \left( \mathbf{D} + \mathbf{L} \right)^{-1} \mathbf{A}\)</span> has all of its eigenvalues inside the unit circle and the Gauss-Seidel iteration converges.</p>
+</blockquote>
+<p>Hidden in this proof are two little facts you need to have in mind. First, while a sufficient condition for convergence of the Jacobi method was that both <span class="math inline">\(\mathbf{A}\)</span> and <span class="math inline">\(2\mathbf{D} - \mathbf{A}\)</span> were symmetric positive-definite, the Gauss-Seidel method only requires <span class="math inline">\(\mathbf{A}\)</span> to be so. Hence, it converges for a wider set of matrices than the Jacobi method. Second, while the eigenvalues of the Jacobi method were all purely real, those of Gauss-Seidel can be complex (albeit within the unit disk). This will have no consequence whatsoever in the rest of this post, but it might be worth noting it.</p>
 </section>
 <section id="alright-it-converges.-but-how-fast" class="level3">
 <h3 class="anchored" data-anchor-id="alright-it-converges.-but-how-fast">Alright, it converges. But how fast?</h3>
+<p>Just like the Jacobi method, the convergence rate of the Gauss-Seidel can be estimated using the <a href="https://en.wikipedia.org/wiki/Spectral_radius">spectral radius</a> of the iteration matrix <span class="math inline">\(\mathbf{M} = \mathbf{I} - \left( \mathbf{D} + \mathbf{L} \right)^{-1} \mathbf{A}\)</span> (which we’ve just proved to be smaller than unity). Obviously, the smaller <span class="math inline">\(\rho(\mathbf{M})\)</span>, the better. But the question we are actually interested in is not how quickly does the Gauss-Seidel method converges, but <em>how fast does it converge relative to Jacobi?</em></p>
+<p>The answer is actually <em>it depends</em>. There are actually cases where the Jacobi method converges, while the Gauss-Seidel method diverges. In my experience, these are however somewhat pathological cases. What can be said for sure is that: if <span class="math inline">\(\mathbf{A}\)</span> is symmetric positive definite and has a tridiagonal (or block tridiagonal) structure, then the Gauss-Seidel method will asymptotically require only half the number of iterations of the Jacobi method to reach the same accuracy. The proof is by <a href="https://en.wikipedia.org/wiki/David_M._Young_Jr.">David Young</a> (1923-2008), one of the pioneers in numerical analysis and scientific computing.</p>
 </section>
 </section>
 <section id="numerical-experiments-with-fortran" class="level2">
 <h2 class="anchored" data-anchor-id="numerical-experiments-with-fortran">Numerical experiments with <code>Fortran</code></h2>
+<p>Alright! So now that we know the Gauss-Seidel method is theoretically sound, let us implement it in <code>Fortran</code> and see how good it is in practice. For that purpose, we’ll use the same test case as before: the 2D Poisson equation discretized with the standard five-point Laplacian approximation along with homogeneous Dirichlet boundary conditions. For more details on the derivation of the discrete problem, you can go back to the post on the Jacobi method (<a href="https://loiseaujc.github.io/posts/blog-title/jacobi_experiments.html#the-poissons-equation-on-the-unit-square%5D">here</a>).</p>
+<section id="the-gauss-seidel-method-for-the-2d-poisson-equation" class="level3">
+<h3 class="anchored" data-anchor-id="the-gauss-seidel-method-for-the-2d-poisson-equation">The Gauss-Seidel method for the 2D Poisson equation</h3>
+<p>The discretized equation for the interior nodes reads</p>
+<p><span class="math display">\[
+\dfrac{1}{\Delta x^2} \left( u_{i+1, j} + u_{i-1, j} + u_{i, j+1} + u_{i, j-1} - 4 u_{i, j} \right) = - f_{i, j},
+\]</span></p>
+<p>where <span class="math inline">\(\Delta x\)</span> is our uniform grid spacing in each direction, and <span class="math inline">\(f_{i, j}\)</span> is the discretized source term of the equation. On the left-hand side, the <span class="math inline">\(u_{ij}\)</span> term corresponds to the diagonal component (<span class="math inline">\(\mathbf{D}\)</span>), while all the others are the off-diagonal ones (<span class="math inline">\(\mathbf{L} + \mathbf{L}^\top\)</span>). Recall that, using the <a href="https://loiseaujc.github.io/posts/blog-title/jacobi_experiments.html#the-jacobi-method-for-the-2d-poisson-equation">Jacobi method</a>, we treat the diagonal term implicitly and the off-diagonal ones explicitly such that the update rule reads</p>
+<p><span class="math display">\[
+u_{i, j}^{(t+1)} = \dfrac{1}{4} \left( \Delta x^2 \cdot f_{i, j} + u_{i+1, j}^{(t)} + u_{i-1, j}^{(t)} + u_{i, j+1}^{(t)} + u_{i, j-1}^{(t)} \right)
+\]</span></p>
+<p>where <span class="math inline">\(t\)</span> is the iteration number. Suppose now that we loop through the different grid points sequentially, with <span class="math inline">\(i\)</span> being the fastest changing index and <span class="math inline">\(j\)</span> the slowest one. Then, once we reach <span class="math inline">\(u_{i, j}\)</span>, we already have improved estimates for <span class="math inline">\(u_{i-1, j}^{(t+1)}\)</span> and <span class="math inline">\(u_{i, j-1}^{(t+1)}\)</span>. It would thus make sense to re-use these improved estimates rather than the old values <span class="math inline">\(u_{i-1, j}^{(t)}\)</span> and <span class="math inline">\(u_{i, j-1}^{(t)}\)</span>. This leads to the update rule</p>
+<p><span class="math display">\[
+u_{i, j}^{(t+1)} = \dfrac{1}{4} \left( \Delta x^2 \cdot f_{i, j} + u_{i+1, j}^{(t)} + u_{i, j+1}^{(t)} + u_{i-1, j}^{(t+1)} + u_{i, j-1}^{(t)} \right).
+\]</span></p>
+<p>This is precisely the update rule for the Gauss-Seidel method applied to the 2D Poisson equation. And since we use improved estimates of some of the unknowns at each iteration, it intuitively makes sense to expect a faster convergence than for the Jacobi method. Another apparent benefit of the Gauss-Seidel method is that, while we need two different buffers for Jacobi (one to store <span class="math inline">\(\mathbf{u}^{(t)}\)</span> and one for <span class="math inline">\(\mathbf{u}^{(t+1)}\)</span>), we can use only one here and update it in-place. This should reduce our memory consumption by roughly a factor 2, which is probably a good thing. Let’s now move on with the actual implementation.</p>
+<section id="the-standard-computational-kernel" class="level4">
+<h4 class="anchored" data-anchor-id="the-standard-computational-kernel">The standard computational kernel</h4>
+<p>Let us start with the simplest implementation of this kernel. In the rest, we will use <code>double precision</code> arithmetic. The <code>kind</code> parameter will be defined as</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode numberSource fortran number-lines code-with-copy"><code class="sourceCode fortranfixed"><span id="cb1-1"><a href="#cb1-1"></a><span class="dt">integer</span>, <span class="dt">parameter</span> <span class="dt">::</span> dp <span class="kw">=</span> <span class="fu">selected_real_kind</span>(<span class="dv">15</span>, <span class="dv">307</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>This is often considered to be a good practice in <code>Fortran</code> and guarantees a certain portability of the code across different compilers and platforms. Let us now turn our attention to the Gauss-Seidel kernel. Our textbook implementation is shown below.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode numberSource fortran number-lines code-with-copy"><code class="sourceCode fortranfixed"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">pure</span> <span class="kw">subroutine</span> textbook_kernel(nx, ny, u, b, dx)</span>
+<span id="cb2-2"><a href="#cb2-2"></a>    <span class="kw">implicit</span> <span class="kw">none</span> (<span class="dt">type</span>, <span class="kw">external</span>)</span>
+<span id="cb2-3"><a href="#cb2-3"></a>    <span class="dt">integer</span>, <span class="dt">intent(in)</span> <span class="dt">::</span> nx, ny</span>
+<span id="cb2-4"><a href="#cb2-4"></a>    <span class="dt">real(dp)</span>, <span class="dt">intent(inout)</span> <span class="dt">::</span> u(nx, ny)</span>
+<span id="cb2-5"><a href="#cb2-5"></a>    <span class="dt">real(dp)</span>, <span class="dt">intent(in)</span> <span class="dt">::</span> b(nx, ny), dx</span>
+<span id="cb2-6"><a href="#cb2-6"></a>    <span class="dt">integer</span> <span class="dt">::</span> i, j</span>
+<span id="cb2-7"><a href="#cb2-7"></a>    <span class="kw">do</span> j <span class="kw">=</span> <span class="dv">2</span>, ny<span class="kw">-</span><span class="dv">1</span></span>
+<span id="cb2-8"><a href="#cb2-8"></a>        <span class="kw">do</span> i <span class="kw">=</span> <span class="dv">2</span>, nx<span class="kw">-</span><span class="dv">1</span></span>
+<span id="cb2-9"><a href="#cb2-9"></a>            u(i, j) <span class="kw">=</span> <span class="fl">0.25_dp</span> <span class="kw">*</span> (b(i, j)<span class="kw">*</span>dx<span class="kw">**</span><span class="dv">2</span> <span class="kw">+</span> u(i<span class="kw">+</span><span class="dv">1</span>, j) <span class="kw">+</span> u(i, j<span class="kw">+</span><span class="dv">1</span>) <span class="kw">&amp;</span></span>
+<span id="cb2-10"><a href="#cb2-10"></a>                                               <span class="kw">+</span> u(i<span class="kw">-</span><span class="dv">1</span>, j) <span class="kw">+</span> u(i, j<span class="kw">-</span><span class="dv">1</span>))</span>
+<span id="cb2-11"><a href="#cb2-11"></a>        <span class="kw">enddo</span></span>
+<span id="cb2-12"><a href="#cb2-12"></a>    <span class="kw">enddo</span></span>
+<span id="cb2-13"><a href="#cb2-13"></a><span class="kw">end subroutine</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>To the actual solver now. As for the <a href="https://loiseaujc.github.io/posts/blog-title/jacobi_experiments.html#baseline-implementation">Jacobi method</a>, we will check the norm of the correction only now and then due to the slow convergence to avoid unnecessary computations.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode numberSource fortran number-lines code-with-copy"><code class="sourceCode fortranfixed"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">function</span> solver(b, tol, maxiter) <span class="kw">result</span>(u)</span>
+<span id="cb3-2"><a href="#cb3-2"></a>    <span class="kw">implicit</span> <span class="kw">none</span></span>
+<span id="cb3-3"><a href="#cb3-3"></a>    <span class="dt">real(dp)</span>, <span class="dt">intent(in)</span>  <span class="dt">::</span> b(:, :), tol</span>
+<span id="cb3-4"><a href="#cb3-4"></a>    <span class="dt">integer</span>, <span class="dt">intent(in)</span>   <span class="dt">::</span> maxiter</span>
+<span id="cb3-5"><a href="#cb3-5"></a>    <span class="dt">real(dp)</span>, <span class="dt">allocatable</span> <span class="dt">::</span> u(:, :)</span>
+<span id="cb3-6"><a href="#cb3-6"></a>    <span class="co">! Internal variables.</span></span>
+<span id="cb3-7"><a href="#cb3-7"></a>    <span class="dt">integer</span>               <span class="dt">::</span> nx, ny, i, j, iteration</span>
+<span id="cb3-8"><a href="#cb3-8"></a>    <span class="dt">real(dp)</span>, <span class="dt">allocatable</span> <span class="dt">::</span> v(:, :)</span>
+<span id="cb3-9"><a href="#cb3-9"></a>    <span class="dt">real(dp)</span>              <span class="dt">::</span> dx, l2_norm</span>
+<span id="cb3-10"><a href="#cb3-10"></a></span>
+<span id="cb3-11"><a href="#cb3-11"></a>    <span class="co">! Initialize variables.</span></span>
+<span id="cb3-12"><a href="#cb3-12"></a>    nx <span class="kw">=</span> <span class="fu">size</span>(b, <span class="dv">1</span>) ; ny <span class="kw">=</span> <span class="fu">size</span>(b, <span class="dv">2</span>)</span>
+<span id="cb3-13"><a href="#cb3-13"></a>    <span class="kw">if</span> (nx <span class="op">/=</span> ny) <span class="kw">then</span></span>
+<span id="cb3-14"><a href="#cb3-14"></a>        error <span class="kw">stop</span> <span class="st">"Number of points in each direction need to be equal."</span></span>
+<span id="cb3-15"><a href="#cb3-15"></a>    <span class="kw">endif</span></span>
+<span id="cb3-16"><a href="#cb3-16"></a>    </span>
+<span id="cb3-17"><a href="#cb3-17"></a>    dx <span class="kw">=</span> <span class="fl">1.0_dp</span> <span class="kw">/</span> (nx <span class="kw">-</span><span class="dv">1</span>)</span>
+<span id="cb3-18"><a href="#cb3-18"></a>    <span class="kw">allocate</span>(u(nx, ny), v(nx, ny), source<span class="kw">=</span><span class="fl">0.0_dp</span>)</span>
+<span id="cb3-19"><a href="#cb3-19"></a>    l2_norm <span class="kw">=</span> <span class="fl">1.0_dp</span></span>
+<span id="cb3-20"><a href="#cb3-20"></a>    iteration <span class="kw">=</span> <span class="dv">0</span></span>
+<span id="cb3-21"><a href="#cb3-21"></a></span>
+<span id="cb3-22"><a href="#cb3-22"></a>    <span class="co">! Beginning of the Gauss-Seidel iterative method.</span></span>
+<span id="cb3-23"><a href="#cb3-23"></a>    <span class="kw">do</span> <span class="kw">while</span> ((iteration <span class="op">&lt;</span> maxiter) <span class="op">.and.</span> (l2_norm <span class="op">&gt;</span> tol))</span>
+<span id="cb3-24"><a href="#cb3-24"></a>        <span class="co">! Save previous solution for norm correction computation.</span></span>
+<span id="cb3-25"><a href="#cb3-25"></a>        <span class="kw">if</span> (<span class="bu">mod</span>(iteration, <span class="dv">1000</span>) <span class="op">==</span> <span class="dv">0</span>) v <span class="kw">=</span> u</span>
+<span id="cb3-26"><a href="#cb3-26"></a>        <span class="co">! Gauss-Seidel kernel.</span></span>
+<span id="cb3-27"><a href="#cb3-27"></a>        <span class="kw">call</span> textbook_kernel(nx, ny, u, b, dx)</span>
+<span id="cb3-28"><a href="#cb3-28"></a>        <span class="co">! Compute norm of the correction.</span></span>
+<span id="cb3-29"><a href="#cb3-29"></a>        <span class="kw">if</span> (<span class="bu">mod</span>(iteration, <span class="dv">1000</span>) <span class="op">==</span> <span class="dv">0</span>) l2_norm <span class="kw">=</span> norm2(u <span class="kw">-</span> v)</span>
+<span id="cb3-30"><a href="#cb3-30"></a>        <span class="co">! Update iteration counter.</span></span>
+<span id="cb3-31"><a href="#cb3-31"></a>        iteration <span class="kw">=</span> iteration <span class="kw">+</span> <span class="dv">1</span></span>
+<span id="cb3-32"><a href="#cb3-32"></a>    <span class="kw">enddo</span></span>
+<span id="cb3-33"><a href="#cb3-33"></a><span class="kw">end function</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>If you recall the post on the <a href="https://loiseaujc.github.io/posts/blog-title/jacobi_experiments.html">Jacobi method</a>, you’ll see that the solver is organized very similarly. Even if you ain’t familiar with <code>Fortran</code>, it is quite readable. After having declared and initialized all of the required variables, the Gauss-Seidel method starts from line 23 and proceeds in 2 steps:</p>
+<ol type="1">
+<li>Perform the Gauss-Seidel update (line 27).</li>
+<li>Compute the 2-norm of the correction (lines 25 and 29) every now and then.</li>
+</ol>
+<p>This loop keeps on going until the 2-norm of the correction is small enough to claim convergence. In all of our experiments, the tolerance is set to <span class="math inline">\(10^{-8}\)</span>.</p>
+<p><strong>Performance -</strong> We will use 512 points in each direction with a uniform grid spacing and assume the initial guess to be the zero solution for all of our experiments. We thus have slightly more than a quarter million of unknowns, a reasonably large linear system. The code is compiled using <code>gfortran 15.1</code> and the following options: <code>-O3 -march=native -mtune=native</code>. The table below summarizes some of the key computational metrics.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;"><strong>Solver</strong></th>
+<th style="text-align: center;"><strong># of iterations</strong></th>
+<th style="text-align: center;"><strong>Time/iteration</strong></th>
+<th style="text-align: center;"><strong>Total</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">Textbook Gauss-Seidel</td>
+<td style="text-align: center;">74 000</td>
+<td style="text-align: center;">1 ms</td>
+<td style="text-align: center;">80 s</td>
+</tr>
+</tbody>
+</table>
+<p>Note that the time per iteration has been rounded. Nonetheless, solving a linear system with a quarter million of unknowns in under two minutes is quite impressive when you think about it. It is clearly orders of magnitude faster than if you were to do it by hand (and far less error-prone)! But the real question here is <em>how fast is it compared to the Jacobi method</em>?</p>
 </section>
-<section id="what-did-go-wrong" class="level2">
-<h2 class="anchored" data-anchor-id="what-did-go-wrong">What did go wrong?</h2>
+<section id="comparison-against-the-jacobi-method" class="level4">
+<h4 class="anchored" data-anchor-id="comparison-against-the-jacobi-method">Comparison against the Jacobi method</h4>
+<p>As a reference, we will use the fastest solver we implemented for the Jacobi method. This solver uses the following Jacobi kernel</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode numberSource fortran number-lines code-with-copy"><code class="sourceCode fortranfixed"><span id="cb4-1"><a href="#cb4-1"></a><span class="kw">pure</span> <span class="kw">subroutine</span> jacobi_kernel(nx, ny, u, v, b, dx)</span>
+<span id="cb4-2"><a href="#cb4-2"></a>    <span class="kw">implicit</span> <span class="kw">none</span> (<span class="dt">type</span>, <span class="kw">external</span>)</span>
+<span id="cb4-3"><a href="#cb4-3"></a>    <span class="dt">integer</span>, <span class="dt">intent(in)</span>   <span class="dt">::</span> nx, ny</span>
+<span id="cb4-4"><a href="#cb4-4"></a>    <span class="dt">real(dp)</span>, <span class="dt">intent(out)</span> <span class="dt">::</span> u(nx, ny)</span>
+<span id="cb4-5"><a href="#cb4-5"></a>    <span class="dt">real(dp)</span>, <span class="dt">intent(in)</span>  <span class="dt">::</span> v(nx, ny), b(nx, ny), dx</span>
+<span id="cb4-6"><a href="#cb4-6"></a>    <span class="dt">integer</span>               <span class="dt">::</span> i, j</span>
+<span id="cb4-7"><a href="#cb4-7"></a>    <span class="kw">do</span> concurrent(j<span class="kw">=</span><span class="dv">2</span>:ny<span class="kw">-</span><span class="dv">1</span>, i<span class="kw">=</span><span class="dv">2</span>:nx<span class="kw">-</span><span class="dv">1</span>)</span>
+<span id="cb4-8"><a href="#cb4-8"></a>        u(i, j) <span class="kw">=</span> <span class="fl">0.25_dp</span><span class="kw">*</span>(b(i, j)<span class="kw">*</span>dx<span class="kw">**</span><span class="dv">2</span> <span class="kw">+</span> v(i<span class="kw">+</span><span class="dv">1</span>, j) <span class="kw">+</span> v(i<span class="kw">-</span><span class="dv">1</span>, j) <span class="kw">&amp;</span></span>
+<span id="cb4-9"><a href="#cb4-9"></a>                                         <span class="kw">+</span> v(i, j<span class="kw">+</span><span class="dv">1</span>) <span class="kw">+</span> v(i, j<span class="kw">-</span><span class="dv">1</span>))</span>
+<span id="cb4-10"><a href="#cb4-10"></a>    <span class="kw">enddo</span></span>
+<span id="cb4-11"><a href="#cb4-11"></a><span class="kw">end subroutine</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>along with the flip-flop trick to avoid any unnecessary copies. Let’s put it to the test!</p>
+<p>We will actually proceed in two steps for the comparisons. First, let us tell the compiler to compile both codes using no optimization whatsoever using only the <code>-O0</code> option.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;"><strong>Solver</strong></th>
+<th style="text-align: center;"><strong># of iterations</strong></th>
+<th style="text-align: center;"><strong>Time/iteration</strong></th>
+<th style="text-align: center;"><strong>Total</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">Textbook Gauss-Seidel</td>
+<td style="text-align: center;">74 000</td>
+<td style="text-align: center;">2.5 ms</td>
+<td style="text-align: center;">190 s</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">Jacobi</td>
+<td style="text-align: center;">138 000</td>
+<td style="text-align: center;">3 ms</td>
+<td style="text-align: center;">434 s</td>
+</tr>
+</tbody>
+</table>
+<p>As expected, the Gauss-Seidel solver requires roughly half the number of iterations compared to the Jacobi one, which translates into the solution being computed almost twice as fast. This looks consistent with the math. Right off the bat though, you can note that turning off compiler optimization leads to a slower solver, taking 190 seconds with <code>-O0</code> compared to only 80 seconds when compiled with <code>-O3 -march=native -mtune=native</code>. So clearly, the compiler is doing something useful when optimizing. And this is the whole point of using a language like <code>Fortran</code> for number crunching.</p>
+<p>Let’s now rerun our test case but with compiler optimization turned on. The results are shown below.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;"><strong>Solver</strong></th>
+<th style="text-align: center;"><strong># of iterations</strong></th>
+<th style="text-align: center;"><strong>Time/iteration</strong></th>
+<th style="text-align: center;"><strong>Total</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">Textbook Gauss-Seidel</td>
+<td style="text-align: center;">74 000</td>
+<td style="text-align: center;">1 ms</td>
+<td style="text-align: center;">80 s</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">Jacobi</td>
+<td style="text-align: center;">138 000</td>
+<td style="text-align: center;">0.1 ms</td>
+<td style="text-align: center;">16 s</td>
+</tr>
+</tbody>
+</table>
+<p>Again, the Gauss-Seidel method requires only half the number of iterations to converge. But now, the Jacobi solver is about 5x fast in wall-clock time! This seems surprising, doesn’t it? Looking at the two update rules</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode numberSource fortran number-lines code-with-copy"><code class="sourceCode fortranfixed"><span id="cb5-1"><a href="#cb5-1"></a><span class="co">! Jacobi update</span></span>
+<span id="cb5-2"><a href="#cb5-2"></a>u(i, j) <span class="kw">=</span> <span class="fl">0.25_dp</span><span class="kw">*</span>(b(i, j)<span class="kw">*</span>dx<span class="kw">**</span><span class="dv">2</span> <span class="kw">+</span> v(i<span class="kw">+</span><span class="dv">1</span>, j) <span class="kw">+</span> v(i, j<span class="kw">+</span><span class="dv">1</span>) <span class="kw">&amp;</span></span>
+<span id="cb5-3"><a href="#cb5-3"></a>                                 <span class="kw">+</span> v(i<span class="kw">-</span><span class="dv">1</span>, j) <span class="kw">+</span> v(i, j<span class="kw">-</span><span class="dv">1</span>))</span>
+<span id="cb5-4"><a href="#cb5-4"></a></span>
+<span id="cb5-5"><a href="#cb5-5"></a><span class="co">! Gauss-Seidel update</span></span>
+<span id="cb5-6"><a href="#cb5-6"></a>u(i, j) <span class="kw">=</span> <span class="fl">0.25_dp</span><span class="kw">*</span>(b(i, j)<span class="kw">*</span>dx<span class="kw">**</span><span class="dv">2</span> <span class="kw">+</span> u(i<span class="kw">+</span><span class="dv">1</span>, j) <span class="kw">+</span> u(i, j<span class="kw">+</span><span class="dv">1</span>) <span class="kw">&amp;</span></span>
+<span id="cb5-7"><a href="#cb5-7"></a>                                 <span class="kw">+</span> u(i<span class="kw">-</span><span class="dv">1</span>, j) <span class="kw">+</span> u(i, j<span class="kw">-</span><span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>we can see that they have the exact same number of arithmetic operations, the only difference being that Jacobi uses two buffers while Gauss-Seidel uses only one. Our timings would somehow imply that, even though the Jacobi method needs twice as many iterations to converge, each iteration is roughly ten times faster than the Gauss-Seidel one. Clearly, something must have gone wrong when the compiler optimized the Gauss-Seidel kernel. But what could it be?</p>
 </section>
-<section id="can-we-make-things-better" class="level2">
-<h2 class="anchored" data-anchor-id="can-we-make-things-better">Can we make things better?</h2>
 </section>
-<section id="cutting-this-long-story-short" class="level2">
-<h2 class="anchored" data-anchor-id="cutting-this-long-story-short">Cutting this long story short</h2>
+<section id="what-did-go-wrong" class="level3">
+<h3 class="anchored" data-anchor-id="what-did-go-wrong">What did go wrong?</h3>
+<p>Two options here: either there is a critical issue with the compiler or, despite the two kernels being so similar, there is something fundamentally different between them preventing the compiler from optimizing. It turns out that the second option is the correct one. While a detailed explanation would require us to deep dive into how compilers and modern CPUs work, we will keep things simple and high-level.</p>
+<p>In order to understand what is happening, let us consider the equation for <code>u(i, j)</code> and unroll the loop for a couple of <code>i</code> values. For the Gauss-Seidel kernel (dropping the source term for the sake of clarity), this gives</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode numberSource fortran number-lines code-with-copy"><code class="sourceCode fortranfixed"><span id="cb6-1"><a href="#cb6-1"></a>u(i, j)   <span class="kw">=</span> <span class="fl">0.25_dp</span> <span class="kw">*</span> (u(i<span class="kw">+</span><span class="dv">1</span>, j) <span class="kw">+</span> u(i<span class="kw">-</span><span class="dv">1</span>, j) <span class="kw">+</span> u(i, j<span class="kw">+</span><span class="dv">1</span>)   <span class="kw">+</span> u(i, j<span class="kw">-</span><span class="dv">1</span>)  <span class="co">)</span></span>
+<span id="cb6-2"><a href="#cb6-2"></a>u(i<span class="kw">+</span><span class="dv">1</span>, j) <span class="kw">=</span> <span class="fl">0.25_dp</span> <span class="kw">*</span> (u(i<span class="kw">+</span><span class="dv">2</span>, j) <span class="kw">+</span> u(i, j)   <span class="kw">+</span> u(i<span class="kw">+</span><span class="dv">1</span>, j<span class="kw">+</span><span class="dv">1</span>) <span class="kw">+</span> u(i<span class="kw">+</span><span class="dv">1</span>, j<span class="kw">-</span><span class="dv">1</span>)<span class="co">)</span></span>
+<span id="cb6-3"><a href="#cb6-3"></a>u(i<span class="kw">+</span><span class="dv">2</span>, j) <span class="kw">=</span> <span class="fl">0.25_dp</span> <span class="kw">*</span> (u(i<span class="kw">+</span><span class="dv">3</span>, j) <span class="kw">+</span> u(i<span class="kw">+</span><span class="dv">1</span>, j) <span class="kw">+</span> u(i<span class="kw">+</span><span class="dv">2</span>, j<span class="kw">+</span><span class="dv">1</span>) <span class="kw">+</span> u(i<span class="kw">+</span><span class="dv">2</span>, j<span class="kw">-</span><span class="dv">1</span>)<span class="co">)</span></span>
+<span id="cb6-4"><a href="#cb6-4"></a>u(i<span class="kw">+</span><span class="dv">3</span>, j) <span class="kw">=</span> <span class="fl">0.25_dp</span> <span class="kw">*</span> (u(i<span class="kw">+</span><span class="dv">4</span>, j) <span class="kw">+</span> u(i<span class="kw">+</span><span class="dv">2</span>, j) <span class="kw">+</span> u(i<span class="kw">+</span><span class="dv">3</span>, j<span class="kw">+</span><span class="dv">1</span>) <span class="kw">+</span> u(i<span class="kw">+</span><span class="dv">3</span>, j<span class="kw">-</span><span class="dv">1</span>)<span class="co">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Updating <code>u(i+3, j)</code> (line 4) requires that we already computed <code>u(i+2, j)</code> and <code>u(i+3, j-1)</code>. But updating <code>u(i+2, j)</code> (line 3) itself requires <code>u(i+1, j)</code> to have been updated. Likewise, <code>u(i+1, j)</code> (line 2) requires <code>u(i, j)</code> to be updated. As written, the (lexicographic) Gauss-Seidel method is a sequential process where grid points can be updated only one at a time. This is a <a href="https://en.wikipedia.org/wiki/Loop_dependence_analysis">loop-carried dependence</a> that needs to be preserved, no matter how aggressive the compiler optimization is, in order to guarantee the correctness of the code. Unfortunately, there is not much that can be done here (not entirely true though, but that is a story for another time).</p>
+<p>Let us now look at the unrolled loop for the Jacobi kernel.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode numberSource fortran number-lines code-with-copy"><code class="sourceCode fortranfixed"><span id="cb7-1"><a href="#cb7-1"></a>u(i, j)   <span class="kw">=</span> <span class="fl">0.25_dp</span> <span class="kw">*</span> (v(i<span class="kw">+</span><span class="dv">1</span>, j) <span class="kw">+</span> v(i<span class="kw">-</span><span class="dv">1</span>, j) <span class="kw">+</span> v(i, j<span class="kw">+</span><span class="dv">1</span>)   <span class="kw">+</span> v(i, j<span class="kw">-</span><span class="dv">1</span>)  <span class="co">)</span></span>
+<span id="cb7-2"><a href="#cb7-2"></a>u(i<span class="kw">+</span><span class="dv">1</span>, j) <span class="kw">=</span> <span class="fl">0.25_dp</span> <span class="kw">*</span> (v(i<span class="kw">+</span><span class="dv">2</span>, j) <span class="kw">+</span> v(i, j)   <span class="kw">+</span> v(i<span class="kw">+</span><span class="dv">1</span>, j<span class="kw">+</span><span class="dv">1</span>) <span class="kw">+</span> v(i<span class="kw">+</span><span class="dv">1</span>, j<span class="kw">-</span><span class="dv">1</span>)<span class="co">)</span></span>
+<span id="cb7-3"><a href="#cb7-3"></a>u(i<span class="kw">+</span><span class="dv">2</span>, j) <span class="kw">=</span> <span class="fl">0.25_dp</span> <span class="kw">*</span> (v(i<span class="kw">+</span><span class="dv">3</span>, j) <span class="kw">+</span> v(i<span class="kw">+</span><span class="dv">1</span>, j) <span class="kw">+</span> v(i<span class="kw">+</span><span class="dv">2</span>, j<span class="kw">+</span><span class="dv">1</span>) <span class="kw">+</span> v(i<span class="kw">+</span><span class="dv">2</span>, j<span class="kw">-</span><span class="dv">1</span>)<span class="co">)</span></span>
+<span id="cb7-4"><a href="#cb7-4"></a>u(i<span class="kw">+</span><span class="dv">3</span>, j) <span class="kw">=</span> <span class="fl">0.25_dp</span> <span class="kw">*</span> (v(i<span class="kw">+</span><span class="dv">4</span>, j) <span class="kw">+</span> v(i<span class="kw">+</span><span class="dv">2</span>, j) <span class="kw">+</span> v(i<span class="kw">+</span><span class="dv">3</span>, j<span class="kw">+</span><span class="dv">1</span>) <span class="kw">+</span> v(i<span class="kw">+</span><span class="dv">3</span>, j<span class="kw">-</span><span class="dv">1</span>)<span class="co">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>While very similar to the Gauss-Seidel unrolled kernel, one striking difference is that the left-hand side assignment (the <code>u</code> values) depend solely on the <code>v</code> values (which are constant over one sweep). There is no loop-carried dependence here. You could evaluate these four lines in any order you like, it wouldn’t change a thing at the end. You could actually even evaluate all four lines at once! Being able to re-order the computations into whatever order is most convenient and perform multiple evaluations simultaneously (so-called <a href="https://en.wikipedia.org/wiki/Automatic_vectorization">vectorization</a>) are precisely what allow the compiler to be very aggressive in its optimization and leverage all the features of modern CPU architectures! This is what the use of <code>do concurrent</code> in the Jacobi kernel conveys. And this is why, at the end, despite requiring twice as many iterations to converge, the Jacobi method turns out to be faster. Mathematically, the algorithm is not better (it is actually considered to be worse). But practically, it is better suited than Gauss-Seidel for modern computers.</p>
+</section>
+</section>
+<section id="is-all-hope-lost" class="level2">
+<h2 class="anchored" data-anchor-id="is-all-hope-lost">Is all hope lost?</h2>
+<p>Not at all! The failure of textbook Gauss-Seidel on modern hardware is not a mathematical defect. It is a <strong>dependency and parallelism problem</strong>. To make Gauss-Seidel fast on modern CPUs, we must eliminate the loop-carried dependency without losing its superior convergence rate. This brings us to <strong>grid reordering strategies</strong>:</p>
+<ol type="1">
+<li><strong>Red-Black (Checkerboard) Ordering:</strong> By splitting the grid into alternate red and black nodes, we can update half the domain in parallel using pure SIMD sweeps, recovering full SIMD vectorization while keeping the Gauss-Seidel convergence rate.</li>
+<li><strong>Domain Decomposition &amp; Multi-Scale Layouts:</strong> Partitioning the domain into independent blocks allows us to execute localized Gauss-Seidel sweeps inside L1/L2 caches before exchanging boundary data.</li>
+</ol>
+<p>In the next post, we will go through the details of the <strong>Red-Black Gauss-Seidel</strong>, implement it in <code>Fortran</code> and explore whether we can recover Gauss-Seidel’s convergence advantage without sacrificing the hardware efficiency of Jacobi.</p>
 
 
 </section>
