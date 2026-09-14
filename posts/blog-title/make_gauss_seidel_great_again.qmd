@@ -2,12 +2,12 @@
 title: "Make Gauss-Seidel great again!"
 subtitle: "The art of unrolling."
 author: "Jean-Christophe Loiseau"
-date: "2026-09-08"
+date: "2026-09-14"
 categories: [blog]
 # image : "make_gauss_seidel_great_again.jpeg"
 image : "../../files/images/blog/make_gauss_seidel_great_again.jpeg"
 #css: /custom.css
-draft: true
+draft: false
 format: html
 ---
 

@@ -15,7 +15,1107 @@
 <link>https://loiseaujc.github.io/posts.html</link>
 </image>
 <generator>quarto-1.7.34</generator>
-<lastBuildDate>Mon, 07 Sep 2026 22:00:00 GMT</lastBuildDate>
+<lastBuildDate>Sun, 13 Sep 2026 22:00:00 GMT</lastBuildDate>
+<item>
+  <title>Make Gauss-Seidel great again!</title>
+  <dc:creator>Jean-Christophe Loiseau</dc:creator>
+  <link>https://loiseaujc.github.io/posts/blog-title/make_gauss_seidel_great_again.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<center>
+<hr width="50%" hr="">
+</center>
+<p><img src="https://loiseaujc.github.io/posts/blog-title/make_gauss_seidel_great_again.jpeg" class="img-fluid" style="width:100.0%"></p>
+<center>
+<hr width="50%" hr="">
+</center>
+<p>Last time, we explored the <a href="https://loiseaujc.github.io/posts/blog-title/gauss_seidel_experiments.html">Gauss-Seidel</a> method. We arrived at the following conclusion: the math says Gauss-Seidel takes half as many iterations to converge, and this is backed up by our numerical test case. Yet, despite requiring only half the number of iterations, the Gauss-Seidel solver takes 4 to 5 times as long as the Jacobi one. A seemingly puzzling fact if you think about it: how can a method which is better on paper perform worse when implemented numerically? As we’ve seen, the explanation lies in that, unlike Jacobi, the Gauss-Seidel update rule has <a href="https://en.wikipedia.org/wiki/Loop_dependence_analysis">loop-carried dependencies</a> which prevent the compiler from vectorizing the code. The question we’ll try to answer today thus is: <strong>is this the end of the road or can we somehow recover Gauss-Seidel’s convergence advantage without sacrificing the hardware efficiency of Jacobi?</strong></p>
+<p>And it turns out that, yes you can! We have two different routes though: one fairly general where you help the compiler as much as you can (but you need to understand a bit how compilers and CPUs work), and another, quite specific to our particular 2D Poisson test case, where you let the math guide you. None of them will be a smooth ride, but we’ll learn a lot along the way. Eventually, we’ll explore both, but for now we’ll ride along the first one and discover what <em>loop unrolling</em> is.</p>
+<section id="wait-what-was-the-problem-again" class="level1 page-columns page-full">
+<h1>Wait, what was the problem again?</h1>
+<p>Let’s rewind for a second. Last time, we pitted two update rules against each other on the same 2D Poisson problem: the humble Jacobi iteration, and its slightly more sophisticated cousin, Gauss-Seidel.</p>
+<div class="sourceCode" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode numberSource fortran number-lines code-with-copy"><code class="sourceCode fortranfixed"><span id="cb1-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">do</span> j <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>, n<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span></span>
+<span id="cb1-2">   <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">do</span> i <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>, n<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span></span>
+<span id="cb1-3">      u(i, j) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.25_dp</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span>(dx2<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span>b(i,j) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> v(i<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>,j) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> v(i<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>,j) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">&amp;</span></span>
+<span id="cb1-4">                                    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> v(i,j<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> v(i,j<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>))</span>
+<span id="cb1-5">   <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">end do</span></span>
+<span id="cb1-6"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">end do</span></span></code></pre></div>
+<p>Jacobi always reads from the <em>old</em> iterate <code>v</code> and writes into a fresh array <code>u</code>. Gauss-Seidel, in contrast, updates in place:</p>
+<div class="sourceCode" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode numberSource fortran number-lines code-with-copy"><code class="sourceCode fortranfixed"><span id="cb2-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">do</span> j <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>, n<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span></span>
+<span id="cb2-2">   <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">do</span> i <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>, n<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span></span>
+<span id="cb2-3">      u(i, j) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.25_dp</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span>(dx2<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span>b(i,j) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> u(i<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>,j) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> u(i<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>,j) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">&amp;</span></span>
+<span id="cb2-4">                                    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> u(i,j<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> u(i,j<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>))</span>
+<span id="cb2-5">   <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">end do</span></span>
+<span id="cb2-6"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">end do</span></span></code></pre></div>
+<p>That is a one-line difference that buys you a faster-converging method, at exactly half the number of sweeps to reach a given tolerance. On paper, Gauss-Seidel should win outright. And yet, when we actually ran the numbers, Gauss-Seidel took <strong>4 to 5 times longer</strong> than Jacobi, wall-clock, despite needing only half as many iterations. Something in that one-line difference is costing us dearly, and it isn’t showing up anywhere in the convergence theory.</p>
+<p><strong>Loop-carried dependencies, made concrete</strong></p>
+<p>The culprit, as we found, is that <code>u(i-1,j)</code> in the Gauss-Seidel update has <em>already been overwritten</em> by the time you read it. It’s not the old value from the previous sweep, it’s this sweep’s freshly computed neighbor. That’s precisely what makes Gauss-Seidel converge faster: you’re propagating information within a single sweep instead of waiting a full iteration for it. But it also means iteration <code>i</code> cannot start until iteration <code>i-1</code> has fully finished writing <code>u(i-1,j)</code>. Jacobi has no such constraint: every read in a Jacobi sweep comes from <code>v</code>, which nothing in that sweep ever touches.</p>
+<p>This is the textbook definition of a <a href="https://en.wikipedia.org/wiki/Loop_dependence_analysis">loop-carried dependency</a>, and it’s exactly the kind of thing a compiler needs to reason about before deciding whether it can vectorize a loop, reorder instructions, or overlap iterations on an out-of-order core. Jacobi: no such dependency, compiler’s hands are free. Gauss-Seidel: hard dependency, compiler’s hands are tied.</p>
+<p><strong>Putting a number on “tied”</strong></p>
+<p>That’s a nice story, but it’s still just a story until you can measure it. So this time, rather than taking the compiler’s word for it, we reached for <a href="https://github.com/RRZE-HPC/OSACA">OSACA</a> — the Open Source Architecture Code Analyzer — and pointed it directly at the compiled assembly of both kernels.</p>
+<p>OSACA reads a marked assembly loop and, assuming an idealized out-of-order core, reports two numbers per loop body: the <strong>critical path (CP)</strong>, the length of the longest dependency chain running through one iteration in isolation, and the <strong>loop-carried dependency (LCD)</strong>, the part of that chain that <em>must</em> cross from one iteration to the next. LCD is the number that matters here. It’s a hard floor on cycles-per-iteration, no amount of clever scheduling can get under it.</p>
+<p>Here’s what came back for our <code>-O3 -march=native</code> kernels, compiled with plain <code>do</code> loops (no <code>do concurrent</code>, nothing fancy):</p>
+<table class="caption-top table">
+<caption>Summary of the <code>osaca</code> analysis of the Jacobi and standard Gauss-Seidel kernels. Both kernels have been compiled using <code>gfortran 15.3</code> with options <code>-O3 -mtune=native -march=native</code>. The precise numbers reported may depend on the exact CPU and compiler you’re using.</caption>
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th>CP (cycles)</th>
+<th>LCD (cycles)</th>
+<th>Port-pressure floor (cycles)</th>
+<th>Governing bound</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Jacobi (vectorized, 4 elements/it.)</td>
+<td>24</td>
+<td>1</td>
+<td>3</td>
+<td>throughput</td>
+</tr>
+<tr class="even">
+<td>Gauss-Seidel (scalar, 1 element/it.)</td>
+<td>24</td>
+<td>12</td>
+<td>2.5</td>
+<td><strong>latency</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Two things jump out immediately. First, the critical path is <em>identical</em> for both kernels — 24 cycles. That makes sense: it’s essentially the same chain of floating-point operations in both cases:</p>
+<ul>
+<li>Three adds : <code>tmp1 = v(i+1, j) + v(i-1, j) + v(i, j+1) + v(i, j-1)</code></li>
+<li>One multiply : <code>tmp2 = b(i, j) * dx2</code></li>
+<li>One FMA : <code>tmp3 = 0.25_dp * tmp1 + 0.25_dp*tmp2</code></li>
+</ul>
+<p>along with a a load and a store. The arithmetic hasn’t changed; only what’s allowed to overlap has.</p>
+<p>Second, and this is the whole ballgame: Jacobi’s loop-carried dependency is a throwaway 1 cycle (just the loop counter incrementing, nothing to do with the actual computation). Gauss-Seidel’s is <strong>12 cycles</strong>, and OSACA even tells you exactly where it comes from:</p>
+<pre><code>46 | 12.0 | vaddsd  %xmm1, %xmm0, %xmm0          | [46, 47, 48]</code></pre>
+<p>Trace it back and it’s the west-neighbor term: <code>%xmm1</code> holds this sweep’s freshly written <code>u(i,j)</code>, and it gets read straight back in as <code>u(i-1,j)</code> on the very next loop trip. Three chained instructions — the west-neighbor add, the north-neighbor add, and the final multiply — each with 4-cycle latency, sum to exactly 12. That’s not a compiler being lazy; it’s the compiler correctly reporting that there is <em>no way</em> to start computing <code>u(i,j)</code> before <code>u(i-1,j)</code> exists, because the algorithm itself demands it.</p>
+<p>The other giveaway, readable straight off the assembly without even needing OSACA, is the instruction mnemonics themselves. Jacobi’s inner loop is built entirely out of packed double-precision instructions — <code>vaddpd</code>, <code>vmulpd</code>, <code>vfmadd213pd</code> — each one crunching four grid points at a time in a single 256-bit AVX register. Gauss-Seidel’s inner loop uses the scalar forms of the exact same instructions — <code>vaddsd</code>, <code>vmulsd</code>, <code>vfmadd213sd</code> — one grid point at a time. The <code>pd</code>/<code>sd</code> suffix alone tells you, at a glance, which loop the compiler was able to vectorize and which one it wasn’t.</p>
+<p><strong>Does the number add up?</strong></p>
+<p>For each kernel, the CPU’s actual sustained cost per iteration is bounded below by <em>both</em> constraints at once, the throughput floor and the LCD, so the one that actually governs is whichever of the two is larger. For Gauss-Seidel, that’s the LCD (12 cycles, versus a 2.5-cycle throughput floor). For Jacobi, it’s the throughput floor (3 cycles, versus a negligible 1-cycle LCD). In other words, Gauss-Seidel is <em>latency-bound</em> and Jacobi is <em>throughput-bound</em>. Two different bottlenecks entirely, which is precisely why comparing them isn’t just a matter of reading off the same column for both.</p>
+<p>Normalizing each kernel’s governing bound per grid point (dividing Jacobi’s by 4, since it processes four elements per vector iteration) gives a <em>predicted</em> per-sweep slowdown of roughly</p>
+<p><img src="https://latex.codecogs.com/png.latex?%5Cdfrac%7B12%7D%7B3%20/%204%7D%20=%2016%5Ctimes"></p>
+<p>That’s higher than the 4–5× we measured wall-clock. But remember, wall-clock measures <em>total time to solution</em>, and Gauss-Seidel needs only half as many sweeps as Jacobi to converge. Once you back that out, the actual per-sweep slowdown implied by the measurements is</p>
+<p><img src="https://latex.codecogs.com/png.latex?%5Cleft(%5Cfrac%7BT_%7BGS%7D%7D%7BT_J%7D%5Cright)%20%5CBig/%20%5Cleft(%5Cfrac%7BN_%7BGS%7D%7D%7BN_J%7D%5Cright)%20%5Capprox%20(4%5Ctext%7B%E2%80%93%7D5)%20%5Ctimes%202%20%5Capprox%208%5Ctext%7B%E2%80%93%7D10%5Ctimes"></p>
+<div class="page-columns page-full"><p>which lands within a factor of two of OSACA’s prediction, a healthy level of agreement for a <em>static</em> model that has zero visibility into the memory system.  The mechanism OSACA identifies — Gauss-Seidel latency-bound at a hard 12-cycle wall, Jacobi comfortably throughput-bound — is exactly right, even if the precise number needs a pinch of salt.</p><div class="no-row-height column-margin column-container"><span class="margin-aside">Jacobi’s real bottleneck at any decent problem size is almost certainly DRAM bandwidth rather than the 3-cycle compute floor OSACA reports, which would inflate its true per-sweep cost and close the remaining gap.</span></div></div>
+<p>So, the diagnosis is confirmed in triplicate: theory, static analysis, and measurement all agree. Gauss-Seidel’s faster convergence is bought entirely at the price of a serialized, 12-cycle-per-element dependency chain that the compiler simply cannot break on its own. Which raises the obvious question: <strong>is that dependency chain <em>fundamental</em> to the algorithm, or is it an artifact of how we happened to write the loop?</strong></p>
+</section>
+<section id="so-what-is-loop-unrolling-then" class="level1">
+<h1>So what is loop unrolling then?</h1>
+<p><a href="https://en.wikipedia.org/wiki/Loop_unrolling">Loop unrolling</a> is one of the oldest tricks in the optimizing-compiler playbook, and the idea is disarmingly simple. Instead of executing a loop body once per iteration and paying the overhead of a branch and a counter update every single time, you write out the body two, four, or eight times per iteration, advancing the counter by that many steps at once.</p>
+<p>Take a trivial example, nothing to do with our Poisson problem yet:</p>
+<div class="sourceCode" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode numberSource fortran number-lines code-with-copy"><code class="sourceCode fortranfixed"><span id="cb4-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">do</span> i <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, n</span>
+<span id="cb4-2">   a(i) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2.0_dp</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span> a(i)</span>
+<span id="cb4-3"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">end do</span></span></code></pre></div>
+<p>Unrolled by a factor of two, this becomes:</p>
+<div class="sourceCode" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode numberSource fortran number-lines code-with-copy"><code class="sourceCode fortranfixed"><span id="cb5-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">do</span> i <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, n, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span></span>
+<span id="cb5-2">   a(i)   <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2.0_dp</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span> a(i)</span>
+<span id="cb5-3">   a(i<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2.0_dp</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span> a(i<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)</span>
+<span id="cb5-4"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">end do</span></span></code></pre></div>
+<p>modulo a bit of bookkeeping if <code>n</code> is odd, which we’ll conveniently ignore for now. Fewer branches, fewer counter increments, and — crucially — twice as much independent work exposed to the compiler <em>within a single loop trip</em>. That last point is really the whole appeal: with two statements sitting side by side and no dependency between them, the compiler is free to interleave them, pack them into a single vector instruction, or schedule them however the hardware likes. Unrolling doesn’t make the CPU do less work; it makes the <em>scheduler’s</em> job easier by giving it more to look at at once. So, naturally, the question we should ask is: does the same trick save Gauss-Seidel?</p>
+<p><strong>A tempting shortcut that doesn’t work</strong></p>
+<p>Let’s try the obvious thing and unroll our Gauss-Seidel inner loop by two, changing nothing else:</p>
+<div class="sourceCode" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode numberSource fortran number-lines code-with-copy"><code class="sourceCode fortranfixed"><span id="cb6-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">do</span> i <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>, n<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span></span>
+<span id="cb6-2">   u(i, j)   <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.25_dp</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span>(dx2<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span>b(i,j)   <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> u(i<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>,j)   <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> u(i<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>,j)   <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">&amp;</span></span>
+<span id="cb6-3">                                     <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> u(i,j<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)   <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> u(i,j<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>))</span>
+<span id="cb6-4">   u(i<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, j) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.25_dp</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span>(dx2<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span>b(i<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>,j) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> u(i,j)     <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> u(i<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>,j)     <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">&amp;</span></span>
+<span id="cb6-5">                                     <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> u(i<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>,j<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> u(i<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>,j<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>))</span>
+<span id="cb6-6"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">end do</span></span></code></pre></div>
+<p>Look closely at the second statement: it reads <code>u(i,j)</code> which is exactly the value the <em>first</em> statement just finished computing, two lines above. We haven’t removed the loop-carried dependency at all. We’ve just moved a copy of it <em>inside</em> the loop body, where it’s now a same-iteration dependency instead of a cross-iteration one. The compiler still can’t touch these two statements independently, still can’t vectorize them together, and still has to execute them strictly in order. We’ve paid for the bookkeeping of unrolling (larger code, an odd-<code>n</code> remainder to handle) and bought ourselves precisely nothing.</p>
+<p>This is worth sitting with for a second, because it’s a genuinely common trap: unrolling <em>looks</em> like it should help with dependencies, since it’s so often reached for as a vectorization enabler, but by itself it does nothing whatsoever to break a <em>true</em> dependency chain. It’s very good at exposing parallelism that already exists (as in our trivial <code>a(i) = 2*a(i)</code> example) but is completely powerless against parallelism that has to be created. Gauss-Seidel falls squarely in the second category: the dependency isn’t a scheduling accident the compiler failed to notice, it’s baked into the mathematics of the update rule.</p>
+<p>So if unrolling alone is a dead end, what’s missing? The answer is that the dependency itself has to be <em>rewritten away</em> before unrolling can do any good. That means reaching for a bit of algebra, not just a bit of loop restructuring.</p>
+</section>
+<section id="fair-enough-lets-do-that-for-gauss-seidel" class="level1">
+<h1>Fair enough, let’s do that for Gauss-Seidel!</h1>
+<p>To keep the algebra honest and readable, let’s forget about the full 2D grid for now, and work with the 1D Poisson equation, <img src="https://latex.codecogs.com/png.latex?u''%20=%20-f">, discretized on a uniform grid as</p>
+<p><img src="https://latex.codecogs.com/png.latex?%5Cfrac%7Bu_%7Bi+1%7D%20-%202%20u_i%20+%20u_%7Bi-1%7D%7D%7B%5CDelta%20x%5E2%7D%20=%20-f_i."></p>
+<p>Solving for <img src="https://latex.codecogs.com/png.latex?u_i"> gives the update rule</p>
+<p><img src="https://latex.codecogs.com/png.latex?u_i%20=%20%5Cdfrac%7B1%7D%7B2%7D%5Cleft(u_%7Bi-1%7D%20+%20u_%7Bi+1%7D%20+%20%5CDelta%20x%5E2%20f_i%5Cright),"></p>
+<p>so, unsurprisingly, the constant playing the role of our earlier <img src="https://latex.codecogs.com/png.latex?0.25"> is now <img src="https://latex.codecogs.com/png.latex?c%20=%20%5Ctfrac12">. Sweeping left to right and updating in place, Gauss-Seidel reads:</p>
+<div class="sourceCode" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode numberSource fortran number-lines code-with-copy"><code class="sourceCode fortranfixed"><span id="cb7-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">do</span> i <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>, n<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span></span>
+<span id="cb7-2">   u(i) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> c<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span>(u(i<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> u(i<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> dx2<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span>b(i))</span>
+<span id="cb7-3"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">end do</span></span></code></pre></div>
+<p>Exactly one neighbor here is a problem: <code>u(i-1)</code> was overwritten by the <em>previous</em> loop trip, while <code>u(i+1)</code> is still the untouched, old value (the sweep hasn’t reached it yet). That’s the whole dependency, laid completely bare with nothing else to distract from it.</p>
+<p><strong>Writing it as a recursion</strong></p>
+<p>Group everything that <em>doesn’t</em> depend on the sweep’s own progress into a single per-column quantity,</p>
+<p><img src="https://latex.codecogs.com/png.latex?t_i%20=%20u_%7Bi+1%7D%20+%20%5CDelta%20x%5E2%20f_i,"></p>
+<p>which is fully known before the block starts (it’s old data, untouched by anything we’re computing right now). The update collapses to a clean, one-term affine recursion:</p>
+<p><img src="https://latex.codecogs.com/png.latex?u_i%20=%20c%5Cleft(u_%7Bi-1%7D%20+%20t_i%5Cright),%20%5Cqquad%20u_%7Bi-1%7D%20%5Cequiv%20%5Ctexttt%7Bum%7D,"></p>
+<p>where <code>um</code> is shorthand for the last already-updated value feeding into this block. This is precisely the shape that makes the dependency chain visible as <em>just</em> a recursion in <img src="https://latex.codecogs.com/png.latex?u"> — nothing more, nothing less.</p>
+<p><strong>Solving the recursion two steps ahead</strong></p>
+<p>Rather than computing <img src="https://latex.codecogs.com/png.latex?u_i"> and <em>then</em> <img src="https://latex.codecogs.com/png.latex?u_%7Bi+1%7D"> from it, we solve the recursion explicitly for both, purely in terms of quantities that existed <em>before</em> the block started:</p>
+<p><img src="https://latex.codecogs.com/png.latex?u_i%20=%20c%5C,(%5Ctexttt%7Bum%7D%20+%20t_i)"></p>
+<p><img src="https://latex.codecogs.com/png.latex?u_%7Bi+1%7D%20=%20c%5C,(u_i%20+%20t_%7Bi+1%7D)%20=%20c%5CBig(c%5C,(%5Ctexttt%7Bum%7D+t_i)%20+%20t_%7Bi+1%7D%5CBig)%20=%20c%5E2%5C,%5Ctexttt%7Bum%7D%20+%20c%5E2%5C,t_i%20+%20c%5C,t_%7Bi+1%7D"></p>
+<p>Look at what happened: <img src="https://latex.codecogs.com/png.latex?u_%7Bi+1%7D"> no longer references <img src="https://latex.codecogs.com/png.latex?u_i"> at all. Both outputs are now pure functions of <code>um</code>, <img src="https://latex.codecogs.com/png.latex?t_i">, and <img src="https://latex.codecogs.com/png.latex?t_%7Bi+1%7D">. All quantities that existed <em>before</em> this pair of updates began. The intra-pair dependency that plain unrolling couldn’t touch (the “unroll-only” kernel from the previous section) has been algebraically dissolved.</p>
+<p>In code, defining <img src="https://latex.codecogs.com/png.latex?c_2%20%5Cequiv%20c%5E2">, this gives the following kernel:</p>
+<div class="sourceCode" id="cb8" style="background: #f1f3f5;"><pre class="sourceCode numberSource fortran number-lines code-with-copy"><code class="sourceCode fortranfixed"><span id="cb8-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">do</span> i <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>, n<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span></span>
+<span id="cb8-2">   um   <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> u(i<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)</span>
+<span id="cb8-3">   t0   <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> u(i<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> dx2<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span>b(i)</span>
+<span id="cb8-4">   t1   <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> u(i<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> dx2<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span>b(i<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)</span>
+<span id="cb8-5">   u(i)   <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> c <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span>(um <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> t0)</span>
+<span id="cb8-6">   u(i<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> c2<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span>um <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> c2<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span>t0 <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> c<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span>t1 <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">! Does not depend on u(i) !</span></span>
+<span id="cb8-7"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">end do</span></span></code></pre></div>
+<p>Two independent expressions, no read of one output by the other’s computation. Exactly what the compiler needs to schedule them concurrently instead of serially.</p>
+<p><strong>Back to 2D: nothing new needed</strong></p>
+<p>This is where the 1D detour pays off. In the real 2D stencil, the north, south, and source contributions play no role whatsoever in creating the <code>i</code>-dependency — they’re either values from a row Gauss-Seidel has already finished, or values from a row it hasn’t touched yet, but never anything the <code>i</code>-loop itself is computing. So they simply fold into the same lumped <img src="https://latex.codecogs.com/png.latex?t_i"> we just defined:</p>
+<p><img src="https://latex.codecogs.com/png.latex?t_i%20%5C;%5Clongrightarrow%5C;%20%5Ctexttt%7Btmp%7D_i%20=%20%5CDelta%20x%5E2%20b(i,j)%20+%20u(i+1,j)%20+%20u(i,j+1)%20+%20u(i,j-1),"></p>
+<p>and the exact same two-line substitution applies, verbatim, giving you the unrolled kernel:</p>
+<div class="sourceCode" id="cb9" style="background: #f1f3f5;"><pre class="sourceCode numberSource fortran number-lines code-with-copy"><code class="sourceCode fortranfixed"><span id="cb9-1"><span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">real(dp)</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">parameter</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">::</span> c  <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.25_dp</span></span>
+<span id="cb9-2"><span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">real(dp)</span>, <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">parameter</span> <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">::</span> c2 <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.0625_dp</span></span>
+<span id="cb9-3"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">do</span> j <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>, n<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span></span>
+<span id="cb9-4">   <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">do</span> i <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>, n<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span></span>
+<span id="cb9-5">      um   <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> u(i<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, j)</span>
+<span id="cb9-6">      tmp1 <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> dx2<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span>b(i, j)   <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> (u(i<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, j) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> u(i, j<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> u(i, j<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>))</span>
+<span id="cb9-7">      tmp2 <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> dx2<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span>b(i<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, j) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> (u(i<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>, j) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> u(i<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, j<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> u(i<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, j<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>))</span>
+<span id="cb9-8">      u(i, j)   <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> c <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span>(um <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> tmp1)</span>
+<span id="cb9-9">      u(i<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, j) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> c2<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span>um <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> (c2<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span>tmp1 <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> c<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span>tmp2)</span>
+<span id="cb9-10">   <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">end do</span></span>
+<span id="cb9-11"></span>
+<span id="cb9-12">   <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">! Handles the case where an odd number of grid points is used.</span></span>
+<span id="cb9-13">   <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> (<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">mod</span>(n, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>) <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">then</span></span>
+<span id="cb9-14">      tmp1 <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> dx2<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span>b(n<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, j) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> (u(n, j) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> u(n<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, j<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> u(n<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, j<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>))</span>
+<span id="cb9-15">      u(n<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, j) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> c<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span>(u(n<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>, j) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> tmp1)</span>
+<span id="cb9-16">   <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">end if</span></span>
+<span id="cb9-17"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">end do</span></span></code></pre></div>
+<p>The trailing <code>if</code> block just mops up a leftover column when <code>n</code> is odd, i.e.&nbsp;the same remainder bookkeeping any unrolled loop needs, nothing conceptually new.</p>
+<p><strong>Does it actually work?</strong></p>
+<p>Ok, so the new kernel looks a bit more complicated than our original one. But mathematically, it’s all the same thing, so is it truly more efficient? Time to check the theory against the machine. Same workflow as before: compile with <code>-O3 -march=native -S</code>, mark the inner loop, and let OSACA loose on it.</p>
+<pre><code>                                     Port pressure in cycles                                      
+     |  0   - 0DV  |  1   |  2   -  2D  |  3   -  3D  |  4   |  5   |  6   |  7   ||  CP  | LCD  |
+--------------------------------------------------------------------------------------------------
+  74 |             |      |             |             |      |      |      |      ||      |      |   .L5:
+  75 |             |      | 0.50   0.50 | 0.50   0.50 |      |      |      |      ||      |      |   vmovsd 16(%rax), %xmm1
+  76 |             |      | 0.50   0.50 | 0.50   0.50 |      |      |      |      ||      |      |   vmovsd 8(%rax), %xmm0
+  77 | 0.00        | 0.00 |             |             |      | 0.50 | 0.50 |      ||      |      |   addq $16, %rdx
+  78 | 0.50        | 0.50 | 0.50   0.50 | 0.50   0.50 |      |      |      |      ||  4.0 |      |   vaddsd 8(%rax,%rsi,8), %xmm1, %xmm1
+  79 | 0.50        | 0.50 | 0.50   0.50 | 0.50   0.50 |      |      |      |      ||      |      |   vaddsd (%rax,%rsi,8), %xmm0, %xmm2
+  80 | 0.50        | 0.50 | 0.50   0.50 | 0.50   0.50 |      |      |      |      ||  4.0 |      |   vaddsd 8(%rax,%rcx,8), %xmm1, %xmm1
+  81 | 0.50        | 0.50 | 0.50   0.50 | 0.50   0.50 |      |      |      |      ||      |      |   vaddsd (%rax,%rcx,8), %xmm2, %xmm2
+  82 | 0.00        | 0.00 |             |             |      | 0.50 | 0.50 |      ||      |      |   addq $16, %rax
+  83 | 0.50        | 0.50 | 0.50   0.50 | 0.50   0.50 |      |      |      |      ||  4.0 |      |   vfmadd231sd -8(%rdx), %xmm5, %xmm1
+  84 | 0.50        | 0.50 | 0.50   0.50 | 0.50   0.50 |      |      |      |      ||      |      |   vfmadd231sd -16(%rdx), %xmm5, %xmm2
+  85 | 0.50        | 0.50 |             |             |      |      |      |      ||  4.0 |      |   vmulsd %xmm4, %xmm1, %xmm1
+  86 | 0.50        | 0.50 |             |             |      |      |      |      ||      |      |   vaddsd %xmm3, %xmm2, %xmm0
+  87 | 0.50        | 0.50 |             |             |      |      |      |      ||      |      |   vmulsd %xmm4, %xmm0, %xmm0
+  88 | 0.50        | 0.50 |             |             |      |      |      |      ||  4.0 |      |   vfmadd132sd %xmm6, %xmm1, %xmm2
+  89 | 0.50        | 0.50 |             |             |      |      |      |      ||  4.0 |  4.0 |   vfmadd132sd %xmm6, %xmm2, %xmm3
+  90 |             |      |             |             |      | 1.00 |      |      ||  1.0 |      |   vunpcklpd %xmm3, %xmm0, %xmm0
+  91 |             |      | 0.00        | 0.00        | 1.00 |      |      | 1.00 ||  0.0 |      |   vmovupd %xmm0, -16(%rax)
+  92 | 0.00        | 0.00 |             |             |      | 0.00 | 1.00 |      ||      |      |   cmpq %rax, %rdi
+  93 |             |      |             |             |      |      |      |      ||      |      | * jne .L5
+
+       5.50          5.50   4.00   4.00   4.00   4.00   1.00   2.00   2.00   1.00    29.0    4.0</code></pre>
+<p>If you look at the last two columns, two things should stand out. The critical path CP got a bit longer, but the loop-carried dependencies (LCD) dropped from 12 to 4 cycles per loop trip — and since each trip now covers two elements, that’s roughly a 6× drop per grid point.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th>LCD (per element)</th>
+<th>Throughput floor (per element)</th>
+<th>Governing bound</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Gauss-Seidel (scalar, degree 1)</td>
+<td>12.0</td>
+<td>2.5</td>
+<td>latency: <strong>12.0</strong></td>
+</tr>
+<tr class="even">
+<td>Kernel 2 (degree 2)</td>
+<td>2.0</td>
+<td>2.75</td>
+<td>throughput: <strong>2.75</strong></td>
+</tr>
+</tbody>
+</table>
+<p>That’s the static prediction. Time to see if the actual machine agrees — and, more interestingly, to see <em>why</em> it agrees, one compilation flag at a time.</p>
+<p><strong>Experiment 1 — baseline, no optimization</strong></p>
+<p>First, a sanity check. Compiled with <code>-O0</code>, so no scheduling cleverness of any kind gets to play a role:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Solver</th>
+<th>Iterations</th>
+<th>Time / iteration</th>
+<th>Total</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Jacobi</td>
+<td>138 000</td>
+<td>2 ms</td>
+<td>273 s</td>
+</tr>
+<tr class="even">
+<td>Textbook Gauss-Seidel</td>
+<td>74 000</td>
+<td>2.4 ms</td>
+<td>178 s</td>
+</tr>
+<tr class="odd">
+<td>Unrolled Gauss-Seidel</td>
+<td>74 000</td>
+<td>2 ms</td>
+<td>147 s</td>
+</tr>
+</tbody>
+</table>
+<p>Two things worth checking here before moving on. First, all three solvers reach the solution in the same number of iterations as the earlier posts — confirming the unrolled kernel really is computing the same thing as the textbook one, algebra and all, not some subtly different (and subtly wrong) approximation. Second, at <code>-O0</code>, the unrolled kernel is already reliably faster than the textbook kernel, by almost exactly the ratio convergence theory predicts for Gauss-Seidel over Jacobi (2×) — a nice confirmation that even without any compiler scheduling to exploit, exposing two independent computations per loop trip buys you something, purely from halving the loop overhead. But nobody ships <code>-O0</code> code, so this is a baseline, not the result.</p>
+<p><strong>Experiment 2 — the critical one</strong></p>
+<p>Now compile with real optimization, but deliberately keep vectorization switched off (<code>-O3 -march=native -mtune=native -fno-tree-vectorize</code>), so that any gains we see can’t be attributed to SIMD at all:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Solver</th>
+<th>Iterations</th>
+<th>Time / iteration</th>
+<th>Total</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Jacobi</td>
+<td>138 000</td>
+<td>166 µs</td>
+<td>23 s</td>
+</tr>
+<tr class="even">
+<td>Textbook Gauss-Seidel</td>
+<td>74 000</td>
+<td>1054 µs</td>
+<td>78 s</td>
+</tr>
+<tr class="odd">
+<td>Unrolled Gauss-Seidel</td>
+<td>74 000</td>
+<td>175 µs</td>
+<td>13 s</td>
+</tr>
+</tbody>
+</table>
+<p>This is the number that matters. With vectorization explicitly disabled, the unrolled kernel is still <strong>six times faster per sweep</strong> than the textbook kernel, and lands within 5% of Jacobi’s per-sweep cost. Since neither Gauss-Seidel kernel can be vectorized under this flag anyway, this gain has nothing to do with packing multiple grid points into one instruction. It comes entirely from something more subtle: reducing the loop-carried dependency lets the CPU’s out-of-order scheduler overlap the <em>scalar</em> work of consecutive iterations, filling execution ports that the textbook kernel’s 12-cycle dependency chain left idle. Fewer cycles spent waiting, same number of instructions issued. This is the empirical confirmation of the LCD-versus-throughput story from the OSACA table above, isolated from vectorization entirely.</p>
+<p><strong>Experiment 3 — turning vectorization back on</strong></p>
+<p>Finally, the same three kernels, same flags, but with vectorization allowed:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Solver</th>
+<th>Iterations</th>
+<th>Time / iteration</th>
+<th>Total</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Jacobi</td>
+<td>138 000</td>
+<td>115 µs</td>
+<td>16 s</td>
+</tr>
+<tr class="even">
+<td>Textbook Gauss-Seidel</td>
+<td>74 000</td>
+<td>1054 µs</td>
+<td>78 s</td>
+</tr>
+<tr class="odd">
+<td>Unrolled Gauss-Seidel</td>
+<td>74 000</td>
+<td>175 µs</td>
+<td>13 s</td>
+</tr>
+</tbody>
+</table>
+<p>Both Gauss-Seidel kernels are completely unchanged, down to the microsecond. That’s expected once you know the assembly: gfortran never vectorizes either GS kernel regardless of this flag, so there’s nothing for the flag to act on. Vectorization was never the mechanism behind experiment 2’s speedup. It’s a separate story that only applies to Jacobi.</p>
+<p>And even for Jacobi, notice the gain is real but modest: 166 µs → 115 µs, about 1.4×, not the ~4× you might expect from packing four doubles into a single AVX register. This is the by-product the LCD story predicted but didn’t fully explain on its own: vectorization only pays off to the extent that a kernel’s <em>compute</em> is the bottleneck, and Jacobi’s inner loop, despite having no loop-carried dependency at all, is largely memory-bound at this problem size. It streams through the whole grid every sweep with essentially no data reuse, so DRAM bandwidth caps the achievable speedup well below what the instruction-level analysis alone would suggest.</p>
+<p>Put the three experiments side by side and the conclusion is unambiguous: <strong>it’s the absence (or reduction) of a loop-carried dependency, not vectorization, that lets the scheduler do its job.</strong> Vectorization is a nice bonus when it’s available. It does still help Jacobi, just less than you’d naively guess. But it was never the reason Gauss-Seidel was slow, and reducing the LCD was already enough, on its own, to close almost the entire performance gap with Jacobi. Actually, this unrolled Gauss-Seidel kernel hands us the solution almost 3 seconds faster than the Jacobi one. Mission accomplished! Or so it appears…</p>
+<p><strong>But look closely at the mnemonics</strong></p>
+<p>Here’s the detail that’s easy to miss if you only look at the CP/LCD numbers and declare victory. If you look at the far right of the OSACA output, that is the assembly for inner-most loop (<code>i</code>) of our kernel. Every single arithmetic instruction in that table is still a scalar op — <code>vaddsd</code>, <code>vmulsd</code>, <code>vfmadd231sd</code>, <code>vfmadd132sd</code>, all operating on individual doubles in <code>%xmm</code> registers, not a single packed <code>pd</code> instruction among them. Compare that to Jacobi’s inner loop, built entirely out of <code>vaddpd</code>/<code>vmulpd</code>/<code>vfmadd213pd</code> on 256-bit <code>%ymm</code> registers, four grid points at a time. <strong>The compiler never vectorized this loop.</strong> It didn’t need to, to hit Jacobi’s throughput. It got there by exposing two <em>independent scalar chains</em> (one for <code>u(i,j)</code>, one for <code>u(i+1,j)</code>) that fill different execution ports at the same time, rather than by packing four elements into one instruction the way Jacobi does. The one and only place the two lanes actually meet is right at the end, at line 90: a <code>vunpcklpd</code> stitching the two independently-computed scalars into a single 128-bit register just before the store. That’s not vectorized computation. It’s a vectorized <em>write</em> of two scalar results, a small, free bonus riding on top of the real work, not the source of the speedup itself.</p>
+<p>This distinction matters more than it might look like at first glance, and it’s the seed of the next post’s cliffhanger: because the compiler is achieving Jacobi-level throughput through instruction-level parallelism across ports rather than true SIMD, this kernel still can’t be handed a wider vector width for free, and it certainly can’t be split across threads. That tiny 4-cycle pair-to-pair dependency, however cheap, is still a <em>sequential</em> handoff that no <code>do concurrent</code> or OpenMP directive could safely break apart. We’ve matched (and even slightly exceeded) Jacobi’s single-core speed, but not its parallelizability. Those turn out to be two different prizes entirely. And only one of them is in hand.</p>
+</section>
+<section id="can-we-go-even-further" class="level1">
+<h1>Can we go even further?</h1>
+<p>Could we push the substitution one step further? Unroll by 4 instead of 2, and squeeze out even more performance? Not really. We’d be at risk of marginally reducing an LCD that’s already a non-issue, while greatly increasing the pressure on the CPU ports.</p>
+<p>Here’s why. Going back to the general recursion from before,</p>
+<p><img src="https://latex.codecogs.com/png.latex?u_i%20=%20c%5E%7Bi+1%7D%5C,u_%7B-1%7D%20+%20%5Csum_%7Bm=0%7D%5E%7Bi%7D%20c%5E%7Bi-m%7D%5C,t_m,"></p>
+<p>each additional element you fold into the substitution costs you one more multiply-add. By the time you reach the degree-4 unrolling, you’re resolving a 4-term cascading sum, every term weighted by its own power of <img src="https://latex.codecogs.com/png.latex?c">. Averaged across the four outputs, that’s roughly twice the multiply-add work per element compared to degree 2. And recall where we ended up last section: the throughput floor is already the governing bound at degree 2 (2.75 cycles/element, versus an LCD of only 2.0). Doubling the arithmetic per element doesn’t touch the LCD’s role in the story at all. It just raises the throughput floor further, from the <em>bound that’s actually constraining us</em>. You’d be spending real port-pressure budget to shave cycles off a dependency chain that was already comfortably hidden behind other work. A losing trade, and one you can see coming from the algebra alone, without even needing to compile anything.</p>
+<p>So degree 2 isn’t an arbitrary stopping point. It’s exactly the amount of unrolling needed to push the LCD below the throughput floor, and not a bit more. Past that point, every extra unit of unrolling is pure cost with no corresponding benefit. At least for Gauss-Seidel.</p>
+<p><strong>So, where does that leave us?</strong></p>
+<p>We made it: a Gauss-Seidel kernel that keeps the mathematical convergence advantage over Jacobi. Same iteration count as the textbook version, while very nearly matching Jacobi’s raw computational efficiency per sweep. A serial win on both fronts at once, which is exactly the “have your cake and eat it too” outcome we set out chasing at the start of this post.</p>
+<p>But, there’s always a but, it’s a serial win only. The kernel is still built entirely out of scalar instructions. The compiler (<code>gfortran 15.3</code>) never vectorized it for my particular CPU. It got to Jacobi-level throughput through a different route (independent scalar chains sharing execution ports, not packed SIMD lanes). Worse, that tiny residual pair-to-pair dependency, however cheap, is still a genuine sequential handoff. No <code>do concurrent</code>, no OpenMP directive, no compiler flag can safely split this loop across threads or hand it a wider vector register, because the math still insists that pair <img src="https://latex.codecogs.com/png.latex?k"> cannot start until pair <img src="https://latex.codecogs.com/png.latex?k-1"> has written its result.</p>
+<p>For a single core on a laptop, that’s a complete success. But it’s a dead end for anything that needs to scale. And scaling is, after all, the entire point of numerical computing once your grids get big enough to matter. If we want a Gauss-Seidel kernel that vectorizes <em>and</em> multithreads, unrolling and clever algebra won’t get us there. We’ll need to change the order in which we visit grid points altogether, which is exactly where red-black ordering comes in, next time.</p>
+<!--Include social share buttons-->
+<!-- 
+AddToAny check more: https://www.addtoany.com/buttons/for/website 
+Using includes will make edits easier, will only need to add or remove button here if needed.
+https://quarto.org/docs/authoring/includes.html
+-->
+<div class="a2a_kit a2a_kit_size_32 a2a_default_style">
+<p><a class="a2a_dd" href="https://www.addtoany.com/share"></a> <a class="a2a_button_linkedin"></a> <a class="a2a_button_bluesky"></a> <a class="a2a_button_facebook"></a> <a class="a2a_button_copy_link"></a> <a class="a2a_button_email"></a></p>
+</div>
+<script async="" src="https://static.addtoany.com/menu/page.js"></script>
+<hr>
+<p><strong>Acknowledgement –</strong> I have to give credit where credit is due. It is <a href="https://github.com/ivan-pi">Ivan Pribec</a> who showed me this particular unrolling trick for Gauss-Seidel. It is also he who put <code>osaca</code> under my radar, so none of what I presented here would have been possible without him. Thanks a lot!</p>
+<p><strong>If you want to read more of my stuff</strong></p>
+<ul>
+<li><a href="https://loiseaujc.github.io/posts/blog-title/gauss_seidel_experiments.html">Gauss-Seidel is faster than Jacobi. Or is it?</a></li>
+<li><a href="https://loiseaujc.github.io/posts/blog-title/jacobi_experiments.html">Jacobi method: From a naïve implementation to a modern Fortran multithreaded one</a></li>
+<li><a href="https://loiseaujc.github.io/posts/blog-title/fortran_vs_python.html">Is Fortran better than Python for teaching the basics of numerical linear algebra?</a></li>
+</ul>
+
+
+</section>
+
+ ]]></description>
+  <category>blog</category>
+  <guid>https://loiseaujc.github.io/posts/blog-title/make_gauss_seidel_great_again.html</guid>
+  <pubDate>Sun, 13 Sep 2026 22:00:00 GMT</pubDate>
+  <media:content url="https://loiseaujc.github.io/files/images/blog/make_gauss_seidel_great_again.jpeg" medium="image" type="image/jpeg"/>
+</item>
 <item>
   <title>Gauss-Seidel is faster than Jacobi. Or is it?</title>
   <dc:creator>Jean-Christophe Loiseau</dc:creator>

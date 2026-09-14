@@ -6,6 +6,7 @@
   {
     "listing": "/posts.html",
     "items": [
+      "/posts/blog-title/make_gauss_seidel_great_again.html",
       "/posts/blog-title/gauss_seidel_experiments.html",
       "/posts/paper-title/hydrogym.html",
       "/posts/news-title/ensam_podcast.html",
@@ -24,6 +25,7 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/blog-title/make_gauss_seidel_great_again.html",
       "/posts/blog-title/gauss_seidel_experiments.html",
       "/posts/paper-title/hydrogym.html",
       "/posts/news-title/ensam_podcast.html",
