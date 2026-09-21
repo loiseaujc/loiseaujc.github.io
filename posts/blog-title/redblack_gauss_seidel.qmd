@@ -4,7 +4,7 @@ subtitle: "Restoring Gauss-Seidel parallelization."
 author: "Jean-Christophe Loiseau"
 date: "2026-09-21"
 categories: [blog]
-image : "../../files/images/blog/redblack_gauss_seidel.jpeg"
+image : "./redblack_gauss_seidel.jpeg"
 #css: /custom.css
 draft: false
 format: html
@@ -12,6 +12,7 @@ execute:
     echo: false
 jupyter: python3
 ---
+
 <center><hr width="50%" /hr></center>
 
 ![](redblack_gauss_seidel.jpeg){width=100%}
