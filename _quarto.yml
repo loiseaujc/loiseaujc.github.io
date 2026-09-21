@@ -45,7 +45,7 @@ website:
       #     href: posts.qmd#category=presentation                   
       - text: Group
         href: people.qmd
-      - text: Blog
+      - text: "Blog: Ill-Conditioned Opinions"
         href: posts.qmd#category=blog
 
     right: 
