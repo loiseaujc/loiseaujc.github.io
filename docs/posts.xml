@@ -15,7 +15,7 @@
 <link>https://loiseaujc.github.io/posts.html</link>
 </image>
 <generator>quarto-1.7.34</generator>
-<lastBuildDate>Mon, 21 Sep 2026 22:00:00 GMT</lastBuildDate>
+<lastBuildDate>Sun, 20 Sep 2026 22:00:00 GMT</lastBuildDate>
 <item>
   <title>Red or Black?</title>
   <dc:creator>Jean-Christophe Loiseau</dc:creator>
@@ -444,7 +444,7 @@ font-style: inherit;">end do</span></span></code></pre></div>
 <section id="lets-put-this-assertion-to-the-test" class="level2">
 <h2 class="anchored" data-anchor-id="lets-put-this-assertion-to-the-test">Let’s put this assertion to the test</h2>
 <p>Same old same old: 2D Poisson on the unit square with homogeneous Dirichlet boundary conditions, non-zero forcing, and second-order accurate finite differences on a uniform grid with 512 points per direction. Both kernels are compiled with <code>gfortran -O3 -march=native -mtune=native -ftree-parallelize-loops=n</code> where <code>n</code> is the number of threads we want to use. Hereafter, we’ll let <code>n</code> vary between 1 (serial) and 8 (the maximum number of threads on my laptop).</p>
-<div id="19a8ca72" class="cell" data-execution_count="1">
+<div id="b3dd2970" class="cell" data-execution_count="1">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -630,7 +630,7 @@ background-color: null;
 font-weight: bold;
 font-style: inherit;">end do</span></span></code></pre></div>
 <p>instead, i.e.&nbsp;scanning through the rows first rather than the columns, the loop-carried dependency would still be there: <code>u(i, j)</code> couldn’t be updated until <code>u(i, j-1)</code> had been. These two kernels correspond to slightly different <em>ordering</em> of the unknowns. The traversal path associated to each is illustrated below.</p>
-<div id="13681086" class="cell" data-execution_count="2">
+<div id="0837f7da" class="cell" data-execution_count="2">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -653,7 +653,7 @@ font-style: inherit;">end do</span></span></code></pre></div>
 <p>For Jacobi, the superscript <img src="https://latex.codecogs.com/png.latex?(?)"> is simply <img src="https://latex.codecogs.com/png.latex?(t)">, i.e.&nbsp;we update <img src="https://latex.codecogs.com/png.latex?u_%7Bi,%20j%7D%5E%7B(t+1)%7D"> from old values stored in a completely different buffer. For Gauss-Seidel on the other hand, the superscript <img src="https://latex.codecogs.com/png.latex?(?)"> can be either <img src="https://latex.codecogs.com/png.latex?(t)"> or <img src="https://latex.codecogs.com/png.latex?(t+1)"> since we directly use the newly updated values whenever possible, leading to</p>
 <p><img src="https://latex.codecogs.com/png.latex?%0Au_%7Bi,%20j%7D%5E%7B(t+1)%7D%20=%20%5Cdfrac%7B1%7D%7B4%7D%20%5Cleft(%20b_%7Bi,%20j%7D%20%5Ccdot%20%5CDelta%20x%5E2%20+%20u_%7Bi-1,%20j%7D%5E%7B(t+1)%7D%20+%20u_%7Bi+1,%20j%7D%5E%7B(t)%7D%20+%20u_%7Bi,%20j-1%7D%5E%7B(t+1)%7D%20+%20u_%7Bi,%20j+1%7D%5E%7B(t)%7D%20%5Cright).%0A"></p>
 <p>This is a very simple update rule, so how the hell can we find a more hardware-friendly ordering? To get some intuition, let’s look at the figure below.</p>
-<div id="0cacc15b" class="cell" data-execution_count="3">
+<div id="71dbcb59" class="cell" data-execution_count="3">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -962,7 +962,7 @@ font-style: inherit;">end do</span></span></code></pre></div>
 <section id="lets-go-parallel" class="level2">
 <h2 class="anchored" data-anchor-id="lets-go-parallel">Let’s go parallel</h2>
 <p>So far, we’ve only looked at serial performance. But the whole point of coming up with the red/black ordering was not to have yet another variation on Gauss-Seidel, but actually have a kernel that can run in parallel. So it’s time to show you what you came for! Same setup as experiment n°3, but now enable multithreading and vary the number of threads from 1 to 8. And TADA!</p>
-<div id="a62dfbbe" class="cell" data-execution_count="4">
+<div id="953331df" class="cell" data-execution_count="4">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -979,7 +979,7 @@ font-style: inherit;">end do</span></span></code></pre></div>
 <h1>Is this finally the end of the road?</h1>
 <p>It took us quite a bit of time to get where we wanted, but here we are: we’ve restored Gauss-Seidel to its rightful place! So it is only natural to ask <em>are we really done now?</em> Well… as far as Jacobi and Gauss-Seidel go, pretty much. But there is still a lot we can do.</p>
 <p>First, let’s replot the data from the last figure to see the actual speed-up as we increase the number of threads.</p>
-<div id="4d911a08" class="cell page-columns page-full" data-execution_count="5">
+<div id="d827f52b" class="cell page-columns page-full" data-execution_count="5">
 <div class="cell-output cell-output-display page-columns page-full">
 <div class="quarto-figure quarto-figure-center page-columns page-full">
 <figure class="figure page-columns page-full">
@@ -1015,7 +1015,7 @@ https://quarto.org/docs/authoring/includes.html
  ]]></description>
   <category>blog</category>
   <guid>https://loiseaujc.github.io/posts/blog-title/redblack_gauss_seidel.html</guid>
-  <pubDate>Mon, 21 Sep 2026 22:00:00 GMT</pubDate>
+  <pubDate>Sun, 20 Sep 2026 22:00:00 GMT</pubDate>
   <media:content url="https://loiseaujc.github.io/files/images/blog/redblack_gauss_seidel.jpeg" medium="image" type="image/jpeg"/>
 </item>
 <item>

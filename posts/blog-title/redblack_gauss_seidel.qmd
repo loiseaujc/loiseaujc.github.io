@@ -2,7 +2,7 @@
 title: "Red or Black?"
 subtitle: "Restoring Gauss-Seidel parallelization."
 author: "Jean-Christophe Loiseau"
-date: "2026-09-22"
+date: "2026-09-21"
 categories: [blog]
 image : "../../files/images/blog/redblack_gauss_seidel.jpeg"
 #css: /custom.css
@@ -12,7 +12,6 @@ execute:
     echo: false
 jupyter: python3
 ---
-
 <center><hr width="50%" /hr></center>
 
 ![](redblack_gauss_seidel.jpeg){width=100%}

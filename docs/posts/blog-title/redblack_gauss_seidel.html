@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Dr.&nbsp;Jean-Christophe Loiseau">
-<meta name="dcterms.date" content="2026-09-22">
+<meta name="dcterms.date" content="2026-09-21">
 <meta name="description" content="Quarto Academic Website Template adapted by Dr.&nbsp;Gang He">
 
 <title>Red or Black? – Dr.&nbsp;Jean-Christophe Loiseau</title>
@@ -336,7 +336,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">September 22, 2026</p>
+      <p class="date">September 21, 2026</p>
     </div>
   </div>
   
@@ -440,7 +440,7 @@ window.Quarto = {
 <section id="lets-put-this-assertion-to-the-test" class="level2">
 <h2 class="anchored" data-anchor-id="lets-put-this-assertion-to-the-test">Let’s put this assertion to the test</h2>
 <p>Same old same old: 2D Poisson on the unit square with homogeneous Dirichlet boundary conditions, non-zero forcing, and second-order accurate finite differences on a uniform grid with 512 points per direction. Both kernels are compiled with <code>gfortran -O3 -march=native -mtune=native -ftree-parallelize-loops=n</code> where <code>n</code> is the number of threads we want to use. Hereafter, we’ll let <code>n</code> vary between 1 (serial) and 8 (the maximum number of threads on my laptop).</p>
-<div id="19a8ca72" class="cell" data-execution_count="1">
+<div id="b3dd2970" class="cell" data-execution_count="1">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -470,7 +470,7 @@ window.Quarto = {
 <span id="cb5-5"><a href="#cb5-5"></a>    <span class="kw">end do</span></span>
 <span id="cb5-6"><a href="#cb5-6"></a><span class="kw">end do</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>instead, i.e.&nbsp;scanning through the rows first rather than the columns, the loop-carried dependency would still be there: <code>u(i, j)</code> couldn’t be updated until <code>u(i, j-1)</code> had been. These two kernels correspond to slightly different <em>ordering</em> of the unknowns. The traversal path associated to each is illustrated below.</p>
-<div id="13681086" class="cell" data-execution_count="2">
+<div id="0837f7da" class="cell" data-execution_count="2">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -497,7 +497,7 @@ u_{i, j}^{(t+1)} = \dfrac{1}{4} \left( b_{i, j} \cdot \Delta x^2 + u_{i-1, j}^{(
 u_{i, j}^{(t+1)} = \dfrac{1}{4} \left( b_{i, j} \cdot \Delta x^2 + u_{i-1, j}^{(t+1)} + u_{i+1, j}^{(t)} + u_{i, j-1}^{(t+1)} + u_{i, j+1}^{(t)} \right).
 \]</span></p>
 <p>This is a very simple update rule, so how the hell can we find a more hardware-friendly ordering? To get some intuition, let’s look at the figure below.</p>
-<div id="0cacc15b" class="cell" data-execution_count="3">
+<div id="71dbcb59" class="cell" data-execution_count="3">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -724,7 +724,7 @@ B^\top &amp; D_2
 <section id="lets-go-parallel" class="level2">
 <h2 class="anchored" data-anchor-id="lets-go-parallel">Let’s go parallel</h2>
 <p>So far, we’ve only looked at serial performance. But the whole point of coming up with the red/black ordering was not to have yet another variation on Gauss-Seidel, but actually have a kernel that can run in parallel. So it’s time to show you what you came for! Same setup as experiment n°3, but now enable multithreading and vary the number of threads from 1 to 8. And TADA!</p>
-<div id="a62dfbbe" class="cell" data-execution_count="4">
+<div id="953331df" class="cell" data-execution_count="4">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -741,7 +741,7 @@ B^\top &amp; D_2
 <h1>Is this finally the end of the road?</h1>
 <p>It took us quite a bit of time to get where we wanted, but here we are: we’ve restored Gauss-Seidel to its rightful place! So it is only natural to ask <em>are we really done now?</em> Well… as far as Jacobi and Gauss-Seidel go, pretty much. But there is still a lot we can do.</p>
 <p>First, let’s replot the data from the last figure to see the actual speed-up as we increase the number of threads.</p>
-<div id="4d911a08" class="cell page-columns page-full" data-execution_count="5">
+<div id="d827f52b" class="cell page-columns page-full" data-execution_count="5">
 <div class="cell-output cell-output-display page-columns page-full">
 <div class="quarto-figure quarto-figure-center page-columns page-full">
 <figure class="figure page-columns page-full">
