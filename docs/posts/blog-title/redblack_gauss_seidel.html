@@ -7,10 +7,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Dr.&nbsp;Jean-Christophe Loiseau">
-<meta name="dcterms.date" content="2026-09-08">
+<meta name="dcterms.date" content="2026-09-22">
 <meta name="description" content="Quarto Academic Website Template adapted by Dr.&nbsp;Gang He">
 
-<title>Make Gauss-Seidel great again! – Dr.&nbsp;Jean-Christophe Loiseau</title>
+<title>Red or Black? – Dr.&nbsp;Jean-Christophe Loiseau</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -135,7 +135,6 @@ https://badge.dimensions.ai/
 <script async="" src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
 
 <script type="text/javascript" src="//cdn.plu.mx/widget-popup.js"></script>
-<meta name="quarto:status" content="draft">
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
@@ -168,20 +167,20 @@ window.Quarto = {
 </script>
 
 <link rel="stylesheet" href="../../styles.css">
-<meta property="og:title" content="Make Gauss-Seidel great again! – Dr.&nbsp;Jean-Christophe Loiseau">
-<meta property="og:description" content="The art of peeling.">
-<meta property="og:image" content="https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Fortran_acs_cover.jpeg/250px-Fortran_acs_cover.jpeg">
+<meta property="og:title" content="Red or Black? – Dr.&nbsp;Jean-Christophe Loiseau">
+<meta property="og:description" content="Restoring Gauss-Seidel parallelization.">
+<meta property="og:image" content="https://loiseaujc.github.io/files/images/blog/redblack_gauss_seidel.jpeg">
 <meta property="og:site_name" content="Dr. Jean-Christophe Loiseau">
-<meta name="twitter:title" content="Make Gauss-Seidel great again! – Dr.&nbsp;Jean-Christophe Loiseau">
-<meta name="twitter:description" content="The art of peeling.">
-<meta name="twitter:image" content="https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Fortran_acs_cover.jpeg/250px-Fortran_acs_cover.jpeg">
+<meta name="twitter:title" content="Red or Black? – Dr.&nbsp;Jean-Christophe Loiseau">
+<meta name="twitter:description" content="Restoring Gauss-Seidel parallelization.">
+<meta name="twitter:image" content="https://loiseaujc.github.io/files/images/blog/redblack_gauss_seidel.jpeg">
 <meta name="twitter:card" content="summary_large_image">
 </head>
 
 <body class="nav-fixed quarto-light">
 
 <div id="quarto-search-results"></div>
-  <header id="quarto-header" class="headroom fixed-top"><div id="quarto-draft-alert" class="alert alert-warning"><i class="bi bi-pencil-square"></i>Draft</div>
+  <header id="quarto-header" class="headroom fixed-top">
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
@@ -286,20 +285,38 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#wait-what-was-the-problem-again" id="toc-wait-what-was-the-problem-again" class="nav-link active" data-scroll-target="#wait-what-was-the-problem-again">Wait, what was the problem again?</a></li>
-  <li><a href="#so-what-is-loop-peeling-then" id="toc-so-what-is-loop-peeling-then" class="nav-link" data-scroll-target="#so-what-is-loop-peeling-then">So what is loop peeling then?</a></li>
-  <li><a href="#fair-enough-lets-do-that-for-gauss-seidel" id="toc-fair-enough-lets-do-that-for-gauss-seidel" class="nav-link" data-scroll-target="#fair-enough-lets-do-that-for-gauss-seidel">Fair enough, let’s do that for Gauss-Seidel!</a></li>
-  <li><a href="#can-we-go-even-further" id="toc-can-we-go-even-further" class="nav-link" data-scroll-target="#can-we-go-even-further">Can we go even further?</a></li>
+  <li><a href="#but-why-is-the-lack-of-vectorization-a-problem" id="toc-but-why-is-the-lack-of-vectorization-a-problem" class="nav-link active" data-scroll-target="#but-why-is-the-lack-of-vectorization-a-problem">But why is the lack of vectorization a problem?</a>
+  <ul class="collapse">
+  <li><a href="#lets-put-this-assertion-to-the-test" id="toc-lets-put-this-assertion-to-the-test" class="nav-link" data-scroll-target="#lets-put-this-assertion-to-the-test">Let’s put this assertion to the test</a></li>
+  <li><a href="#so-what-can-we-do" id="toc-so-what-can-we-do" class="nav-link" data-scroll-target="#so-what-can-we-do">So what can we do?</a></li>
+  </ul></li>
+  <li><a href="#leveraging-the-mathematical-structure-of-the-problem" id="toc-leveraging-the-mathematical-structure-of-the-problem" class="nav-link" data-scroll-target="#leveraging-the-mathematical-structure-of-the-problem">Leveraging the mathematical structure of the problem</a>
+  <ul class="collapse">
+  <li><a href="#red-and-black-coloring" id="toc-red-and-black-coloring" class="nav-link" data-scroll-target="#red-and-black-coloring">Red and black coloring</a></li>
+  <li><a href="#a-detour-through-the-mathematics" id="toc-a-detour-through-the-mathematics" class="nav-link" data-scroll-target="#a-detour-through-the-mathematics">A detour through the mathematics</a></li>
+  </ul></li>
+  <li><a href="#back-to-business" id="toc-back-to-business" class="nav-link" data-scroll-target="#back-to-business">Back to business!</a>
+  <ul class="collapse">
+  <li><a href="#the-redblack-gauss-seidel-kernel" id="toc-the-redblack-gauss-seidel-kernel" class="nav-link" data-scroll-target="#the-redblack-gauss-seidel-kernel">The red/black Gauss-Seidel kernel</a></li>
+  <li><a href="#one-step-at-a-time" id="toc-one-step-at-a-time" class="nav-link" data-scroll-target="#one-step-at-a-time">One step at a time…</a>
+  <ul class="collapse">
+  <li><a href="#experiment-n1-baseline-no-optimization" id="toc-experiment-n1-baseline-no-optimization" class="nav-link" data-scroll-target="#experiment-n1-baseline-no-optimization">Experiment n°1 – baseline, no optimization</a></li>
+  <li><a href="#experiment-n2-the-critical-one" id="toc-experiment-n2-the-critical-one" class="nav-link" data-scroll-target="#experiment-n2-the-critical-one">Experiment n°2 – the critical one</a></li>
+  <li><a href="#experiment-n3-turning-simd-vectorization-back-on" id="toc-experiment-n3-turning-simd-vectorization-back-on" class="nav-link" data-scroll-target="#experiment-n3-turning-simd-vectorization-back-on">Experiment n°3 – turning SIMD vectorization back on</a></li>
+  </ul></li>
+  <li><a href="#lets-go-parallel" id="toc-lets-go-parallel" class="nav-link" data-scroll-target="#lets-go-parallel">Let’s go parallel</a></li>
+  </ul></li>
+  <li><a href="#is-this-finally-the-end-of-the-road" id="toc-is-this-finally-the-end-of-the-road" class="nav-link" data-scroll-target="#is-this-finally-the-end-of-the-road">Is this finally the end of the road?</a></li>
   </ul>
 </nav>
     </div>
 <!-- main -->
-<main class="content" id="quarto-document-content">
+<main class="content page-columns page-full" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Make Gauss-Seidel great again!</h1>
-<p class="subtitle lead">The art of peeling.</p>
+<h1 class="title">Red or Black?</h1>
+<p class="subtitle lead">Restoring Gauss-Seidel parallelization.</p>
   <div class="quarto-categories">
     <div class="quarto-category">blog</div>
   </div>
@@ -319,7 +336,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">September 8, 2026</p>
+      <p class="date">September 22, 2026</p>
     </div>
   </div>
   
@@ -334,98 +351,425 @@ window.Quarto = {
 <center>
 <hr width="50%" hr="">
 </center>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="https://scitechdaily.com/images/Graph-Theory-Mathematics-777x518.jpg" class="img-fluid figure-img" style="width:100.0%"></p>
-<figcaption>A somewhat unrelated image, but I like it.</figcaption>
-</figure>
-</div>
+<p><img src="redblack_gauss_seidel.jpeg" class="img-fluid" style="width:100.0%"></p>
 <center>
 <hr width="50%" hr="">
 </center>
-<p>Last time, we explored the <a href="https://loiseaujc.github.io/posts/blog-title/gauss_seidel_experiments.html">Gauss-Seidel</a> method. We arrived at the following conclusion: the math says Gauss-Seidel takes half as many iterations to converge, and this is backed up by our numerical test case. Yet, despite requiring only half the number of iterations, the Gauss-Seidel solver takes 4 to 5 times as long as the Jacobi one. A seemingly puzzling fact if you think about it: how can a method which is better on paper perform worse when implemented numerically? As we’ve seen, the explanation lies in that, unlike Jacobi, the Gauss-Seidel update rule has <a href="https://en.wikipedia.org/wiki/Loop_dependence_analysis">loop-carried dependencies</a> which prevent the compiler from vectorizing the code. The question we’ll try to answer today thus is: <strong>is this the end of the road or can we somehow recover Gauss-Seidel’s convergence advantage without sacrificing the hardware efficiency of Jacobi?</strong></p>
-<p>And it turns out that yes you can! We have two different routes though: one fairly general where you help the compiler as much as you can (but you need to understand a bit how compilers and CPUs work), and another, quite specific to our particular 2D Poisson test case, where you let the math guide you. None of them will be a smooth ride, but we’ll learn a lot along the way. Eventually, we’ll explore both but for now we’ll ride along the first one and discover what <a href="https://en.wikipedia.org/wiki/Loop_splitting">loop peeling</a> is.</p>
-<section id="wait-what-was-the-problem-again" class="level1">
-<h1>Wait, what was the problem again?</h1>
-<p>Let’s rewind for a second. Last time, we pitted two update rules against each other on the same 2D Poisson problem: the humble Jacobi iteration, and its slightly more sophisticated cousin, Gauss-Seidel.</p>
+<p><a href="https://loiseaujc.github.io/posts/blog-title/make_gauss_seidel_great_again.html">Last time</a>, we set out to restore Gauss-Seidel to its rightful place. And we managed to do it. Or so it seems… Starting from the textbook <em>lexicographic</em> kernel</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode numberSource fortran number-lines code-with-copy"><code class="sourceCode fortranfixed"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">do</span> j <span class="kw">=</span> <span class="dv">2</span>, n<span class="kw">-</span><span class="dv">1</span></span>
-<span id="cb1-2"><a href="#cb1-2"></a>   <span class="kw">do</span> i <span class="kw">=</span> <span class="dv">2</span>, n<span class="kw">-</span><span class="dv">1</span></span>
-<span id="cb1-3"><a href="#cb1-3"></a>      u_new(i, j) <span class="kw">=</span> <span class="fl">0.25_dp</span><span class="kw">*</span>(dx2<span class="kw">*</span>b(i,j) <span class="kw">+</span> u(i<span class="kw">+</span><span class="dv">1</span>,j) <span class="kw">+</span> u(i<span class="kw">-</span><span class="dv">1</span>,j) <span class="kw">+</span> u(i,j<span class="kw">+</span><span class="dv">1</span>)<span class="co"> + u(i,j-1))</span></span>
-<span id="cb1-4"><a href="#cb1-4"></a>   <span class="kw">end do</span></span>
-<span id="cb1-5"><a href="#cb1-5"></a><span class="kw">end do</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Jacobi always reads from the <em>old</em> iterate <code>u</code> and writes into a fresh array <code>u_new</code>. Gauss-Seidel, in contrast, updates in place:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode numberSource fortran number-lines code-with-copy"><code class="sourceCode fortranfixed"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">do</span> j <span class="kw">=</span> <span class="dv">2</span>, n<span class="kw">-</span><span class="dv">1</span></span>
-<span id="cb2-2"><a href="#cb2-2"></a>   <span class="kw">do</span> i <span class="kw">=</span> <span class="dv">2</span>, n<span class="kw">-</span><span class="dv">1</span></span>
-<span id="cb2-3"><a href="#cb2-3"></a>      u(i, j) <span class="kw">=</span> <span class="fl">0.25_dp</span><span class="kw">*</span>(dx2<span class="kw">*</span>b(i,j) <span class="kw">+</span> u(i<span class="kw">+</span><span class="dv">1</span>,j) <span class="kw">+</span> u(i<span class="kw">-</span><span class="dv">1</span>,j) <span class="kw">+</span> u(i,j<span class="kw">+</span><span class="dv">1</span>) <span class="kw">+</span> u<span class="co">(i,j-1))</span></span>
-<span id="cb2-4"><a href="#cb2-4"></a>   <span class="kw">end do</span></span>
-<span id="cb2-5"><a href="#cb2-5"></a><span class="kw">end do</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>— a one-line difference that buys you a strictly faster-converging method, at exactly half the number of sweeps to reach a given tolerance. On paper, Gauss-Seidel should win outright.</p>
-<p>And yet, when we actually ran the numbers, Gauss-Seidel took <strong>4 to 5 times longer</strong> than Jacobi, wall-clock, despite needing only half as many iterations. Something in that one-line difference was costing us dearly, and it wasn’t showing up anywhere in the convergence theory.</p>
-<p><strong>Loop-carried dependencies, made concrete</strong></p>
-<p>The culprit, as we found, is that <code>u(i-1,j)</code> in the Gauss-Seidel update has <em>already been overwritten</em> by the time you read it — it’s not the old value from the previous sweep, it’s this sweep’s freshly computed neighbor. That’s precisely what makes Gauss-Seidel converge faster (you’re propagating information within a single sweep instead of waiting a full iteration for it), but it also means iteration <code>i</code> cannot start until iteration <code>i-1</code> has fully finished writing <code>u(i-1,j)</code>. Jacobi has no such constraint: every read in a Jacobi sweep comes from <code>u</code>, which nothing in that sweep ever touches.</p>
-<p>This is the textbook definition of a <a href="https://en.wikipedia.org/wiki/Loop_dependence_analysis">loop-carried dependency</a>, and it’s exactly the kind of thing a compiler needs to reason about before deciding whether it can vectorize a loop, reorder instructions, or overlap iterations on an out-of-order core. Jacobi: no such dependency, compiler’s hands are free. Gauss-Seidel: hard dependency, compiler’s hands are tied.</p>
-<p><strong>Putting a number on “tied”</strong></p>
-<p>That’s a nice story, but it’s still just a story until you can measure it. So this time, rather than taking the compiler’s word for it, we reached for <a href="https://github.com/RRZE-HPC/OSACA">OSACA</a> — the Open Source Architecture Code Analyzer — and pointed it directly at the compiled assembly of both kernels.</p>
-<p>OSACA reads a marked assembly loop and, assuming an idealized out-of-order core, reports two numbers per loop body: the <strong>critical path (CP)</strong>, the length of the longest dependency chain running through one iteration in isolation, and the <strong>loop-carried dependency (LCD)</strong>, the part of that chain that <em>must</em> cross from one iteration to the next. LCD is the number that matters here — it’s a hard floor on cycles-per-iteration, no amount of clever scheduling can get under it.</p>
-<p>Here’s what came back for our <code>-O3 -march=native</code> kernels, compiled with plain <code>do</code> loops (no <code>do concurrent</code>, nothing fancy):</p>
+<span id="cb1-2"><a href="#cb1-2"></a>    <span class="kw">do</span> i <span class="kw">=</span> <span class="dv">2</span>, n<span class="kw">-</span><span class="dv">1</span></span>
+<span id="cb1-3"><a href="#cb1-3"></a>        u(i, j) <span class="kw">=</span> <span class="fl">0.25_dp</span><span class="kw">*</span>(dx2<span class="kw">*</span>b(i, j) <span class="kw">+</span> u(i<span class="kw">+</span><span class="dv">1</span>, j) <span class="kw">+</span> u(i<span class="kw">-</span><span class="dv">1</span>, j) <span class="kw">&amp;</span></span>
+<span id="cb1-4"><a href="#cb1-4"></a>                                       <span class="kw">+</span> u(i, j<span class="kw">+</span><span class="dv">1</span>) <span class="kw">+</span> u(i, j<span class="kw">-</span><span class="dv">1</span>))</span>
+<span id="cb1-5"><a href="#cb1-5"></a>    <span class="kw">end do</span></span>
+<span id="cb1-6"><a href="#cb1-6"></a><span class="kw">end do</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>we used loop-unrolling techniques and a bit of algebra to rewrite it as</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode numberSource fortran number-lines code-with-copy"><code class="sourceCode fortranfixed"><span id="cb2-1"><a href="#cb2-1"></a><span class="dt">real(dp)</span>, <span class="dt">parameter</span> <span class="dt">::</span> c  <span class="kw">=</span> <span class="fl">0.25_dp</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a><span class="dt">real(dp)</span>, <span class="dt">parameter</span> <span class="dt">::</span> c2 <span class="kw">=</span> <span class="fl">0.0625_dp</span></span>
+<span id="cb2-3"><a href="#cb2-3"></a><span class="kw">do</span> j <span class="kw">=</span> <span class="dv">2</span>, n<span class="kw">-</span><span class="dv">1</span></span>
+<span id="cb2-4"><a href="#cb2-4"></a>   <span class="kw">do</span> i <span class="kw">=</span> <span class="dv">2</span>, n<span class="kw">-</span><span class="dv">2</span>, <span class="dv">2</span></span>
+<span id="cb2-5"><a href="#cb2-5"></a>      um   <span class="kw">=</span> u(i<span class="kw">-</span><span class="dv">1</span>, j)</span>
+<span id="cb2-6"><a href="#cb2-6"></a>      tmp1 <span class="kw">=</span> dx2<span class="kw">*</span>b(i, j)   <span class="kw">+</span> (u(i<span class="kw">+</span><span class="dv">1</span>, j) <span class="kw">+</span> u(i, j<span class="kw">+</span><span class="dv">1</span>) <span class="kw">+</span> u(i, j<span class="kw">-</span><span class="dv">1</span>))</span>
+<span id="cb2-7"><a href="#cb2-7"></a>      tmp2 <span class="kw">=</span> dx2<span class="kw">*</span>b(i<span class="kw">+</span><span class="dv">1</span>, j) <span class="kw">+</span> (u(i<span class="kw">+</span><span class="dv">2</span>, j) <span class="kw">+</span> u(i<span class="kw">+</span><span class="dv">1</span>, j<span class="kw">+</span><span class="dv">1</span>) <span class="kw">+</span> u(i<span class="kw">+</span><span class="dv">1</span>, j<span class="kw">-</span><span class="dv">1</span>))</span>
+<span id="cb2-8"><a href="#cb2-8"></a>      u(i, j)   <span class="kw">=</span> c <span class="kw">*</span>(um <span class="kw">+</span> tmp1)</span>
+<span id="cb2-9"><a href="#cb2-9"></a>      u(i<span class="kw">+</span><span class="dv">1</span>, j) <span class="kw">=</span> c2<span class="kw">*</span>um <span class="kw">+</span> (c2<span class="kw">*</span>tmp1 <span class="kw">+</span> c<span class="kw">*</span>tmp2)</span>
+<span id="cb2-10"><a href="#cb2-10"></a>   <span class="kw">end do</span></span>
+<span id="cb2-11"><a href="#cb2-11"></a></span>
+<span id="cb2-12"><a href="#cb2-12"></a>   <span class="co">! Handles the case where an odd number of grid points is used.</span></span>
+<span id="cb2-13"><a href="#cb2-13"></a>   <span class="kw">if</span> (<span class="bu">mod</span>(n, <span class="dv">2</span>) <span class="op">==</span> <span class="dv">1</span>) <span class="kw">then</span></span>
+<span id="cb2-14"><a href="#cb2-14"></a>      tmp1 <span class="kw">=</span> dx2<span class="kw">*</span>b(n<span class="kw">-</span><span class="dv">1</span>, j) <span class="kw">+</span> (u(n, j) <span class="kw">+</span> u(n<span class="kw">-</span><span class="dv">1</span>, j<span class="kw">+</span><span class="dv">1</span>) <span class="kw">+</span> u(n<span class="kw">-</span><span class="dv">1</span>, j<span class="kw">-</span><span class="dv">1</span>))</span>
+<span id="cb2-15"><a href="#cb2-15"></a>      u(n<span class="kw">-</span><span class="dv">1</span>, j) <span class="kw">=</span> c<span class="kw">*</span>(u(n<span class="kw">-</span><span class="dv">2</span>, j) <span class="kw">+</span> tmp1)</span>
+<span id="cb2-16"><a href="#cb2-16"></a>   <span class="kw">end if</span></span>
+<span id="cb2-17"><a href="#cb2-17"></a><span class="kw">end do</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>A slightly more complicated implementation admittedly. But the added complexity paid off: we drastically reduced the number of loop-carried dependencies. In doing so, we enabled the compiler to make use of instruction-level-parallelism and generate a much faster code. Using our classical 2D Poisson test case with 512 points per direction, we obtained the following timings:</p>
 <table class="caption-top table">
-<colgroup>
-<col style="width: 20%">
-<col style="width: 20%">
-<col style="width: 20%">
-<col style="width: 20%">
-<col style="width: 20%">
-</colgroup>
 <thead>
 <tr class="header">
-<th></th>
-<th>CP (cycles)</th>
-<th>LCD (cycles)</th>
-<th>Port-pressure floor (cycles)</th>
-<th>Governing bound</th>
+<th>Solver</th>
+<th>Iterations</th>
+<th>Time / iteration</th>
+<th>Total</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td>Jacobi (vectorized, 4 elements/it.)</td>
-<td>24.0</td>
-<td>1.0</td>
-<td>3.0</td>
-<td>throughput</td>
+<td>Jacobi</td>
+<td>138 000</td>
+<td><strong>115 µs</strong></td>
+<td>16 s</td>
 </tr>
 <tr class="even">
-<td>Gauss-Seidel (scalar, 1 element/it.)</td>
-<td>24.0</td>
-<td>12.0</td>
-<td>2.5</td>
-<td><strong>latency</strong></td>
+<td>Textbook Gauss-Seidel</td>
+<td>74 000</td>
+<td>1054 µs</td>
+<td>78 s</td>
+</tr>
+<tr class="odd">
+<td>Unrolled Gauss-Seidel</td>
+<td>74 000</td>
+<td><strong>175 µs</strong></td>
+<td><strong>13 s</strong></td>
 </tr>
 </tbody>
 </table>
-<p>Two things jump out immediately.</p>
-<p>First, the critical path is <em>identical</em> for both kernels — 24 cycles. That makes sense: it’s essentially the same chain of floating-point operations (a load, an FMA, three adds, a multiply, a store) in both cases. The arithmetic hasn’t changed; only what’s allowed to overlap has.</p>
-<p>Second, and this is the whole ballgame: Jacobi’s loop-carried dependency is a throwaway 1.0 cycles — just the loop counter incrementing, nothing to do with the actual computation. Gauss-Seidel’s is <strong>12.0 cycles</strong>, and OSACA even tells you exactly where it comes from:</p>
-<pre><code>46 | 12.0 | vaddsd  %xmm1, %xmm0, %xmm0          | [46, 47, 48]</code></pre>
-<p>Trace it back and it’s the west-neighbor term: <code>%xmm1</code> holds this sweep’s freshly written <code>u(i,j)</code>, and it gets read straight back in as <code>u(i-1,j)</code> on the very next loop trip. Three chained instructions — the west-neighbor add, the north-neighbor add, and the final multiply — each with 4-cycle latency, sum to exactly 12. That’s not a compiler being lazy; it’s the compiler correctly reporting that there is <em>no way</em> to start computing <code>u(i,j)</code> before <code>u(i-1,j)</code> exists, because the algorithm itself demands it.</p>
-<p>The other giveaway, readable straight off the assembly without even needing OSACA, is the instruction mnemonics themselves. Jacobi’s inner loop is built entirely out of packed double-precision instructions — <code>vaddpd</code>, <code>vmulpd</code>, <code>vfmadd213pd</code> — each one crunching four grid points at a time in a single 256-bit AVX register. Gauss-Seidel’s inner loop uses the scalar forms of the exact same instructions — <code>vaddsd</code>, <code>vmulsd</code>, <code>vfmadd213sd</code> — one grid point at a time. The <code>pd</code>/<code>sd</code> suffix alone tells you, at a glance, which loop the compiler was able to vectorize and which one it wasn’t.</p>
-<p><strong>Does the number add up?</strong></p>
-<p>For each kernel, the CPU’s actual sustained cost per iteration is bounded below by <em>both</em> constraints at once — the throughput floor and the LCD — so the one that actually governs is whichever of the two is larger. For Gauss-Seidel, that’s the LCD (12.0 cycles, versus a 2.5-cycle throughput floor); for Jacobi, it’s the throughput floor (3.0 cycles, versus a negligible 1.0-cycle LCD). In other words, Gauss-Seidel is <em>latency-bound</em> and Jacobi is <em>throughput-bound</em> — two different bottlenecks entirely, which is precisely why comparing them isn’t just a matter of reading off the same column for both.</p>
-<p>Normalizing each kernel’s governing bound per grid point (dividing Jacobi’s by 4, since it processes four elements per vector iteration) gives a <em>predicted</em> per-sweep slowdown of roughly</p>
-<p><span class="math display">\[\frac{12.0}{3.0/4} = 16\times\]</span></p>
-<p>That’s higher than the 4–5× we measured wall-clock — but remember, wall-clock measures <em>total time to solution</em>, and Gauss-Seidel needs only half as many sweeps as Jacobi to converge. Once you back that out, the actual per-sweep slowdown implied by the measurements is</p>
-<p><span class="math display">\[\left(\frac{T_{GS}}{T_J}\right) \Big/ \left(\frac{N_{GS}}{N_J}\right) \approx (4\text{–}5) \times 2 \approx 8\text{–}10\times\]</span></p>
-<p>which lands within a factor of two of OSACA’s prediction — a healthy level of agreement for a <em>static</em> model that has zero visibility into the memory system. (Jacobi’s real bottleneck at any decent problem size is almost certainly DRAM bandwidth rather than the 3-cycle compute floor OSACA reports, which would inflate its true per-sweep cost and close the remaining gap.) The mechanism OSACA identifies — Gauss-Seidel latency-bound at a hard 12-cycle wall, Jacobi comfortably throughput-bound — is exactly right, even if the precise number needs a pinch of salt.</p>
-<p>So: the diagnosis is confirmed, in triplicate — theory, static analysis, and measurement all agree. Gauss-Seidel’s faster convergence is bought entirely at the price of a serialized, 12-cycle-per-element dependency chain that the compiler simply cannot break on its own.</p>
-<p>Which raises the obvious question: is that dependency chain <em>fundamental</em> to the algorithm, or is it an artifact of how we happened to write the loop?</p>
+<p>This new kernel runs 6 times faster than the original one. And, although a single iteration is slightly slower than Jacobi, the better convergence rate of the Gauss-Seidel method allows this kernel to compute the solution to our problem almost 3 seconds faster. This is clearly a win, so why do I keep bothering you with Gauss-Seidel?</p>
+<p>The reason is pretty simple: because of the loop-carried dependency, this kernel cannot be easily vectorized nor parallelized. And I like my kernels being vectorized. This can be inferred directly from the assembly code emitted by the compiler (<code>gfortran 15.1</code> with <code>-O3 -march=native -mtune=native</code> here) for the inner-most loop</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode numberSource {assembly} number-lines code-with-copy"><code class="sourceCode"><span id="cb3-1"><a href="#cb3-1"></a>.L5:</span>
+<span id="cb3-2"><a href="#cb3-2"></a>    vmovsd  16(%rax), %xmm1</span>
+<span id="cb3-3"><a href="#cb3-3"></a>    vmovsd  8(%rax), %xmm0</span>
+<span id="cb3-4"><a href="#cb3-4"></a>    addq    $16, %rdx</span>
+<span id="cb3-5"><a href="#cb3-5"></a>    vaddsd  8(%rax,%rsi,8), %xmm1, %xmm1</span>
+<span id="cb3-6"><a href="#cb3-6"></a>    vaddsd  (%rax,%rsi,8), %xmm0, %xmm2</span>
+<span id="cb3-7"><a href="#cb3-7"></a>    vaddsd  8(%rax,%rcx,8), %xmm1, %xmm1</span>
+<span id="cb3-8"><a href="#cb3-8"></a>    vaddsd  (%rax,%rcx,8), %xmm2, %xmm2</span>
+<span id="cb3-9"><a href="#cb3-9"></a>    addq    $16, %rax</span>
+<span id="cb3-10"><a href="#cb3-10"></a>    vfmadd231sd -8(%rdx), %xmm5, %xmm1</span>
+<span id="cb3-11"><a href="#cb3-11"></a>    vfmadd231sd -16(%rdx), %xmm5, %xmm2</span>
+<span id="cb3-12"><a href="#cb3-12"></a>    vmulsd  %xmm4, %xmm1, %xmm1</span>
+<span id="cb3-13"><a href="#cb3-13"></a>    vaddsd  %xmm3, %xmm2, %xmm0</span>
+<span id="cb3-14"><a href="#cb3-14"></a>    vmulsd  %xmm4, %xmm0, %xmm0</span>
+<span id="cb3-15"><a href="#cb3-15"></a>    vfmadd132sd %xmm6, %xmm1, %xmm2</span>
+<span id="cb3-16"><a href="#cb3-16"></a>    vfmadd132sd %xmm6, %xmm2, %xmm3</span>
+<span id="cb3-17"><a href="#cb3-17"></a>    vunpcklpd   %xmm3, %xmm0, %xmm0</span>
+<span id="cb3-18"><a href="#cb3-18"></a>    vmovupd %xmm0, -16(%rax)</span>
+<span id="cb3-19"><a href="#cb3-19"></a>    cmpq    %rax, %rdi</span>
+<span id="cb3-20"><a href="#cb3-20"></a>    jne .L5</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>If you look at the mnemonics (that is the last two letters of most instructions), you’ll see that almost all of them are <code>sd</code>. Take the <code>vaddsd</code> on line 5 for instance. What it stands for is <code>Vector Add Scalar Double-Precision</code>. The <code>Vector</code> here has nothing to do with SIMD vectorization. It simply means the instruction belongs to the Advanced Vector Extensions (AVX) set. <code>Add</code> is pretty obvious right, we add numbers. The problem is <code>Scalar Double-Precision</code>. Basically, this means that we process grid points one at a time. And even though reducing the loop-carried dependencies enabled the scheduler to use <a href="https://en.wikipedia.org/wiki/Instruction-level_parallelism">instruction-level parallelism</a> (which is why this kernel runs faster), I’d rather have this algorithm (not the kernel) be vectorized.</p>
+<section id="but-why-is-the-lack-of-vectorization-a-problem" class="level1 page-columns page-full">
+<h1>But why is the lack of vectorization a problem?</h1>
+<div class="page-columns page-full"><p>Here is a simple reason: if a kernel is vectorized, modern CPUs can process several grid points with a single instruction (SIMD). If the computation is also free of dependencies between those points, we can distribute those independent operations across multiple threads. In my case, my CPU has 8 physical cores. From a practical point of view, what it entails is: if I can figure out how to have a vectorized implementation of the Gauss-Seidel algorithm with no loop-carried dependencies, this kernel could run (theoretically) up to 8 times faster at no extra cost by leveraging multithreading. Same code, same hardware, 8x speed-up.  So here is the problem: we did not restore Gauss-Seidel to its rightful place yet precisely because the Jacobi kernel is easily vectorized. And because it also has no loop-carried dependencies, it can also be accelerated quite significantly on the exact same machine.</p><div class="no-row-height column-margin column-container"><span class="margin-aside">Yes I know, memory-bounded so not quite true. We’ll get there eventually.</span></div></div>
+<section id="lets-put-this-assertion-to-the-test" class="level2">
+<h2 class="anchored" data-anchor-id="lets-put-this-assertion-to-the-test">Let’s put this assertion to the test</h2>
+<p>Same old same old: 2D Poisson on the unit square with homogeneous Dirichlet boundary conditions, non-zero forcing, and second-order accurate finite differences on a uniform grid with 512 points per direction. Both kernels are compiled with <code>gfortran -O3 -march=native -mtune=native -ftree-parallelize-loops=n</code> where <code>n</code> is the number of threads we want to use. Hereafter, we’ll let <code>n</code> vary between 1 (serial) and 8 (the maximum number of threads on my laptop).</p>
+<div id="19a8ca72" class="cell" data-execution_count="1">
+<div class="cell-output cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="redblack_gauss_seidel_files/figure-html/cell-2-output-1.png" width="663" height="287" class="figure-img"></p>
+<figcaption><strong>Figure 1 -</strong> Wall-clock time as a function of thread count for Jacobi and Gauss-Seidel. Jacobi scales close to linearly with the number of threads, while Gauss-Seidel stays essentially flat — at 8 threads, Jacobi is already 4.7<span class="math inline">\(\times\)</span> faster.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>This figure depicts the time-to-solution for the two kernels as we vary <code>n</code>. The left-most points are our serial setup, i.e.&nbsp;what we considered so far. As <a href="https://loiseaujc.github.io/posts/blog-title/make_gauss_seidel_great_again.html">before</a>, the unrolled Gauss-Seidel kernel is slightly faster than the Jacobi one! Things however go south as soon as we enable multithreading… By the time we reach the full 8 threads, the Jacobi solver is roughly 5 times faster than our brand new Gauss-Seidel one. This is why I said our win from last time was <em>serial only</em>. Because all the lattice updates in Jacobi are independent from one another, adding a single option (<code>-ftree-parallelize-loops=n</code>) lets the compiler parallelize the Jacobi solver and have it outperform Gauss-Seidel by quite a margin despite its worse convergence properties.</p>
 </section>
-<section id="so-what-is-loop-peeling-then" class="level1">
-<h1>So what is loop peeling then?</h1>
+<section id="so-what-can-we-do" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="so-what-can-we-do">So what can we do?</h2>
+<div class="page-columns page-full"><p>Well, for this particular implementation of the Gauss-Seidel method, not much actually. We haven’t quite reached the end of the road yet, but taking the final step would require a hefty number of changes in the code as well as a deeper understanding of the underlying hardware.  And sometimes, you do have to bite the bullet and take this extra step because that is the only thing you can do. But here, I’d like to actually take a step back instead, and reflect on where the troubling loop-carried dependencies actually come from.</p><div class="no-row-height column-margin column-container"><span class="margin-aside">What I have in mind here are things like <em>temporal blocking</em>, <em>diamond tiling</em>, and the likes. <a href="https://stackoverflow.com/questions/77846522/how-can-i-generalize-diamond-tiling-to-higher-dimensions">Here</a> is a very comprehensive stackoverflow post if you’re interested.</span></div></div>
+<p>Let’s look back to our original Gauss-Seidel kernel (the unrolled one is just a variation around it)</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode numberSource fortran number-lines code-with-copy"><code class="sourceCode fortranfixed"><span id="cb4-1"><a href="#cb4-1"></a><span class="kw">do</span> j <span class="kw">=</span> <span class="dv">2</span>, n<span class="kw">-</span><span class="dv">1</span></span>
+<span id="cb4-2"><a href="#cb4-2"></a>    <span class="kw">do</span> i <span class="kw">=</span> <span class="dv">2</span>, n<span class="kw">-</span><span class="dv">1</span></span>
+<span id="cb4-3"><a href="#cb4-3"></a>        u(i, j) <span class="kw">=</span> <span class="fl">0.25_dp</span> <span class="kw">*</span> (b(i, j)<span class="kw">*</span>dx2 <span class="kw">+</span> u(i<span class="kw">-</span><span class="dv">1</span>, j) <span class="kw">+</span> u(i<span class="kw">+</span><span class="dv">1</span>, j) <span class="kw">&amp;</span></span>
+<span id="cb4-4"><a href="#cb4-4"></a>                                         <span class="kw">+</span> u(i, j<span class="kw">-</span><span class="dv">1</span>) <span class="kw">+</span> u(i, j<span class="kw">+</span><span class="dv">1</span>))</span>
+<span id="cb4-5"><a href="#cb4-5"></a>    <span class="kw">end do</span></span>
+<span id="cb4-6"><a href="#cb4-6"></a><span class="kw">end do</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The loop-carried dependencies identified in the <a href="https://loiseaujc.github.io/posts/blog-title/make_gauss_seidel_great_again.html">previous post</a> come from the fact that <code>u(i, j)</code> cannot be updated until <code>u(i-1, j)</code> has already been. Had we implemented the kernel as</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode numberSource fortran number-lines code-with-copy"><code class="sourceCode fortranfixed"><span id="cb5-1"><a href="#cb5-1"></a><span class="kw">do</span> i <span class="kw">=</span> <span class="dv">2</span>, n<span class="kw">-</span><span class="dv">1</span></span>
+<span id="cb5-2"><a href="#cb5-2"></a>    <span class="kw">do</span> j <span class="kw">=</span> <span class="dv">2</span>, n<span class="kw">-</span><span class="dv">1</span></span>
+<span id="cb5-3"><a href="#cb5-3"></a>        u(i, j) <span class="kw">=</span> <span class="fl">0.25_dp</span> <span class="kw">*</span> (b(i, j)<span class="kw">*</span>dx2 <span class="kw">+</span> u(i<span class="kw">-</span><span class="dv">1</span>, j) <span class="kw">+</span> u(i<span class="kw">+</span><span class="dv">1</span>, j) <span class="kw">&amp;</span></span>
+<span id="cb5-4"><a href="#cb5-4"></a>                                         <span class="kw">+</span> u(i, j<span class="kw">-</span><span class="dv">1</span>) <span class="kw">+</span> u(i, j<span class="kw">+</span><span class="dv">1</span>))</span>
+<span id="cb5-5"><a href="#cb5-5"></a>    <span class="kw">end do</span></span>
+<span id="cb5-6"><a href="#cb5-6"></a><span class="kw">end do</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>instead, i.e.&nbsp;scanning through the rows first rather than the columns, the loop-carried dependency would still be there: <code>u(i, j)</code> couldn’t be updated until <code>u(i, j-1)</code> had been. These two kernels correspond to slightly different <em>ordering</em> of the unknowns. The traversal path associated to each is illustrated below.</p>
+<div id="13681086" class="cell" data-execution_count="2">
+<div class="cell-output cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="redblack_gauss_seidel_files/figure-html/cell-3-output-1.png" width="722" height="396" class="figure-img"></p>
+<figcaption><strong>Figure 2 -</strong> The two possible loop orderings of the lexicographic Gauss-Seidel kernel. (a) Column-wise ordering sweeps down each column (fixed <span class="math inline">\(j\)</span>, incrementing <span class="math inline">\(i\)</span>) before moving to the next. (b) Row-wise ordering sweeps across each row (fixed <span class="math inline">\(i\)</span>, incrementing <span class="math inline">\(j\)</span>) before moving to the next. Either way, the path is a single unbroken sequence through every grid point, which is exactly where the loop-carried dependency comes from.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>Quite clearly, both of these orderings process the grid points sequentially. So the question is: <strong>is this sequential process (and the resulting loop-carried dependencies) a fundamental property of the Gauss-Seidel method, or is it simply a consequence of the way we ordered the grid points?</strong></p>
 </section>
-<section id="fair-enough-lets-do-that-for-gauss-seidel" class="level1">
-<h1>Fair enough, let’s do that for Gauss-Seidel!</h1>
 </section>
-<section id="can-we-go-even-further" class="level1">
-<h1>Can we go even further?</h1>
+<section id="leveraging-the-mathematical-structure-of-the-problem" class="level1 page-columns page-full">
+<h1>Leveraging the mathematical structure of the problem</h1>
+<p>It turns out that the answer to this question is no, the sequential processing of grid points <strong>is not</strong> a fundamental property of the Gauss-Seidel method (at least when applied to this 2D Poisson problem). And yes, for our particular problem, we can find a better ordering that will actually get entirely rid of the loop-carried dependencies. But to find this ordering, we’ll have to look back at the problem from a completely different angle. Instead of trying to come up with variations of the lexicographic kernel hoping it’ll help the compiler do a better job, we’ll have to figure out on our own if there is an underlying mathematical structure to our problem that we can leverage to design a fundamentally better kernel.</p>
+<section id="red-and-black-coloring" class="level2">
+<h2 class="anchored" data-anchor-id="red-and-black-coloring">Red and black coloring</h2>
+<p>Alright, so let’s start from the beginning again. Both the Jacobi and Gauss-Seidel update rules for the 2D Poisson equation can be written as</p>
+<p><span class="math display">\[
+u_{i, j}^{(t+1)} = \dfrac{1}{4} \left( b_{i, j} \cdot \Delta x^2 + u_{i-1, j}^{(?)} + u_{i+1, j}^{(?)} + u_{i, j-1}^{(?)} + u_{i, j+1}^{(?)} \right).
+\]</span></p>
+<p>For Jacobi, the superscript <span class="math inline">\((?)\)</span> is simply <span class="math inline">\((t)\)</span>, i.e.&nbsp;we update <span class="math inline">\(u_{i, j}^{(t+1)}\)</span> from old values stored in a completely different buffer. For Gauss-Seidel on the other hand, the superscript <span class="math inline">\((?)\)</span> can be either <span class="math inline">\((t)\)</span> or <span class="math inline">\((t+1)\)</span> since we directly use the newly updated values whenever possible, leading to</p>
+<p><span class="math display">\[
+u_{i, j}^{(t+1)} = \dfrac{1}{4} \left( b_{i, j} \cdot \Delta x^2 + u_{i-1, j}^{(t+1)} + u_{i+1, j}^{(t)} + u_{i, j-1}^{(t+1)} + u_{i, j+1}^{(t)} \right).
+\]</span></p>
+<p>This is a very simple update rule, so how the hell can we find a more hardware-friendly ordering? To get some intuition, let’s look at the figure below.</p>
+<div id="0cacc15b" class="cell" data-execution_count="3">
+<div class="cell-output cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="redblack_gauss_seidel_files/figure-html/cell-4-output-1.png" width="653" height="459" class="figure-img"></p>
+<figcaption><strong>Figure 3 -</strong> Nodes are partitioned into two disjoint sets: red where <span class="math inline">\((i+j)\)</span> is even, and black where <span class="math inline">\((i+j)\)</span> is odd. Blue lines highlight the standard 5-point discrete Laplacian stencil centered at node <span class="math inline">\((3,3)\)</span>. Because every red node relies exclusively on its four orthogonal black neighbors (and vice versa), all red nodes can be updated simultaneously without data dependencies, followed by an update of all black nodes.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>The different grid points have been color-coded in a very specific way. Points for which <span class="math inline">\((i + j)\)</span> is even are red, while those for which <span class="math inline">\((i + j)\)</span> is odd are black. We’ve also highlighted the standard 5-point discrete Laplacian stencil we’re using for the node <span class="math inline">\((3, 3)\)</span>. And something should jump out directly: this red point update depends only on black points, as does every other red point. And conversely, any black point update depends solely on red points. It looks very promising, isn’t it! It seems like we could update all of the red points simultaneously based on the old values of the black points, and then update all of the black points (simultaneously again) based on the just-updated values of the red ones. Suspiciously similar to Gauss-Seidel… And it is actually the same plain old Gauss-Seidel we’ve been looking at for some time, simply using a different ordering breaking the sequential nature of the lexicographic kernel that would have led otherwise to loop-carried dependencies.</p>
+</section>
+<section id="a-detour-through-the-mathematics" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="a-detour-through-the-mathematics">A detour through the mathematics</h2>
+<p>You should have by now at least a good intuition for why this red/black ordering may be beneficial. Let’s now try to formalize that mathematically starting from our original linear system</p>
+<p><span class="math display">\[
+Ax = b.
+\]</span></p>
+<p>When <span class="math inline">\(A\)</span> is symmetric positive-definite, Gauss-Seidel uses the additive decomposition <span class="math inline">\(A = D + L + L^\top\)</span> (with <span class="math inline">\(D\)</span> diagonal, and <span class="math inline">\(L\)</span> strictly lower triangular) to arrive at the iterative update rule</p>
+<p><span class="math display">\[
+    \left( D + L \right) x_{t+1} = b - L^\top x_t.
+\]</span></p>
+<p>The loop-carried dependency we’ve identified in the lexicographic kernel comes precisely from the fact that the lower triangular matrix <span class="math inline">\(D + L\)</span> is inverted using forward substitution. But let’s now re-order our vector of unknowns <span class="math inline">\(x\)</span> by introducing a permutation matrix <span class="math inline">\(P\)</span>. This leads to the linear system <span class="math inline">\(PAP^\top z = Pb\)</span>, where <span class="math inline">\(z = Px\)</span> is the re-ordered vector of unknowns. Partitioning this vector into two sets leads to the block system</p>
+<p><span class="math display">\[
+\begin{bmatrix}
+D_1 &amp; B \\
+C &amp; D_2
+\end{bmatrix}
+\begin{bmatrix}
+z_1 \\ z_2
+\end{bmatrix}
+=
+\begin{bmatrix}
+b_1 \\ b_2
+\end{bmatrix},
+\]</span></p>
+<p>and we could try to iteratively solve this system using the following update rule</p>
+<p><span class="math display">\[
+\begin{aligned}
+D_1 z_1^{(t+1)} &amp; = b_1 - B z_2^{(t)} \\
+D_2 z_2^{(t+1)} &amp; = b_2 - C z_1^{(t+1)}.
+\end{aligned}
+\]</span></p>
+<p>Depending on the matrix <span class="math inline">\(A\)</span> and how we re-ordered the unknowns, this may or may not converge. But so far, we’ve only considered an arbitrary permutation matrix <span class="math inline">\(P\)</span>. The name of the game thus is finding a permutation matrix <span class="math inline">\(P\)</span> such that</p>
+<ol type="1">
+<li><span class="math inline">\(D_1\)</span> and <span class="math inline">\(D_2\)</span> are easy to invert,</li>
+</ol>
+<p><strong>and</strong></p>
+<ol start="2" type="1">
+<li>this update rule actually converges.</li>
+</ol>
+<p>This is exactly what the red/black ordering is doing for our Poisson problem. There are two things to note. First, because our original system is symmetric, we actually have <span class="math inline">\(B = C^\top\)</span>. Second, since the red (resp. black) depend exclusively on the black (resp. red) ones, the <span class="math inline">\(D_1\)</span> and <span class="math inline">\(D_2\)</span> are simply multiples of the identity matrix and thus trivial to invert. So our first condition checks out. Let’s move on with the second one: <em>does it actually converge?</em></p>
+<p>Things get a bit more complicated here, but the answer is <em>for our specific problem, yes it does</em>. I’ll omit the proof and just give the main ideas. Because <span class="math inline">\(A\)</span> is symmetric positive definite, the matrix</p>
+<p><span class="math display">\[
+P A P^\top
+=
+\begin{bmatrix}
+D_1 &amp; B \\
+B^\top &amp; D_2
+\end{bmatrix},
+\]</span></p>
+<div class="page-columns page-full"><p>also is (where <span class="math inline">\(P\)</span> is the permutation matrix associated to the red/black ordering). The red/black iteration is therefore simply block Gauss-Seidel applied to this SPD system, with <span class="math inline">\(D_1\)</span> and <span class="math inline">\(D_2\)</span> as the two diagonal blocks. Standard convergence results for block Gauss-Seidel then guarantee convergence. So condition 2 also checks out.  The important point however is that we have changed the ordering, not the underlying iteration: the converged solution is still the solution of the original linear system (up to the permutation of the unknowns).</p><div class="no-row-height column-margin column-container"><span class="margin-aside">Condition 2 holding true is not specific to red/black ordering. Any permutation would work because it has everything to do with the original matrix being symmetric positive definite.</span></div></div>
+</section>
+</section>
+<section id="back-to-business" class="level1 page-columns page-full">
+<h1>Back to business!</h1>
+<p>Alright, we’re all set. Back to <code>Fortran</code>!</p>
+<section id="the-redblack-gauss-seidel-kernel" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="the-redblack-gauss-seidel-kernel">The red/black Gauss-Seidel kernel</h2>
+<p>After a bit of fiddling around, it shouldn’t be too hard to realize that the red/black Gauss-Seidel kernel can be written as</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode numberSource fortran number-lines code-with-copy"><code class="sourceCode fortranfixed"><span id="cb6-1"><a href="#cb6-1"></a><span class="kw">do</span> k <span class="kw">=</span> <span class="dv">0</span>, <span class="dv">1</span></span>
+<span id="cb6-2"><a href="#cb6-2"></a>    <span class="co">!$omp parallel do default(none) private(j, i, istart) shared(n, u, b, dx2, k) schedule(static)</span></span>
+<span id="cb6-3"><a href="#cb6-3"></a>    <span class="kw">do</span> j <span class="kw">=</span> <span class="dv">2</span>, n<span class="kw">-</span><span class="dv">1</span></span>
+<span id="cb6-4"><a href="#cb6-4"></a>        istart <span class="kw">=</span> <span class="dv">2</span> <span class="kw">+</span> <span class="bu">mod</span>(k<span class="kw">+</span>j, <span class="dv">2</span>)</span>
+<span id="cb6-5"><a href="#cb6-5"></a>        <span class="kw">do</span> i <span class="kw">=</span> istart, n<span class="kw">-</span><span class="dv">1</span>, <span class="dv">2</span></span>
+<span id="cb6-6"><a href="#cb6-6"></a>            u(i, j) <span class="kw">=</span> <span class="fl">0.25_dp</span><span class="kw">*</span>(b(i, j)<span class="kw">*</span>dx2 <span class="kw">+</span> u(i<span class="kw">+</span><span class="dv">1</span>, j) <span class="kw">+</span> u(i<span class="kw">-</span><span class="dv">1</span>, j) <span class="kw">&amp;</span></span>
+<span id="cb6-7"><a href="#cb6-7"></a>                                           <span class="kw">+</span> u(i, j<span class="kw">+</span><span class="dv">1</span>) <span class="kw">+</span> u(i, j<span class="kw">-</span><span class="dv">1</span>))</span>
+<span id="cb6-8"><a href="#cb6-8"></a>        <span class="kw">end do</span></span>
+<span id="cb6-9"><a href="#cb6-9"></a>    <span class="kw">end do</span></span>
+<span id="cb6-10"><a href="#cb6-10"></a>    <span class="co">!$omp end parallel do</span></span>
+<span id="cb6-11"><a href="#cb6-11"></a><span class="kw">end do</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="page-columns page-full"><p>Forget about the <code>OpenMP</code> stuff for now.  If you look at lines 6 and 7, you’ll see that this is the exact same update rule as before. The only thing that changed is how we loop over <span class="math inline">\(i\)</span> and <span class="math inline">\(j\)</span>. Note that, when <code>k = 0</code>, the loop updates the red points, and when <code>k = 1</code> it updates the black ones. So is this really good enough to recover the SIMD vectorization and multithreading capabilities of Jacobi?</p><div class="no-row-height column-margin column-container"><span class="margin-aside">In an ideal world, we could have written it using <code>do concurrent</code>. But for some reason, <code>gfortran</code> does not like it when going multithreaded.</span></div></div>
+<p>As in the <a href="https://loiseaujc.github.io/posts/blog-title/make_gauss_seidel_great_again.html">previous post</a>, we’ll run this kernel through <a href="https://github.com/RRZE-HPC/OSACA"><code>OSACA</code></a>. We’ll thus compile it with the same options as before: <code>gfortran -O3 -march=native -mtune=native</code> so that vectorization is enabled. Here are the results for the inner-most loop updating only the red points.</p>
+<pre><code>                                      Port pressure in cycles                                       
+     |  0   - 0DV  |  1   |  2   -  2D  |  3   -  3D  |  4   |   5   |  6   |  7   ||  CP  | LCD  |
+---------------------------------------------------------------------------------------------------
+ 168 |             |      |             |             |      |       |      |      ||      |      |   .L17:
+ 169 |             |      | 0.50   0.50 | 0.50   0.50 |      |       |      |      ||      |      |   vmovupd (%r9,%rax), %ymm1
+ 170 |             |      | 0.50   0.50 | 0.50   0.50 |      |       |      |      ||      |      |   vmovupd (%r8,%rax), %ymm10
+ 171 |             |      | 0.50   0.50 | 0.50   0.50 |      |       |      |      ||      |      |   vmovupd (%rdi,%rax), %ymm12
+ 172 |             |      | 0.50   0.50 | 0.50   0.50 |      |       |      |      ||      |      |   vmovupd (%rsi,%rax), %ymm14
+ 173 |             |      | 0.50   0.50 | 0.50   0.50 |      | 1.000 |      |      ||  3.0 |      |   vpermt2pd 32(%r9,%rax), %ymm2, %ymm1
+ 174 |             |      | 0.50   0.50 | 0.50   0.50 |      | 1.000 |      |      ||      |      |   vpermt2pd 32(%r8,%rax), %ymm2, %ymm10
+ 175 |             |      | 0.50   0.50 | 0.50   0.50 |      |       |      |      ||      |      |   vmovupd (%r10,%rax), %ymm0
+ 176 | 0.50        | 0.50 |             |             |      |       |      |      ||  4.0 |      |   vaddpd %ymm10, %ymm1, %ymm1
+ 177 |             |      | 0.50   0.50 | 0.50   0.50 |      | 1.000 |      |      ||      |      |   vpermt2pd 32(%rdi,%rax), %ymm2, %ymm12
+ 178 |             |      | 0.50   0.50 | 0.50   0.50 |      | 1.000 |      |      ||      |      |   vpermt2pd 32(%rsi,%rax), %ymm2, %ymm14
+ 179 |             |      | 0.50   0.50 | 0.50   0.50 |      | 1.000 |      |      ||      |      |   vpermt2pd 32(%r10,%rax), %ymm2, %ymm0
+ 180 | 0.50        | 0.50 |             |             |      |       |      |      ||  4.0 |      |   vaddpd %ymm12, %ymm1, %ymm1
+ 181 | 0.50        | 0.50 |             |             |      |       |      |      ||  4.0 |      |   vaddpd %ymm14, %ymm1, %ymm1
+ 182 | 0.50        | 0.50 |             |             |      |       |      |      ||  4.0 |      |   vfmadd132pd %ymm7, %ymm1, %ymm0
+ 183 | 0.50        | 0.50 |             |             |      |       |      |      ||  4.0 |      |   vmulpd %ymm4, %ymm0, %ymm0
+ 184 |             |      |             |             |      | 1.000 |      |      ||  3.0 |      |   vextractf64x2 $1, %ymm0, %xmm1
+ 185 |             |      | 0.50        | 0.50        | 1.00 |       |      |      ||      |      |   vmovlpd %xmm0, (%rdx,%rax)
+ 186 |             |      | 0.50        | 0.50        | 1.00 |       |      |      ||      |      |   vmovhpd %xmm0, 16(%rdx,%rax)
+ 187 |             |      |             |             |      | 1.000 |      |      ||      |      |   valignq $3, %ymm0, %ymm0, %ymm0
+ 188 |             |      | 0.50        | 0.50        | 1.00 |       |      |      ||  0.0 |      |   vmovsd %xmm1, 32(%rdx,%rax)
+ 189 |             |      | 0.50        | 0.50        | 1.00 |       |      |      ||      |      |   vmovsd %xmm0, 48(%rdx,%rax)
+ 190 | 0.00        | 0.00 |             |             |      | -0.01 | 1.00 |      ||      |  1.0 |   addq $64, %rax
+ 191 | 0.00        | 0.00 |             |             |      | -0.01 | 1.00 |      ||      |      |   cmpq %rax, %r12
+ 192 |             |      |             |             |      |       |      |      ||      |      | * jne .L17
+
+       2.50          2.50   7.00   5.00   7.00   5.00   4.00   6.980   2.00           26.0    1.0  </code></pre>
+<div class="page-columns page-full"><p>If you remember what we’ve done <a href="https://loiseaujc.github.io/posts/blog-title/make_gauss_seidel_great_again.html">last time</a>, the loop-carried dependencies have been reduced from 4 to 1, and this 1 is only related to incrementing the loop counter so utterly irrelevant. Moreover, if you look at the assembly code, you’ll see that the mnemonics are now <code>pd</code>. So there you have it! Not only does the red/black ordering for Gauss-Seidel lead to a complete disappearance of the loop-carried dependencies, but it also enables SIMD vectorization! That is a win on both accounts.  So let’s pit it against Jacobi now.</p><div class="no-row-height column-margin column-container"><span class="margin-aside">Surprisingly, the story for the black loop is slightly messier. It is not just the symmetric of this one, but the absence of loop-carried dependencies is still true so we won’t deep dive into this.</span></div></div>
+</section>
+<section id="one-step-at-a-time" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="one-step-at-a-time">One step at a time…</h2>
+<p>There’s no point in showing the parallel performance if the serial one is not good enough. So before the grand reveal, let’s do just that: make sure we’ve at least not degraded the performance of the serial code. Same experiments as before: sanity check (no optimization whatsoever), critical one (<code>-O3</code> but no vectorization), and cherry on top (vectorization turned on).</p>
+<section id="experiment-n1-baseline-no-optimization" class="level3">
+<h3 class="anchored" data-anchor-id="experiment-n1-baseline-no-optimization">Experiment n°1 – baseline, no optimization</h3>
+<p>First things first: sanity check. Compiled with <code>-O0</code>, so no scheduling cleverness of any kind gets to play.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;">Solver</th>
+<th style="text-align: center;">Iterations</th>
+<th style="text-align: center;">Time/iteration</th>
+<th style="text-align: center;">Total</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">Jacobi</td>
+<td style="text-align: center;">138 000</td>
+<td style="text-align: center;">2 ms</td>
+<td style="text-align: center;">273 s</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">Unrolled GS</td>
+<td style="text-align: center;">74 000</td>
+<td style="text-align: center;">2.07 ms</td>
+<td style="text-align: center;">153 s</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">Red/black GS</td>
+<td style="text-align: center;">74 000</td>
+<td style="text-align: center;">2 ms</td>
+<td style="text-align: center;">148 s</td>
+</tr>
+</tbody>
+</table>
+<p>So unoptimized serial performance of the red/black Gauss-Seidel kernel is essentially the same as that of the unrolled kernel. And the solution, even though not shown, is the same up to the desired tolerance. And as before, both Gauss-Seidel kernels are effectively twice as fast to compute the solution compared to the Jacobi kernel. So everything consistent so far.</p>
+</section>
+<section id="experiment-n2-the-critical-one" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="experiment-n2-the-critical-one">Experiment n°2 – the critical one</h3>
+<div class="page-columns page-full"><p>Now, compile with real optimization, but deliberately keep vectorization and multithreading switched off (<code>-O3 -march=native -mtune=native -fno-tree-vectorize</code> and no OpenMP shady business) so that any gains we see can’t be attributed to SIMD at all. </p><div class="no-row-height column-margin column-container"><span class="margin-aside">The actual command line used is <code>fpm run --profile release</code> with the flags specified in the text. So effectively, there are a bunch of other options turned on by <code>fpm</code>, but they’re the same for all kernels.</span></div></div>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;">Solver</th>
+<th style="text-align: center;">Iterations</th>
+<th style="text-align: center;">Time/iteration</th>
+<th style="text-align: center;">Total</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">Jacobi</td>
+<td style="text-align: center;">138 000</td>
+<td style="text-align: center;">167 µs</td>
+<td style="text-align: center;">23 s</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">Unrolled GS</td>
+<td style="text-align: center;">74 000</td>
+<td style="text-align: center;">175 µs</td>
+<td style="text-align: center;">13 s</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">Red/black GS</td>
+<td style="text-align: center;">74 000</td>
+<td style="text-align: center;">200 µs</td>
+<td style="text-align: center;">15 s</td>
+</tr>
+</tbody>
+</table>
+<p>With no SIMD enabled, the red/black kernel is slightly slower than the unrolled lexicographic one, but still faster than Jacobi. One possible explanation is that the red/black kernel has to loop over the entire array twice: once to update the red points, and once more to update the black ones. So possibly a bit more memory traffic, but nothing too detrimental.</p>
+</section>
+<section id="experiment-n3-turning-simd-vectorization-back-on" class="level3">
+<h3 class="anchored" data-anchor-id="experiment-n3-turning-simd-vectorization-back-on">Experiment n°3 – turning SIMD vectorization back on</h3>
+<p>Finally, the same three kernels, same flags, but with vectorization allowed (but no multithreading still).</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;">Solver</th>
+<th style="text-align: center;">Iterations</th>
+<th style="text-align: center;">Time/iteration</th>
+<th style="text-align: center;">Total</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">Jacobi</td>
+<td style="text-align: center;">138 000</td>
+<td style="text-align: center;">115 µs</td>
+<td style="text-align: center;">16 s</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">Unrolled GS</td>
+<td style="text-align: center;">74 000</td>
+<td style="text-align: center;">175 µs</td>
+<td style="text-align: center;">13 s</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">Red/black GS</td>
+<td style="text-align: center;">74 000</td>
+<td style="text-align: center;">175 µs</td>
+<td style="text-align: center;">13 s</td>
+</tr>
+</tbody>
+</table>
+<p>So enabling SIMD shaves off the extra 25 µs for the red/black kernel execution, making its serial performance on par with the unrolled kernel we discussed last time. So that is good: essentially no regression in the serial performance.</p>
+</section>
+</section>
+<section id="lets-go-parallel" class="level2">
+<h2 class="anchored" data-anchor-id="lets-go-parallel">Let’s go parallel</h2>
+<p>So far, we’ve only looked at serial performance. But the whole point of coming up with the red/black ordering was not to have yet another variation on Gauss-Seidel, but actually have a kernel that can run in parallel. So it’s time to show you what you came for! Same setup as experiment n°3, but now enable multithreading and vary the number of threads from 1 to 8. And TADA!</p>
+<div id="a62dfbbe" class="cell" data-execution_count="4">
+<div class="cell-output cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="redblack_gauss_seidel_files/figure-html/cell-5-output-1.png" width="663" height="287" class="figure-img"></p>
+<figcaption><strong>Figure 4 -</strong> Wall-clock time comparison for the parallelized solvers. With loop dependencies removed, Red/Black Gauss-Seidel maintains an edge over Jacobi across all thread counts.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>Everything works as expected. Leveraging the red/black ordering not only leads to the elimination of loop-carried dependencies while enabling SIMD vectorization, but also multithreading. So, even though the advantage of red/black Gauss-Seidel over Jacobi reduces as we increase the number of threads, it is still a bit faster. Now we can actually claim victory.</p>
+</section>
+</section>
+<section id="is-this-finally-the-end-of-the-road" class="level1 page-columns page-full">
+<h1>Is this finally the end of the road?</h1>
+<p>It took us quite a bit of time to get where we wanted, but here we are: we’ve restored Gauss-Seidel to its rightful place! So it is only natural to ask <em>are we really done now?</em> Well… as far as Jacobi and Gauss-Seidel go, pretty much. But there is still a lot we can do.</p>
+<p>First, let’s replot the data from the last figure to see the actual speed-up as we increase the number of threads.</p>
+<div id="4d911a08" class="cell page-columns page-full" data-execution_count="5">
+<div class="cell-output cell-output-display page-columns page-full">
+<div class="quarto-figure quarto-figure-center page-columns page-full">
+<figure class="figure page-columns page-full">
+<p><img src="redblack_gauss_seidel_files/figure-html/cell-6-output-1.png" class="figure-img" width="366" height="361"></p>
+<figcaption class="margin-caption"><strong>Figure 5 -</strong> Parallel speed-up for Jacobi and Red/Black Gauss-Seidel.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>Both track close to the ideal scaling: doubling the number of threads gets you the solution almost twice as fast. If you’d stop there, you would say that this is very good. But it actually is a misleading picture. Even though a grid of 512 <span class="math inline">\(\times\)</span> 512 points results in roughly a quarter million unknowns, a really big problem by everyday standards, it simply is too small to really stress-test the hardware (even on my laptop). We do need to go to a bigger problem to make some meaningful conclusions. So we will eventually dabble into the field of performance engineering and explore the so-called <a href="https://en.wikipedia.org/wiki/Roofline_model">roofline model</a>, a deceptively simple but highly informative model.</p>
+<p>The other question I’d like to answer is <em>can we modify Gauss-Seidel in just the right way as to massively reduce the number of iterations?</em> This will bring us to the territories of <a href="https://en.wikipedia.org/wiki/Successive_over-relaxation">successive over-relaxation</a>, <a href="https://en.wikipedia.org/wiki/Chebyshev_iteration">Chebyshev iterations</a> and <a href="https://en.wikipedia.org/wiki/Multigrid_method">multigrid methods</a>. But these are stories for another time.</p>
+<!--Include social share buttons-->
+<!-- 
+AddToAny check more: https://www.addtoany.com/buttons/for/website 
+Using includes will make edits easier, will only need to add or remove button here if needed.
+https://quarto.org/docs/authoring/includes.html
+-->
+<div class="a2a_kit a2a_kit_size_32 a2a_default_style">
+<p><a class="a2a_dd" href="https://www.addtoany.com/share"></a> <a class="a2a_button_linkedin"></a> <a class="a2a_button_bluesky"></a> <a class="a2a_button_facebook"></a> <a class="a2a_button_copy_link"></a> <a class="a2a_button_email"></a></p>
+</div>
+<script async="" src="https://static.addtoany.com/menu/page.js"></script>
+<hr>
+<p><strong>If you want to read more of my stuff</strong></p>
+<ul>
+<li><a href="https://loiseaujc.github.io/posts/blog-title/make_gauss_seidel_great_again.html">Make Gauss-Seidel great again!</a></li>
+<li><a href="https://loiseaujc.github.io/posts/blog-title/gauss_seidel_experiments.html">Gauss-Seidel is faster than Jacobi. Or is it?</a></li>
+<li><a href="https://loiseaujc.github.io/posts/blog-title/jacobi_experiments.html">Jacobi method: From a naïve implementation to a modern Fortran multithreaded one</a></li>
+</ul>
 
 
 </section>
