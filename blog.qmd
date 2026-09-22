@@ -1,0 +1,25 @@
+---
+title: "Ill-conditioned Opinions"
+subtitle: "Notes from the space between fields — iterative solvers, Krylov subspaces, reduced-order models, and the occasional strongly-held opinion on numerical methods. Written for people who’d rather understand why something breaks than just get it to work. Fortran included, apologies not."
+description-meta: "Posts about papers, events, news, and more"
+listing: 
+  sort: "date desc"
+  type: grid
+  page-size: 100
+  categories: false
+  sort-ui: true
+  filter-ui: true
+  feed: true
+  contents: 
+      - posts
+      - posts/post-links.yml  # Use this file to add external links
+      # - categories: ["blog"] 
+
+#page-layout: full
+draft-mode: unlinked
+page-navigation: false
+title-block-banner: false
+---
+
+:::{#posts}
+:::

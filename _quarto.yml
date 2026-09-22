@@ -8,6 +8,10 @@ author-meta: "Dr. Jean-Christophe Loiseau"
 
 website:
   title: "Dr. Jean-Christophe Loiseau"
+  site-url: "https://loiseaujc.github.io/"
+  # llms-txt: true
+  twitter-card: true 
+  open-graph: true
   image: "https://quarto.org/quarto.png"
   description: "Quarto Academic Website Template adapted by Dr. Gang He"
   google-analytics: "G-1GNWFLTF2M"
@@ -46,7 +50,8 @@ website:
       - text: Group
         href: people.qmd
       - text: "Blog: Ill-Conditioned Opinions"
-        href: posts.qmd#category=blog
+        # href: posts.qmd#category=blog
+        href: blog.qmd#category=blog
 
     right: 
       - text: CV
@@ -83,17 +88,14 @@ website:
   
   reader-mode: true
 
-  draft-mode: unlinked
+  draft-mode: gone
   
   repo-url: https://github.com/drganghe/quarto-academic-website-template
 #  repo-actions: [edit, issue, source]
   
-  open-graph: true
   
-  twitter-card: true 
 #  card-style: summary      
   
-  site-url: "https://loiseaujc.github.io/"
   
   # google-analytics:
   #   tracking-id: ""  # Please delete or replace with your own tracking ID

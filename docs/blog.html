@@ -9,7 +9,7 @@
 <meta name="author" content="Dr.&nbsp;Jean-Christophe Loiseau">
 <meta name="description" content="Posts about papers, events, news, and more">
 
-<title>What’s New &amp; Updated – Dr.&nbsp;Jean-Christophe Loiseau</title>
+<title>Ill-conditioned Opinions – Dr.&nbsp;Jean-Christophe Loiseau</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -82,9 +82,9 @@ ul.task-list li input[type="checkbox"] {
     }
 
     const options = {
-      valueNames: ['listing-date','listing-title','listing-author','listing-subtitle','listing-image','listing-description','listing-categories',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
+      valueNames: ['listing-title','listing-author','listing-date','listing-image','listing-description',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
       
-      searchColumns: ["listing-date","listing-title","listing-author","listing-subtitle","listing-image","listing-description","listing-categories"],
+      searchColumns: ["listing-title","listing-author","listing-date","listing-image","listing-description"],
     };
 
     window['quarto-listings'] = window['quarto-listings'] || {};
@@ -162,12 +162,12 @@ window.Quarto = {
 </script>
 
 <link rel="stylesheet" href="styles.css">
-<link rel="alternate" type="application/rss+xml" title="Dr. Jean-Christophe Loiseau" href="posts.xml" data-external="1"><meta property="og:title" content="What’s New &amp; Updated – Dr.&nbsp;Jean-Christophe Loiseau">
-<meta property="og:description" content="Posts about papers, events, news, and more">
+<link rel="alternate" type="application/rss+xml" title="Dr. Jean-Christophe Loiseau" href="blog.xml" data-external="1"><meta property="og:title" content="Ill-conditioned Opinions – Dr.&nbsp;Jean-Christophe Loiseau">
+<meta property="og:description" content="Notes from the space between fields — iterative solvers, Krylov subspaces, reduced-order models, and the occasional strongly-held opinion on numerical methods. Written for people who’d rather understand why something breaks than just get it to work. Fortran included, apologies not.">
 <meta property="og:image" content="https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Fortran_acs_cover.jpeg/250px-Fortran_acs_cover.jpeg">
 <meta property="og:site_name" content="Dr. Jean-Christophe Loiseau">
-<meta name="twitter:title" content="What’s New &amp; Updated – Dr.&nbsp;Jean-Christophe Loiseau">
-<meta name="twitter:description" content="Posts about papers, events, news, and more">
+<meta name="twitter:title" content="Ill-conditioned Opinions – Dr.&nbsp;Jean-Christophe Loiseau">
+<meta name="twitter:description" content="Notes from the space between fields — iterative solvers, Krylov subspaces, reduced-order models, and the occasional strongly-held opinion on numerical methods. Written for people who’d rather understand why something breaks than just get it to work. Fortran included, apologies not.">
 <meta name="twitter:image" content="https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Fortran_acs_cover.jpeg/250px-Fortran_acs_cover.jpeg">
 <meta name="twitter:card" content="summary_large_image">
 </head>
@@ -275,16 +275,16 @@ window.Quarto = {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
         
-    <h5 class="quarto-listing-category-title">Categories</h5><div class="quarto-listing-category category-default"><div class="category" data-category="">All <span class="quarto-category-count">(11)</span></div><div class="category" data-category="YmxvZw==">blog <span class="quarto-category-count">(5)</span></div><div class="category" data-category="bmV3cw==">news <span class="quarto-category-count">(1)</span></div><div class="category" data-category="cGFwZXI=">paper <span class="quarto-category-count">(5)</span></div></div></div>
+    </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">What’s New &amp; Updated</h1>
-<p class="subtitle lead">Posts about papers, events, news, and more</p>
+<h1 class="title">Ill-conditioned Opinions</h1>
+<p class="subtitle lead">Notes from the space between fields — iterative solvers, Krylov subspaces, reduced-order models, and the occasional strongly-held opinion on numerical methods. Written for people who’d rather understand why something breaks than just get it to work. Fortran included, apologies not.</p>
 </div>
 
 
@@ -308,7 +308,7 @@ window.Quarto = {
 
 
 
-<div class="quarto-listing quarto-listing-container-default" id="listing-listing">
+<div class="quarto-listing quarto-listing-container-grid" id="listing-listing">
 <div class="listing-actions-group">
    <div class="input-group input-group-sm quarto-listing-sort">
     <span class="input-group-text"><i class="bi bi-sort-down"></i></span>
@@ -334,369 +334,270 @@ window.Quarto = {
       <input type="text" class="search form-control" placeholder="Filter">
     </div>
 </div>
-<div class="list quarto-listing-default">
-<div class="quarto-post image-right" data-index="0" data-categories="YmxvZw==" data-listing-date-sort="1789941600000" data-listing-file-modified-sort="1790004736583" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="37" data-listing-word-count-sort="7203">
-<div class="thumbnail"><a href="./posts/blog-title/redblack_gauss_seidel.html" class="no-external">
-
-<img loading="lazy" src="./posts/blog-title/redblack_gauss_seidel.jpeg" class="thumbnail-image">
-
-</a></div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./posts/blog-title/redblack_gauss_seidel.html" class="no-external">Red or Black?</a>
-</h3>
-<div class="listing-subtitle">
-<a href="./posts/blog-title/redblack_gauss_seidel.html" class="no-external">Restoring Gauss-Seidel parallelization.</a>
-</div>
-<div class="listing-categories">
-
-<div class="listing-category" onclick="window.quartoListingCategory('YmxvZw=='); return false;">blog</div>
-
-</div>
-<div class="delink listing-description"><a href="./posts/blog-title/redblack_gauss_seidel.html" class="no-external">
+<div class="list grid quarto-listing-cols-3">
+<div class="g-col-1" data-index="0" data-categories="YmxvZw==" data-listing-date-sort="1789941600000" data-listing-file-modified-sort="1790004736583" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="37" data-listing-word-count-sort="7203">
+<a href="./posts/blog-title/redblack_gauss_seidel.html" class="quarto-grid-link">
+<div class="quarto-grid-item card h-100 card-left">
+<p class="card-img-top">
+<img loading="lazy" src="./posts/blog-title/redblack_gauss_seidel.jpeg" class="thumbnail-image card-img" style="height: 150px;">
+</p>
+<div class="card-body post-contents">
+<h5 class="no-anchor card-title listing-title">
+Red or Black?
+</h5>
+<div class="card-text listing-description delink">
 Last time, we set out to restore Gauss-Seidel to its rightful place. And we managed to do it. Or so it seems… Starting from the textbook <em>lexicographic</em> kernel
-</a></div>
 </div>
-<div class="metadata">
-<a href="./posts/blog-title/redblack_gauss_seidel.html" class="no-external">
+<div class="card-attribution card-text-small justify">
+<div class="listing-author">
+Jean-Christophe Loiseau
+</div>
 <div class="listing-date">
 Sep 21, 2026
 </div>
+</div>
+</div>
+</div></a>
+</div>
+<div class="g-col-1" data-index="1" data-categories="YmxvZw==" data-listing-date-sort="1789336800000" data-listing-file-modified-sort="1789384641166" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="31" data-listing-word-count-sort="6190">
+<a href="./posts/blog-title/make_gauss_seidel_great_again.html" class="quarto-grid-link">
+<div class="quarto-grid-item card h-100 card-left">
+<p class="card-img-top">
+<img loading="lazy" src="./files/images/blog/make_gauss_seidel_great_again.jpeg" class="thumbnail-image card-img" style="height: 150px;">
+</p>
+<div class="card-body post-contents">
+<h5 class="no-anchor card-title listing-title">
+Make Gauss-Seidel great again!
+</h5>
+<div class="card-text listing-description delink">
+Last time, we explored the Gauss-Seidel method. We arrived at the following conclusion: the math says Gauss-Seidel takes half as many iterations to converge, and this is…<strong></strong>
+</div>
+<div class="card-attribution card-text-small justify">
 <div class="listing-author">
 Jean-Christophe Loiseau
 </div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="1" data-categories="YmxvZw==" data-listing-date-sort="1789336800000" data-listing-file-modified-sort="1789384641166" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="31" data-listing-word-count-sort="6190">
-<div class="thumbnail"><a href="./posts/blog-title/make_gauss_seidel_great_again.html" class="no-external">
-
-<img loading="lazy" src="./files/images/blog/make_gauss_seidel_great_again.jpeg" class="thumbnail-image">
-
-</a></div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./posts/blog-title/make_gauss_seidel_great_again.html" class="no-external">Make Gauss-Seidel great again!</a>
-</h3>
-<div class="listing-subtitle">
-<a href="./posts/blog-title/make_gauss_seidel_great_again.html" class="no-external">The art of unrolling.</a>
-</div>
-<div class="listing-categories">
-
-<div class="listing-category" onclick="window.quartoListingCategory('YmxvZw=='); return false;">blog</div>
-
-</div>
-<div class="delink listing-description"><a href="./posts/blog-title/make_gauss_seidel_great_again.html" class="no-external">
-Last time, we explored the Gauss-Seidel method. We arrived at the following conclusion: the math says Gauss-Seidel takes half as many iterations to converge, and this is…<strong></strong>
-</a></div>
-</div>
-<div class="metadata">
-<a href="./posts/blog-title/make_gauss_seidel_great_again.html" class="no-external">
 <div class="listing-date">
 Sep 14, 2026
 </div>
+</div>
+</div>
+</div></a>
+</div>
+<div class="g-col-1" data-index="2" data-categories="YmxvZw==" data-listing-date-sort="1788818400000" data-listing-file-modified-sort="1788892936027" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="19" data-listing-word-count-sort="3694">
+<a href="./posts/blog-title/gauss_seidel_experiments.html" class="quarto-grid-link">
+<div class="quarto-grid-item card h-100 card-left">
+<p class="card-img-top">
+<img loading="lazy" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Fortran_acs_cover.jpeg/250px-Fortran_acs_cover.jpeg" class="thumbnail-image card-img" style="height: 150px;">
+</p>
+<div class="card-body post-contents">
+<h5 class="no-anchor card-title listing-title">
+Gauss-Seidel is faster than Jacobi. Or is it?
+</h5>
+<div class="card-text listing-description delink">
+In a previous post, I went through some details about how one could write an efficient Jacobi solver in modern <code>Fortran</code> to solve the 2D Poisson equation. Several colleagues…
+</div>
+<div class="card-attribution card-text-small justify">
 <div class="listing-author">
 Jean-Christophe Loiseau
 </div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="2" data-categories="YmxvZw==" data-listing-date-sort="1788818400000" data-listing-file-modified-sort="1788892936027" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="19" data-listing-word-count-sort="3694">
-<div class="thumbnail"><a href="./posts/blog-title/gauss_seidel_experiments.html" class="no-external">
-
-<img loading="lazy" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Fortran_acs_cover.jpeg/250px-Fortran_acs_cover.jpeg" class="thumbnail-image">
-
-</a></div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./posts/blog-title/gauss_seidel_experiments.html" class="no-external">Gauss-Seidel is faster than Jacobi. Or is it?</a>
-</h3>
-<div class="listing-subtitle">
-<a href="./posts/blog-title/gauss_seidel_experiments.html" class="no-external"></a>
-</div>
-<div class="listing-categories">
-
-<div class="listing-category" onclick="window.quartoListingCategory('YmxvZw=='); return false;">blog</div>
-
-</div>
-<div class="delink listing-description"><a href="./posts/blog-title/gauss_seidel_experiments.html" class="no-external">
-In a previous post, I went through some details about how one could write an efficient Jacobi solver in modern <code>Fortran</code> to solve the 2D Poisson equation. Several colleagues…
-</a></div>
-</div>
-<div class="metadata">
-<a href="./posts/blog-title/gauss_seidel_experiments.html" class="no-external">
 <div class="listing-date">
 Sep 8, 2026
 </div>
-<div class="listing-author">
-Jean-Christophe Loiseau
-</div>
-</a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="3" data-categories="cGFwZXI=" data-listing-date-sort="1787090400000" data-listing-file-modified-sort="1788784582571" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="2" data-listing-word-count-sort="282">
-<div class="thumbnail"><a href="./posts/paper-title/hydrogym.html" class="no-external">
-
-<img loading="lazy" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRg1JIfdGVzB4czRcBOCQYPMuZiwe1R9YOceMQUuWmmdA&amp;s=10" class="thumbnail-image">
-
-</a></div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./posts/paper-title/hydrogym.html" class="no-external">The HydroGym reinforcement learning platform for fluid dynamics</a>
-</h3>
-<div class="listing-subtitle">
-<a href="./posts/paper-title/hydrogym.html" class="no-external"><em>Nature</em></a>
+</div></a>
 </div>
-<div class="listing-categories">
-
-<div class="listing-category" onclick="window.quartoListingCategory('cGFwZXI='); return false;">paper</div>
-
-</div>
-<div class="delink listing-description"><a href="./posts/paper-title/hydrogym.html" class="no-external">
+<div class="g-col-1" data-index="3" data-categories="cGFwZXI=" data-listing-date-sort="1787090400000" data-listing-file-modified-sort="1788784582571" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="2" data-listing-word-count-sort="282">
+<a href="./posts/paper-title/hydrogym.html" class="quarto-grid-link">
+<div class="quarto-grid-item card h-100 card-left">
+<p class="card-img-top">
+<img loading="lazy" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRg1JIfdGVzB4czRcBOCQYPMuZiwe1R9YOceMQUuWmmdA&amp;s=10" class="thumbnail-image card-img" style="height: 150px;">
+</p>
+<div class="card-body post-contents">
+<h5 class="no-anchor card-title listing-title">
+The HydroGym reinforcement learning platform for fluid dynamics
+</h5>
+<div class="card-text listing-description delink">
 <p>A Python package with standardized environments for benchmarking reinforcement learning for flow control.</p>
-</a></div>
 </div>
-<div class="metadata">
-<a href="./posts/paper-title/hydrogym.html" class="no-external">
-<div class="listing-date">
-Aug 19, 2026
-</div>
+<div class="card-attribution card-text-small justify">
 <div class="listing-author">
 Christian Lagemann, Sajeda Mokbel, Miro Gondrum, Mario Rüttgers, Yuning Wang, Pol Suarez, Ludger Paehler, Deniz A. Bezgin, Aaron B. Buhendwa, Jared L. Callaham, Samuel Ahnert, Nicholas Zolman, Xiao Shao, Jean-Christophe Loiseau, Nikolaus A. Adams, Matthias Meinke, Wolgang Schröder, Kai Lagemann, Esther Lagemann, Ricardo Vinuesa, Steven L. Brunton
 </div>
-</a>
+<div class="listing-date">
+Aug 19, 2026
 </div>
 </div>
-<div class="quarto-post image-right" data-index="4" data-categories="bmV3cw==" data-listing-date-sort="1777413600000" data-listing-file-modified-sort="1788788965000" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1" data-listing-word-count-sort="53">
-<div class="thumbnail"><a href="./posts/news-title/ensam_podcast.html" class="no-external">
-
-<img loading="lazy" src="https://s3-site.artsetmetiers.fr/public/inline-images/Pr%C3%A9sentation%20Podcast%20-%20Paroles%20d%27Arts%20et%20M%C3%A9tiers.jpg" class="thumbnail-image">
-
-</a></div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./posts/news-title/ensam_podcast.html" class="no-external">Podcast: Paroles d’Arts et Métiers</a>
-</h3>
-<div class="listing-subtitle">
-<a href="./posts/news-title/ensam_podcast.html" class="no-external"></a>
 </div>
-<div class="listing-categories">
-
-<div class="listing-category" onclick="window.quartoListingCategory('bmV3cw=='); return false;">news</div>
-
+</div></a>
 </div>
-<div class="delink listing-description"><a href="./posts/news-title/ensam_podcast.html" class="no-external">
+<div class="g-col-1" data-index="4" data-categories="bmV3cw==" data-listing-date-sort="1777413600000" data-listing-file-modified-sort="1788788965000" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1" data-listing-word-count-sort="53">
+<a href="./posts/news-title/ensam_podcast.html" class="quarto-grid-link">
+<div class="quarto-grid-item card h-100 card-left">
+<p class="card-img-top">
+<img loading="lazy" src="https://s3-site.artsetmetiers.fr/public/inline-images/Pr%C3%A9sentation%20Podcast%20-%20Paroles%20d%27Arts%20et%20M%C3%A9tiers.jpg" class="thumbnail-image card-img" style="height: 150px;">
+</p>
+<div class="card-body post-contents">
+<h5 class="no-anchor card-title listing-title">
+Podcast: Paroles d’Arts et Métiers
+</h5>
+<div class="card-text listing-description delink">
 I have been invited to participate in the podcast <strong>Paroles d’Arts et Métiers</strong> to discuss about my research in fluid dynamics, my experience as a Faculty member at Arts et…
-</a></div>
 </div>
-<div class="metadata">
-<a href="./posts/news-title/ensam_podcast.html" class="no-external">
+<div class="card-attribution card-text-small justify">
+<div class="listing-author">
+Jean-Christophe Loiseau
+</div>
 <div class="listing-date">
 Apr 29, 2026
 </div>
-<div class="listing-author">
-Jean-Christophe Loiseau
-</div>
-</a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="5" data-categories="cGFwZXI=" data-listing-date-sort="1769641200000" data-listing-file-modified-sort="1788798793664" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1" data-listing-word-count-sort="140">
-<div class="thumbnail"><a href="./posts/paper-title/lightkrylov.html" class="no-external">
-
-<img loading="lazy" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQTcztYR1fxZqI2zk6pNGRiiR7Q-FIJCIStOg2TwQh0FA&amp;s" class="thumbnail-image">
-
-</a></div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./posts/paper-title/lightkrylov.html" class="no-external">LightKrylov: Lightweight implementation of Krylov subspace techniques in modern Fortran</a>
-</h3>
-<div class="listing-subtitle">
-<a href="./posts/paper-title/lightkrylov.html" class="no-external"><em>Journal of Open Source Software</em></a>
+</div></a>
 </div>
-<div class="listing-categories">
-
-<div class="listing-category" onclick="window.quartoListingCategory('cGFwZXI='); return false;">paper</div>
-
-</div>
-<div class="delink listing-description"><a href="./posts/paper-title/lightkrylov.html" class="no-external">
+<div class="g-col-1" data-index="5" data-categories="cGFwZXI=" data-listing-date-sort="1769641200000" data-listing-file-modified-sort="1788798793664" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1" data-listing-word-count-sort="140">
+<a href="./posts/paper-title/lightkrylov.html" class="quarto-grid-link">
+<div class="quarto-grid-item card h-100 card-left">
+<p class="card-img-top">
+<img loading="lazy" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQTcztYR1fxZqI2zk6pNGRiiR7Q-FIJCIStOg2TwQh0FA&amp;s" class="thumbnail-image card-img" style="height: 150px;">
+</p>
+<div class="card-body post-contents">
+<h5 class="no-anchor card-title listing-title">
+LightKrylov: Lightweight implementation of Krylov subspace techniques in modern Fortran
+</h5>
+<div class="card-text listing-description delink">
 <p>Reviving the Fortran Linear Algebra ecosystem</p>
-</a></div>
 </div>
-<div class="metadata">
-<a href="./posts/paper-title/lightkrylov.html" class="no-external">
-<div class="listing-date">
-Jan 29, 2026
-</div>
+<div class="card-attribution card-text-small justify">
 <div class="listing-author">
 J. Simon Kern, Ricardo S. Frantz, Jean-Christophe Loiseau
 </div>
-</a>
+<div class="listing-date">
+Jan 29, 2026
 </div>
 </div>
-<div class="quarto-post image-right" data-index="6" data-categories="YmxvZw==" data-listing-date-sort="1758578400000" data-listing-file-modified-sort="1777455680458" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="29" data-listing-word-count-sort="5634">
-<div class="thumbnail"><a href="./posts/blog-title/jacobi_experiments.html" class="no-external">
-
-<img loading="lazy" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Fortran_acs_cover.jpeg/250px-Fortran_acs_cover.jpeg" class="thumbnail-image">
-
-</a></div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./posts/blog-title/jacobi_experiments.html" class="no-external">Jacobi method: From a naïve implementation to a modern Fortran multithreaded one</a>
-</h3>
-<div class="listing-subtitle">
-<a href="./posts/blog-title/jacobi_experiments.html" class="no-external"></a>
 </div>
-<div class="listing-categories">
-
-<div class="listing-category" onclick="window.quartoListingCategory('YmxvZw=='); return false;">blog</div>
-
+</div></a>
 </div>
-<div class="delink listing-description"><a href="./posts/blog-title/jacobi_experiments.html" class="no-external">
+<div class="g-col-1" data-index="6" data-categories="YmxvZw==" data-listing-date-sort="1758578400000" data-listing-file-modified-sort="1777455680458" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="29" data-listing-word-count-sort="5634">
+<a href="./posts/blog-title/jacobi_experiments.html" class="quarto-grid-link">
+<div class="quarto-grid-item card h-100 card-left">
+<p class="card-img-top">
+<img loading="lazy" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Fortran_acs_cover.jpeg/250px-Fortran_acs_cover.jpeg" class="thumbnail-image card-img" style="height: 150px;">
+</p>
+<div class="card-body post-contents">
+<h5 class="no-anchor card-title listing-title">
+Jacobi method: From a naïve implementation to a modern Fortran multithreaded one
+</h5>
+<div class="card-text listing-description delink">
 In a previous post, I used the Jacobi method to illustrate some merits of <code>Fortran</code> over <code>Python</code> for teaching purposes. Since then, I received a handful of messages asking how…<code></code>
-</a></div>
 </div>
-<div class="metadata">
-<a href="./posts/blog-title/jacobi_experiments.html" class="no-external">
+<div class="card-attribution card-text-small justify">
+<div class="listing-author">
+Jean-Christophe Loiseau
+</div>
 <div class="listing-date">
 Sep 23, 2025
 </div>
+</div>
+</div>
+</div></a>
+</div>
+<div class="g-col-1" data-index="7" data-categories="YmxvZw==" data-listing-date-sort="1757368800000" data-listing-file-modified-sort="1777455680458" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="24" data-listing-word-count-sort="4724">
+<a href="./posts/blog-title/fortran_vs_python.html" class="quarto-grid-link">
+<div class="quarto-grid-item card h-100 card-left">
+<p class="card-img-top">
+<img loading="lazy" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Fortran_acs_cover.jpeg/250px-Fortran_acs_cover.jpeg" class="thumbnail-image card-img" style="height: 150px;">
+</p>
+<div class="card-body post-contents">
+<h5 class="no-anchor card-title listing-title">
+Is Fortran better than Python for teaching the basics of numerical linear algebra?
+</h5>
+<div class="card-text listing-description delink">
+<u><strong>Disclaimer</strong></u> – This is <strong>not</strong> a post about which language is the most elegant or which implementation is the fastest (we all know it’s <code>Fortran</code>). It’s about <strong>teaching</strong> the basics of…<code></code><code></code><code></code><code></code><code></code><code></code><code></code><code></code><code></code><em></em>
+</div>
+<div class="card-attribution card-text-small justify">
 <div class="listing-author">
 Jean-Christophe Loiseau
 </div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="7" data-categories="YmxvZw==" data-listing-date-sort="1757368800000" data-listing-file-modified-sort="1777455680458" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="24" data-listing-word-count-sort="4724">
-<div class="thumbnail"><a href="./posts/blog-title/fortran_vs_python.html" class="no-external">
-
-<img loading="lazy" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Fortran_acs_cover.jpeg/250px-Fortran_acs_cover.jpeg" class="thumbnail-image">
-
-</a></div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./posts/blog-title/fortran_vs_python.html" class="no-external">Is Fortran better than Python for teaching the basics of numerical linear algebra?</a>
-</h3>
-<div class="listing-subtitle">
-<a href="./posts/blog-title/fortran_vs_python.html" class="no-external"></a>
-</div>
-<div class="listing-categories">
-
-<div class="listing-category" onclick="window.quartoListingCategory('YmxvZw=='); return false;">blog</div>
-
-</div>
-<div class="delink listing-description"><a href="./posts/blog-title/fortran_vs_python.html" class="no-external">
-<u><strong>Disclaimer</strong></u> – This is <strong>not</strong> a post about which language is the most elegant or which implementation is the fastest (we all know it’s <code>Fortran</code>). It’s about <strong>teaching</strong> the basics of…<code></code><code></code><code></code><code></code><code></code><code></code><code></code><code></code><code></code><em></em>
-</a></div>
-</div>
-<div class="metadata">
-<a href="./posts/blog-title/fortran_vs_python.html" class="no-external">
 <div class="listing-date">
 Sep 9, 2025
 </div>
-<div class="listing-author">
-Jean-Christophe Loiseau
-</div>
-</a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="8" data-categories="cGFwZXI=" data-listing-date-sort="1643410800000" data-listing-file-modified-sort="1788798810705" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1" data-listing-word-count-sort="182">
-<div class="thumbnail"><a href="./posts/paper-title/pysindy.html" class="no-external">
-
-<img loading="lazy" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQTcztYR1fxZqI2zk6pNGRiiR7Q-FIJCIStOg2TwQh0FA&amp;s" class="thumbnail-image">
-
-</a></div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./posts/paper-title/pysindy.html" class="no-external">PySINDy: A comprehensive Python package for robust sparse system identification</a>
-</h3>
-<div class="listing-subtitle">
-<a href="./posts/paper-title/pysindy.html" class="no-external"><em>Journal of Open Source Software</em></a>
+</div></a>
 </div>
-<div class="listing-categories">
-
-<div class="listing-category" onclick="window.quartoListingCategory('cGFwZXI='); return false;">paper</div>
-
-</div>
-<div class="delink listing-description"><a href="./posts/paper-title/pysindy.html" class="no-external">
+<div class="g-col-1" data-index="8" data-categories="cGFwZXI=" data-listing-date-sort="1643410800000" data-listing-file-modified-sort="1788798810705" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1" data-listing-word-count-sort="182">
+<a href="./posts/paper-title/pysindy.html" class="quarto-grid-link">
+<div class="quarto-grid-item card h-100 card-left">
+<p class="card-img-top">
+<img loading="lazy" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQTcztYR1fxZqI2zk6pNGRiiR7Q-FIJCIStOg2TwQh0FA&amp;s" class="thumbnail-image card-img" style="height: 150px;">
+</p>
+<div class="card-body post-contents">
+<h5 class="no-anchor card-title listing-title">
+PySINDy: A comprehensive Python package for robust sparse system identification
+</h5>
+<div class="card-text listing-description delink">
 <p>Bringing nonlinear system identification to Python</p>
-</a></div>
 </div>
-<div class="metadata">
-<a href="./posts/paper-title/pysindy.html" class="no-external">
-<div class="listing-date">
-Jan 29, 2022
-</div>
+<div class="card-attribution card-text-small justify">
 <div class="listing-author">
 Alan A. Kaptanoglu, Brian M. de Silva, Urban Fasel, Kadierdan Kaheman, Andy J. Goldschmidt, Jared Callaham, Charles B. Delahunt, Zachary G. Nicolaou, Kathleen Champion, Jean-Christophe Loiseau, J. Nathan Kutz, Steven L. Brunton
 </div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="9" data-categories="cGFwZXI=" data-listing-date-sort="1515538800000" data-listing-file-modified-sort="1788799088484" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="2" data-listing-word-count-sort="204">
-<div class="thumbnail"><a href="./posts/paper-title/galerkin.html" class="no-external">
-
-<img loading="lazy" src="https://static.cambridge.org/covers/FLM_0_838_0/cover.jpg?send-default-cover=false" class="thumbnail-image">
-
-</a></div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./posts/paper-title/galerkin.html" class="no-external">Constrained sparse Galerkin regression</a>
-</h3>
-<div class="listing-subtitle">
-<a href="./posts/paper-title/galerkin.html" class="no-external"><em>Journal of Fluid Mechanics</em></a>
-</div>
-<div class="listing-categories">
-
-<div class="listing-category" onclick="window.quartoListingCategory('cGFwZXI='); return false;">paper</div>
-
-</div>
-<div class="delink listing-description"><a href="./posts/paper-title/galerkin.html" class="no-external">
-<p>A minimal-order model for the canonical cylinder flow</p>
-</a></div>
-</div>
-<div class="metadata">
-<a href="./posts/paper-title/galerkin.html" class="no-external">
 <div class="listing-date">
-Jan 10, 2018
+Jan 29, 2022
 </div>
+</div>
+</div>
+</div></a>
+</div>
+<div class="g-col-1" data-index="9" data-categories="cGFwZXI=" data-listing-date-sort="1515538800000" data-listing-file-modified-sort="1788799088484" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="2" data-listing-word-count-sort="204">
+<a href="./posts/paper-title/galerkin.html" class="quarto-grid-link">
+<div class="quarto-grid-item card h-100 card-left">
+<p class="card-img-top">
+<img loading="lazy" src="https://static.cambridge.org/covers/FLM_0_838_0/cover.jpg?send-default-cover=false" class="thumbnail-image card-img" style="height: 150px;">
+</p>
+<div class="card-body post-contents">
+<h5 class="no-anchor card-title listing-title">
+Constrained sparse Galerkin regression
+</h5>
+<div class="card-text listing-description delink">
+<p>A minimal-order model for the canonical cylinder flow</p>
+</div>
+<div class="card-attribution card-text-small justify">
 <div class="listing-author">
 Jean-Christophe Loiseau, Steven L. Brunton
 </div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="10" data-categories="cGFwZXI=" data-listing-date-sort="1415055600000" data-listing-file-modified-sort="1788798854692" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="2" data-listing-word-count-sort="317">
-<div class="thumbnail"><a href="./posts/paper-title/roughness.html" class="no-external">
-
-<img loading="lazy" src="https://static.cambridge.org/covers/FLM_0_760_0/cover.jpg?send-default-cover=false" class="thumbnail-image">
-
-</a></div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./posts/paper-title/roughness.html" class="no-external">Investigation of the roughness-induced transition: global stability analyses and direct numerical simulations</a>
-</h3>
-<div class="listing-subtitle">
-<a href="./posts/paper-title/roughness.html" class="no-external"><em>Journal of Fluid Mechanics</em></a>
-</div>
-<div class="listing-categories">
-
-<div class="listing-category" onclick="window.quartoListingCategory('cGFwZXI='); return false;">paper</div>
-
-</div>
-<div class="delink listing-description"><a href="./posts/paper-title/roughness.html" class="no-external">
-<p>Solving very large-scale eigenvalue problems for understanding transition to turbulence</p>
-</a></div>
-</div>
-<div class="metadata">
-<a href="./posts/paper-title/roughness.html" class="no-external">
 <div class="listing-date">
-Nov 4, 2014
+Jan 10, 2018
 </div>
+</div>
+</div>
+</div></a>
+</div>
+<div class="g-col-1" data-index="10" data-categories="cGFwZXI=" data-listing-date-sort="1415055600000" data-listing-file-modified-sort="1788798854692" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="2" data-listing-word-count-sort="317">
+<a href="./posts/paper-title/roughness.html" class="quarto-grid-link">
+<div class="quarto-grid-item card h-100 card-left">
+<p class="card-img-top">
+<img loading="lazy" src="https://static.cambridge.org/covers/FLM_0_760_0/cover.jpg?send-default-cover=false" class="thumbnail-image card-img" style="height: 150px;">
+</p>
+<div class="card-body post-contents">
+<h5 class="no-anchor card-title listing-title">
+Investigation of the roughness-induced transition: global stability analyses and direct numerical simulations
+</h5>
+<div class="card-text listing-description delink">
+<p>Solving very large-scale eigenvalue problems for understanding transition to turbulence</p>
+</div>
+<div class="card-attribution card-text-small justify">
 <div class="listing-author">
 Jean-Christophe Loiseau, Jean-Christophe Robinet, Stefania Cherubini, Emmanuel Leriche
 </div>
-</a>
+<div class="listing-date">
+Nov 4, 2014
 </div>
+</div>
+</div>
+</div></a>
 </div>
 </div>
 <div class="listing-no-matching d-none">No matching items</div>

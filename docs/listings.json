@@ -26,7 +26,6 @@
   {
     "listing": "/index.html",
     "items": [
-      "/posts/blog-title/roofline_analysis.html",
       "/posts/blog-title/redblack_gauss_seidel.html",
       "/posts/blog-title/make_gauss_seidel_great_again.html",
       "/posts/blog-title/gauss_seidel_experiments.html",
@@ -35,7 +34,22 @@
       "/posts/paper-title/lightkrylov.html",
       "/posts/blog-title/jacobi_experiments.html",
       "/posts/blog-title/fortran_vs_python.html",
-      "/posts/event-title/bari_euromech.html",
+      "/posts/paper-title/pysindy.html",
+      "/posts/paper-title/galerkin.html",
+      "/posts/paper-title/roughness.html"
+    ]
+  },
+  {
+    "listing": "/blog.html",
+    "items": [
+      "/posts/blog-title/redblack_gauss_seidel.html",
+      "/posts/blog-title/make_gauss_seidel_great_again.html",
+      "/posts/blog-title/gauss_seidel_experiments.html",
+      "/posts/paper-title/hydrogym.html",
+      "/posts/news-title/ensam_podcast.html",
+      "/posts/paper-title/lightkrylov.html",
+      "/posts/blog-title/jacobi_experiments.html",
+      "/posts/blog-title/fortran_vs_python.html",
       "/posts/paper-title/pysindy.html",
       "/posts/paper-title/galerkin.html",
       "/posts/paper-title/roughness.html"
