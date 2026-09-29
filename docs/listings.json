@@ -6,6 +6,7 @@
   {
     "listing": "/posts.html",
     "items": [
+      "/posts/blog-title/roofline_analysis.html",
       "/posts/blog-title/redblack_gauss_seidel.html",
       "/posts/blog-title/make_gauss_seidel_great_again.html",
       "/posts/blog-title/gauss_seidel_experiments.html",
@@ -26,6 +27,7 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/blog-title/roofline_analysis.html",
       "/posts/blog-title/redblack_gauss_seidel.html",
       "/posts/blog-title/make_gauss_seidel_great_again.html",
       "/posts/blog-title/gauss_seidel_experiments.html",
@@ -42,6 +44,7 @@
   {
     "listing": "/blog.html",
     "items": [
+      "/posts/blog-title/roofline_analysis.html",
       "/posts/blog-title/redblack_gauss_seidel.html",
       "/posts/blog-title/make_gauss_seidel_great_again.html",
       "/posts/blog-title/gauss_seidel_experiments.html",

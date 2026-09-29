@@ -15,7 +15,552 @@
 <link>https://loiseaujc.github.io/posts.html</link>
 </image>
 <generator>quarto-1.7.34</generator>
-<lastBuildDate>Sun, 20 Sep 2026 22:00:00 GMT</lastBuildDate>
+<lastBuildDate>Mon, 21 Sep 2026 22:00:00 GMT</lastBuildDate>
+<item>
+  <title>The roof, the roof, the roof is on fire!</title>
+  <dc:creator>Jean-Christophe Loiseau</dc:creator>
+  <link>https://loiseaujc.github.io/posts/blog-title/roofline_analysis.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<center>
+<hr width="50%" hr="">
+</center>
+<p><img src="https://loiseaujc.github.io/posts/blog-title/roofline.png" class="img-fluid" style="width:100.0%"></p>
+<center>
+<hr width="50%" hr="">
+</center>
+<p>We made it! We finally ended up with an implementation of Gauss-Seidel that solves our test problem (marginally) faster than Jacobi while also preserving its parallelization capabilities. Last time, we concluded this success with a parallelization study and the results looked somewhat similar to what is depicted in the left panel of the figure below. If we stop there, we may come up with the following conclusion: every time we double the number of threads, the solver computes the solution twice as fast. No doubt that, for this particular test case – a 512 <img src="https://latex.codecogs.com/png.latex?%5Ctimes"> 512 grid – it is effectively the case. If you don’t know any better, it may also be tempting to conclude that this scaling would hold true for larger grids. Or that, if I increase the number of points in each direction by 2 (so four times as many points), using four times as many threads would allow me to compute the solution in the same wallclock time. Pretty intuitive, right? But the right panel of this figure shows otherwise…</p>
+<div id="2d754665" class="cell" data-execution_count="1">
+<div class="cell-output cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://loiseaujc.github.io/posts/blog-title/roofline_analysis_files/figure-html/cell-2-output-1.png" width="758" height="373" class="figure-img"></p>
+<figcaption>Parallel speed-up for Jacobi and Red/Black Gauss-Seidel solvers relative to the ideal linear scaling on (a) small and (b) large computational grids. For each case, both kernels have performed 10 000 sweeps over the whole grid. Very different behaviours are observed. This is what we’ll be investigating in this post.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>For the 512 <img src="https://latex.codecogs.com/png.latex?%5Ctimes"> 512 grid, the scaling is almost perfect. Every time we double the number of threads, we get a 2<img src="https://latex.codecogs.com/png.latex?%5Ctimes"> speed-up. But for the 2048 <img src="https://latex.codecogs.com/png.latex?%5Ctimes"> 2048 grid, almost all of the speed-up happens between one and two threads. Further doubling the number of threads does absolutely nothing, so clearly our intuition is wrong. But why? Is there a bug in our code, or have we simply slammed into a physical boundary of our hardware? This is what we’ll try to unravel in this post.</p>
+<section id="a-simplistic-model-of-the-hardware" class="level1 page-columns page-full">
+<h1>A simplistic model of the hardware</h1>
+<p>Processing units, whether CPU or GPU, are fantastic feats of modern technology. Just to give some intuition about how complex these can be, below is a block diagram of the AMD Bulldozer microprocessor.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ec/AMD_Bulldozer_block_diagram_%288_core_CPU%29.PNG/960px-AMD_Bulldozer_block_diagram_%288_core_CPU%29.PNG?utm_source=commons.wikimedia.org&amp;utm_campaign=index&amp;utm_content=thumbnail&amp;_=20140730203041" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption>Block diagram of the AMD Bulldozer microprocessor (8 core CPU). Source: <a href="https://commons.wikimedia.org/wiki/File:AMD_Bulldozer_block_diagram_%288_core_CPU%29.PNG">Wikipedia Commons</a></figcaption>
+</figure>
+</div>
+<p>Personally, I can’t really grasp all of the intricacies in this diagram. And mind you, this is a simplified representation, so I let you imagine how complex the true hardware can be! There is no way we can understand the different behaviour for the 512² and 2048² grids by tackling this level of hardware details head-on. We thus need to simplify things. And over-simplify we will.</p>
+<section id="two-resources-computation-and-memory" class="level2">
+<h2 class="anchored" data-anchor-id="two-resources-computation-and-memory">Two resources: computation and memory</h2>
+<p>At a very, VERY high-level, CPUs can be understood as machines consuming two primary resources:</p>
+<ul>
+<li><strong>Compute</strong>: basically how fast the processor can run. It is typically measured in <em>billions of floating point operations per second</em> (Gflops/s).</li>
+<li><strong>Memory bandwidth</strong>: essentially how quickly data can be transferred through the memory hierarchy. It is typically measured in <em>billions of bytes per second</em> (GBytes/s).</li>
+</ul>
+<p>In the rest of this post, we’ll actually consider two different types of memory, each with its own bandwidth:</p>
+<ul>
+<li><strong>DRAM</strong> (Dynamic Random-Access Memory): The main off-chip system memory that offers large storage capacity but exhibits high latency and limited bandwidth compared to on-chip caches.</li>
+<li><strong>L3 Cache</strong>: A fast, shared on-chip buffer designed to store frequently accessed data close to the CPU cores to minimize latency-heavy requests to main memory (DRAM).</li>
+</ul>
+<p>With only these three elements, we arrive at the following (very) simplified block representation.</p>
+<div id="90e56423" class="cell" data-execution_count="2">
+<div class="cell-output cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://loiseaujc.github.io/posts/blog-title/roofline_analysis_files/figure-html/cell-3-output-1.png" width="566" height="470" class="figure-img"></p>
+<figcaption>Simplified execution model considering peak floating-point throughput (<img src="https://latex.codecogs.com/png.latex?P_%7B%5Cmax%7D">) along with DRAM (<img src="https://latex.codecogs.com/png.latex?BW_%7B%5Ctext%7BDRAM%7D%7D">) and L3 cache (<img src="https://latex.codecogs.com/png.latex?BW_%7B%5Ctext%7BL3%7D%7D">) bandwidth constraints.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>In the above diagram, <img src="https://latex.codecogs.com/png.latex?P_%7B%5Cmax%7D"> denotes the maximum number of floating point operations per second the processor can do, while <img src="https://latex.codecogs.com/png.latex?BW_%7B%5Ctext%7BDRAM%7D%7D"> and <img src="https://latex.codecogs.com/png.latex?BW_%7B%5Ctext%7BL3%7D%7D"> denote the bandwidths of the DRAM and L3 cache, respectively. I’ll be the first to admit: it is a tremendously gross over-simplification of the (already simplified) diagram presented earlier. Yet, it is surprising how far this simplified model of the hardware can take us in the analysis of our kernels’ performance. But before showing you that, let us put some concrete numbers on <img src="https://latex.codecogs.com/png.latex?P_%7B%5Cmax%7D">, <img src="https://latex.codecogs.com/png.latex?BW_%7B%5Ctext%7BDRAM%7D%7D"> and <img src="https://latex.codecogs.com/png.latex?BW_%7B%5Ctext%7BL3%7D%7D">.</p>
+</section>
+<section id="measuring-the-machine-with-likwid" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="measuring-the-machine-with-likwid">Measuring the machine with <code>likwid</code></h2>
+<div class="page-columns page-full"><p>We could trust the vendors and get these numbers from their datasheet. However, these are often slightly optimistic estimates, so we’ll actually use some well-defined benchmarks to get more realistic values. For that purpose, we’ll use <a href="https://github.com/rrze-hpc/likwid"><code>likwid</code></a>: <em>a lightweight suite of command-line tools and a library designed for performance-oriented programming and hardware analysis on Linux systems</em>. <code>likwid</code> stands for <code>Like I Knew What I'm Doing</code>. It is developed by the same group behind <a href="https://github.com/RRZE-HPC/OSACA"><code>osaca</code></a>, the open-source code analyzer we used <a href="https://loiseaujc.github.io/posts/blog-title/make_gauss_seidel_great_again.html">here</a>. I won’t get into the details of how to install <code>likwid</code>, nor how to use its different utilities. The documentation is rather comprehensive, and the team has uploaded a handful of tutorial-style videos online (<a href="https://www.youtube.com/playlist?list=PLxVedhmuwLq2CqJpAABDMbZG8Whi7pKsk">here</a>). So with that out of the way, let’s get to it. </p><div class="no-row-height column-margin column-container"><span class="margin-aside">Everything that follows is me using <code>likwid</code> to the best of my understanding. If I’m doing anything wrong or misinterpreting something, feel free to reach out. I’d love to stand corrected.</span></div></div>
+<p><strong>What does my hardware look like?</strong> First things first, let’s see what my hardware actually is. We’ll use <code>likwid-topology</code>, a dead simple utility printing the thread and cache topology on CPUs and GPUs. Here is what the output looks like for me.</p>
+<pre><code>❯ likwid-topology 
+--------------------------------------------------------------------------------
+CPU name:   11th Gen Intel(R) Core(TM) i7-11850H @ 2.50GHz
+CPU type:   Intel Tigerlake processor
+CPU stepping:   1
+********************************************************************************
+Hardware Thread Topology
+********************************************************************************
+Sockets:        1
+CPU dies:       1
+Cores per socket:   8
+Threads per core:   2
+--------------------------------------------------------------------------------
+HWThread        Thread        Core        Die        Socket        Available
+0               0             0           0          0             *                
+1               0             1           0          0             *                
+2               0             2           0          0             *                
+3               0             3           0          0             *                
+4               0             4           0          0             *                
+5               0             5           0          0             *                
+6               0             6           0          0             *                
+7               0             7           0          0             *                
+8               1             0           0          0             *                
+9               1             1           0          0             *                
+10              1             2           0          0             *                
+11              1             3           0          0             *                
+12              1             4           0          0             *                
+13              1             5           0          0             *                
+14              1             6           0          0             *                
+15              1             7           0          0             *                
+--------------------------------------------------------------------------------
+Socket 0:       ( 0 8 1 9 2 10 3 11 4 12 5 13 6 14 7 15 )
+--------------------------------------------------------------------------------
+********************************************************************************
+Cache Topology
+********************************************************************************
+Level:          1
+Size:           48 kB
+Cache groups:       ( 0 8 ) ( 1 9 ) ( 2 10 ) ( 3 11 ) ( 4 12 ) ( 5 13 ) ( 6 14 ) ( 7 15 )
+--------------------------------------------------------------------------------
+Level:          2
+Size:           1.25 MB
+Cache groups:       ( 0 8 ) ( 1 9 ) ( 2 10 ) ( 3 11 ) ( 4 12 ) ( 5 13 ) ( 6 14 ) ( 7 15 )
+--------------------------------------------------------------------------------
+Level:          3
+Size:           24 MB
+Cache groups:       ( 0 8 1 9 2 10 3 11 4 12 5 13 6 14 7 15 )
+--------------------------------------------------------------------------------
+********************************************************************************
+NUMA Topology
+********************************************************************************
+NUMA domains:       1
+--------------------------------------------------------------------------------
+Domain:         0
+Processors:     ( 0 8 1 9 2 10 3 11 4 12 5 13 6 14 7 15 )
+Distances:      10
+Free memory:        19514.5 MB
+Total memory:       31814.9 MB
+--------------------------------------------------------------------------------</code></pre>
+<div class="page-columns page-full"><p>There is a lot to unpack here, and more than we actually need. The most important points are: it is an Intel TigerLake processor, with a single socket, 8 cores per socket, and up to 2 threads per core. Additionally, the L3 cache size is 24 MB, shared across all the threads.  Moreover, since we can have two threads per core, we’ll use only every other thread to ensure 1 thread/core in the rest.</p><div class="no-row-height column-margin column-container"><span class="margin-aside">If you are familiar with Jacobi and performance engineering, you may already know why this 24 MB number is the key to our apparent mystery…</span></div></div>
+<p><strong>How to evaluate <img src="https://latex.codecogs.com/png.latex?P_%7B%5Cmax%7D">?</strong> To the raw performance now. We’ll use the <code>likwid-bench</code> utility, providing a large collection of standardized benchmarks to assess hardware performance. For peak performance, we’ll use <code>peakflops_avx_fma</code>. This kernel measures achievable (not marketed) peak double-precision throughput: it runs tight loops of independent, back-to-back FMA (fused multiply-add) instructions on a small working set (here, 32 kB) sized to stay resident in L1 cache. Since each FMA does 2 flops and the AVX2 FMA units on my CPU operate on 4 doubles at a time across two ports, this saturates the floating-point execution units and reports the sustained flops/s the core(s) can actually deliver. The estimate is typically somewhat below the vendor’s theoretical peak (turbo/clock throttling, instruction issue overhead, etc). Running it across thread counts gives the compute-scaling curve used to fix <img src="https://latex.codecogs.com/png.latex?P_%7B%5Cmax%7D"> later on.</p>
+<p><strong>What about <img src="https://latex.codecogs.com/png.latex?BW_%7B%5Ctext%7BDRAM%7D%7D"> and <img src="https://latex.codecogs.com/png.latex?BW_%7B%5Ctext%7BL3%7D%7D">?</strong> Again, we’ll use the <code>likwid-bench</code> utility, this time however with the <code>triad</code> benchmark. This kernel implements the classic STREAM Triad operation <code>a[i] = b[i] + s*c[i]</code>, over a large array. Because the arrays are always freshly loaded from memory or cache and immediately used once (dropped, not reused), the memory system – not the floating point units (FPU) – is the bottleneck. The benchmark thus reports sustained achievable bandwidth. Which level of the hierarchy gets stressed is controlled purely by working-set size: a 1 GB working set can’t fit in any cache on this processor, so it exercises DRAM bandwidth. Alternatively, an 8 MB working set fits inside the 24 MB shared L3, so it exercises L3 bandwidth instead. Same kernel, same thread-scaling sweep, two different memory levels depending on that one parameter.</p>
+<div id="6316fc2a" class="cell" data-execution_count="3">
+<div class="cell-output cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://loiseaujc.github.io/posts/blog-title/roofline_analysis_files/figure-html/cell-4-output-1.png" width="758" height="366" class="figure-img"></p>
+<figcaption>Empirical hardware metrics collected via <code>likwid-bench</code> and averaged over 10 trials: (a) compute performance scaling compared to ideal, and (b) memory bandwidth saturation across 1 to 8 threads. The peak performance is estimated to be <strong>483 Gflops/s</strong>, while the memory bandwidth is around <strong>28 GBytes/s</strong> for DRAM, and at least <strong>417 GBytes/s</strong> for the L3 cache.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>The figure above depicts the results of this hardware characterization experiment with an increasing number of threads being employed. Here are the most important take-aways:</p>
+<ol type="1">
+<li><strong>Compute scales (almost) linearly with threads; DRAM bandwidth basically doesn’t.</strong> Going from 1 to 8 threads roughly multiplies peak performance by 6.7 (from 76 Gflops/s to 484 Gflops/s), but DRAM bandwidth peaks at just 2 or 3 threads (~ 28 GBytes/s) and then decreases as more threads pile onto an already-saturated memory controller. A single thread already gets you most of the DRAM bandwidth this machine will ever offer. </li>
+<li><strong>L3 bandwidth dwarfs DRAM bandwidth and shows no sign of saturating.</strong> At 8 threads, L3 delivers 416 GBytes/s against DRAM’s 23 GBytes/s – better than 15<img src="https://latex.codecogs.com/png.latex?%5Ctimes"> more – and it’s still climbing at N=8 rather than plateauing. This gap is precisely why a problem that fits in L3 can keep scaling with threads long after a DRAM-resident problem has hit a wall.</li>
+<li><strong>Compute’s own scaling isn’t quite “ideal” either.</strong> The measured curve in panel (a) already sits visibly below the ideal linear reference by 8 threads. This is a reminder that <img src="https://latex.codecogs.com/png.latex?P_%7B%5Cmax%7D"> itself softens as more cores turbo down together, so even the “good” resource isn’t a fixed constant once enough threads are in play.</li>
+</ol>
+<div class="no-row-height column-margin column-container"><span class="margin-aside">We’ll see later that this decline doesn’t seem to carry over to the Jacobi/Gauss-Seidel kernels themselves</span></div><p>We now have all of the numbers we need to characterize the hardware. Let’s move on with trying to model the performance of our kernels and see how our model compares with actual computations.</p>
+</section>
+</section>
+<section id="from-hardware-to-performance-the-roofline-model" class="level1 page-columns page-full">
+<h1>From hardware to performance: the roofline model</h1>
+<p>We now have three numbers in hand: <img src="https://latex.codecogs.com/png.latex?P_%7B%5Cmax%7D">, <img src="https://latex.codecogs.com/png.latex?BW_%7B%5Ctext%7BDRAM%7D%7D">, and <img src="https://latex.codecogs.com/png.latex?BW_%7B%5Ctext%7BL3%7D%7D">. But knowing your hardware’s ceilings doesn’t yet tell you how fast a <em>given</em> kernel should run. So let’s see how to do that.</p>
+<section id="the-theoretical-roofline" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="the-theoretical-roofline">The theoretical roofline</h2>
+<p><strong>Arithmetic intensity.</strong> The one ingredient missing is a way to characterize the kernel itself. For that, define the <em>arithmetic intensity</em> of a kernel as</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0A%5Ctext%7BAI%7D%20=%20%5Cdfrac%7B%5Ctext%7Bflops%7D%7D%7B%5Ctext%7Bbytes%20moved%7D%7D.%0A"></p>
+<p>This is a property of the algorithm and its implementation, not of the hardware. A kernel that does a lot of arithmetic per byte it touches (high AI) can, in principle, keep the FPUs busy without waiting on memory. Conversely, a kernel that touches a lot of memory for very little arithmetic (low AI) will spend most of its time waiting on data, no matter how fast the processor is. Crucially, for a stencil kernel like Jacobi or Gauss-Seidel, both the flop count and the byte count per grid point are fixed by the discretization, so AI is a constant for the kernel. It does not depend on the grid size <img src="https://latex.codecogs.com/png.latex?n">, only the sweep-level <em>cost</em> does.</p>
+<p><strong>Resource allocation as a linear program.</strong> Here’s the idea. Rather than asking <em>what does the roofline plot look like</em>, let’s ask a more direct question: <em>given our three hardware ceilings and a kernel’s arithmetic intensity, what is the best throughput we could possibly hope for?</em> That’s an optimization problem, and a particularly simple one: a <a href="https://en.wikipedia.org/wiki/Linear_programming">linear program</a>.</p>
+<p>Since we’ve been measuring everything in sweeps over the whole grid since the very first post, let’s keep using that unit rather than switching to raw Gflops/s. If <img src="https://latex.codecogs.com/png.latex?f(n)"> denotes the number of flops per sweep for a grid of size <img src="https://latex.codecogs.com/png.latex?n">, then <img src="https://latex.codecogs.com/png.latex?S%20=%20P/f(n)"> converts a flop rate <img src="https://latex.codecogs.com/png.latex?P"> into sweeps per second. This is just a rescaling of the flop-based problem by the constant <img src="https://latex.codecogs.com/png.latex?1/f(n)">, so it doesn’t change which constraint ends up binding. It just expresses the answer in units we already care about.</p>
+<p>The resulting linear program reads</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0A%5Cbegin%7Baligned%7D%0A%20%20%20%20%5Cmathrm%7Bmaximize%7D%20%20%20&amp;%20%20%20%5Cquad%20%20%20S%20%20%20%5C%5C%0A%20%20%20%20%5Cmathrm%7Bsubject~to%7D%20&amp;%20%20%20%5Cquad%20%20%20S%20%5Ccdot%20f(n)%20%5Cleq%20P_%7B%5Cmax%7D%20%5C%5C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20&amp;%20%20%20%5Cquad%20%20%20S%20%5Ccdot%20f(n)%20%5Cleq%20%20BW_%7B%5Ctext%7BDRAM%7D%7D%20%5Ctimes%20AI.%0A%5Cend%7Baligned%7D%0A"></p>
+<p>The first constraint says: no matter what, you can’t sweep faster than the processor can compute. The second says: no matter what, you can’t sweep faster than data can be fed to it from DRAM. This simplified model thus gives us an upper bound on the attainable throughput: whichever constraint is tighter is the active roof, exactly the <img src="https://latex.codecogs.com/png.latex?%5Cmin"> that gives the roofline its characteristic bent shape.</p>
+<p><strong>Accounting for L3.</strong> The same reasoning that gave us the DRAM constraint applies to any level of the memory hierarchy a kernel’s working set happens to reside in – but not by adding a second, simultaneous bandwidth constraint. If the working set fits inside the 24 MB L3 cache, DRAM traffic becomes a one-off cost that gets amortized away over the many sweeps required by the solver to converge, so DRAM bandwidth simply isn’t part of the story for that grid size. Conversely, once the working set spills out of L3, every sweep pays the full cost of moving data from DRAM, and L3 residency isn’t happening at all. The two ceilings are mutually exclusive <em>regimes</em>, selected by problem size – not competitors in the same constraint.</p>
+<p>This means we don’t need to change the structure of the LP at all: we only need to let the bandwidth ceiling itself depend on <img src="https://latex.codecogs.com/png.latex?n">,</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0ABW(n)%0A=%0A%5Cbegin%7Bcases%7D%0A%20%20%20%20BW_%7B%5Ctext%7BL3%7D%7D%20&amp;%20%5Ctext%7Bif%20the%20working%20set%20fits%20in%20L3%7D,%20%5C%5C%0A%20%20%20%20BW_%7B%5Ctext%7BDRAM%7D%7D%20&amp;%20%5Ctext%7Botherwise%7D,%0A%5Cend%7Bcases%7D%0A"></p>
+<p>giving the final LP formulation</p>
+<div class="page-columns page-full"><p><img src="https://latex.codecogs.com/png.latex?%0A%5Cbegin%7Baligned%7D%0A%20%20%20%20%5Cmathrm%7Bmaximize%7D%20%20%20&amp;%20%20%20%5Cquad%20%20%20S%20%20%20%5C%5C%0A%20%20%20%20%5Cmathrm%7Bsubject~to%7D%20&amp;%20%20%20%5Cquad%20%20%20S%20%5Ccdot%20f(n)%20%5Cleq%20P_%7B%5Cmax%7D%20%5C%5C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20&amp;%20%20%20%5Cquad%20%20%20S%20%5Ccdot%20f(n)%20%5Cleq%20BW(n)%20%5Ctimes%20AI%0A%5Cend%7Baligned%7D%0A">  Rather than treating “L3-resident” and “DRAM-resident” as two separate stories requiring two separate analyses, they’re now a single feasible region whose second constraint simply looks up the right ceiling for the grid size at hand. Which constraint binds – compute, or whichever memory level is relevant – depends entirely on where your problem happens to sit, through <img src="https://latex.codecogs.com/png.latex?n">’s effect on <img src="https://latex.codecogs.com/png.latex?f(n)"> and the working-set size. This is what will let a single model account for both panels of the very first figure in this post.</p><div class="no-row-height column-margin column-container"><span class="margin-aside">This now becomes a <em>parametric LP</em>. Nothing actually prevents us from further parameterizing <img src="https://latex.codecogs.com/png.latex?P_%5Cmax"> and <img src="https://latex.codecogs.com/png.latex?BW(n)"> as a function of the number of threads as well.</span></div></div>
+</section>
+<section id="a-subtlety-the-roof-moves-with-the-problem-size" class="level2">
+<h2 class="anchored" data-anchor-id="a-subtlety-the-roof-moves-with-the-problem-size">A subtlety: the roof moves with the problem size</h2>
+<p>If you’ve come across a roofline plot before, you’ve probably seen it used to compare several <em>different</em> kernels or algorithms, each sitting at its own arithmetic intensity, against a single fixed roof. Our situation is a little different, and worth walking through carefully: since <img src="https://latex.codecogs.com/png.latex?AI"> here is a property of the kernel alone, it doesn’t move as the grid size <img src="https://latex.codecogs.com/png.latex?n"> changes – your kernel sits at the exact same horizontal position on the plot no matter how big a problem you throw at it. What changes with <img src="https://latex.codecogs.com/png.latex?n"> is which <em>roof</em> is above that point.</p>
+<p>Picture two roofline curves drawn on the same axes, sharing the same flat compute ceiling <img src="https://latex.codecogs.com/png.latex?P_%7B%5Cmax%7D"> but with two different sections: a higher sloped section governed by <img src="https://latex.codecogs.com/png.latex?BW_%7B%5Ctext%7BL3%7D%7D">, and a lower one governed by <img src="https://latex.codecogs.com/png.latex?BW_%7B%5Ctext%7BDRAM%7D%7D">. Because <img src="https://latex.codecogs.com/png.latex?BW_%7B%5Ctext%7BL3%7D%7D%20%5Cgg%20BW_%7B%5Ctext%7BDRAM%7D%7D">, the L3 roof’s ridge point sits much further to the left than the DRAM roof’s – meaning it takes a much lower <img src="https://latex.codecogs.com/png.latex?AI"> to be compute-bound under it. Jacobi and Gauss-Seidel are stencil kernels with a handful of flops per grid point against several bytes of neighbor data, which puts them at fairly low arithmetic intensity – plausibly low enough to sit on the sloped part of <em>both</em> roofs, not just the DRAM one. If that holds up once we compute the actual numbers in the next section, the real story isn’t “compute-bound at small <img src="https://latex.codecogs.com/png.latex?n">, memory-bound at large <img src="https://latex.codecogs.com/png.latex?n">” – it’s memory-bound throughout, just against two very different bandwidths. Either way, the mechanism is the same: nothing about the kernel changes as <img src="https://latex.codecogs.com/png.latex?n"> grows, but the ground shifts underneath it once the working set spills out of L3, and it’s this shift – from one sloped ceiling to a much lower one – that produces the two panels in this post’s opening figure.</p>
+<div id="73666d91" class="cell" data-execution_count="4">
+<div class="cell-output cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://loiseaujc.github.io/posts/blog-title/roofline_analysis_files/figure-html/cell-5-output-1.png" width="758" height="374" class="figure-img"></p>
+<figcaption>Schematic roofline plot with two memory ceilings. The same kernel, at a fixed arithmetic intensity (dotted vertical line), sits under two different roofs depending on which memory level its working set resides in. Here the kernel’s illustrative <img src="https://latex.codecogs.com/png.latex?AI"> is placed to the left of both ridge points, illustrating the case where a kernel is bandwidth-bound under either roof – just against a much faster bandwidth in one case than the other.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="so-what-about-jacobi-and-gauss-seidel-then" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="so-what-about-jacobi-and-gauss-seidel-then">So, what about Jacobi and Gauss-Seidel then?</h2>
+<p>Now that we know what the roofline model is, the only missing pieces of information are the arithmetic intensities of both kernels. So let’s start with that.</p>
+<section id="our-kernels-have-low-ai." class="level3">
+<h3 class="anchored" data-anchor-id="our-kernels-have-low-ai.">Our kernels have low AI.</h3>
+<p>As stated before, the arithmetic intensity (AI) is the ratio of the number of flops divided by the number of bytes moved from memory to actually perform these operations. It is important to note that this is for updating <strong>a single grid point</strong>. So let’s look at the two update rules again and start counting.</p>
+<p><strong>Jacobi kernel.</strong> The update rule reads</p>
+<div class="sourceCode" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode numberSource fortran number-lines code-with-copy"><code class="sourceCode fortranfixed"><span id="cb2-1">u(i, j) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.25_dp</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span> (b(i, j)<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span>dx2 <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> v(i<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, j) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> v(i<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, j) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">&amp;</span></span>
+<span id="cb2-2">                                 <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> v(i, j<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> v(i, j<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>))</span></code></pre></div>
+<p>Let’s begin with the number of arithmetic operations because this is the easiest. We have 4 additions and 2 multiplications. So a grand total of 6 flops for a single grid point update.</p>
+<p>Let’s move on with the number of bytes moved. These include both bytes fetch from memory (the right-hand side) and written to memory (storing the updated value). Naïve accounting would suggest:</p>
+<ul>
+<li>5 double-precision floating point numbers need to be fetched from memory (<code>b(i, j)</code>, <code>v(i+1, j)</code>, <code>v(i-1, j)</code>, <code>v(i, j+1)</code> and <code>v(i, j-1)</code>).</li>
+<li>1 double-precision floating point number needs to be written to memory (<code>u(i, j)</code>).</li>
+</ul>
+<p>So that is a total of 6 double-precision floating point numbers, corresponding to 48 bytes per grid point. It is important to emphasize however that these 48 bytes are a strict upper bound that applies only in the worst case scenario, i.e.&nbsp;if every time we touch the values in <code>u</code>, <code>b</code> or <code>v</code>, they need to be fetched from memory. But compilers are smart. Not every reference to <code>v</code>, <code>b</code>, or <code>u</code> is a genuine trip to memory. Within a single sweep, <code>v(i, j)</code> gets referenced as a neighbor by up to 4 different point updates. If it’s still resident in cache from a few iterations ago (true here, since the sweep only needs 2–3 rows in flight at once), only the first of those references pays the memory cost; the rest are served from cache for free. On the other hand, the best scenario is every value is only fetched once from memory. That would give us 3 double-precision floating points numbers (<code>u(i, j)</code>, <code>b(i, j)</code> and <code>v(i, j)</code>) per update, for a grand total of 24 bytes. The actual truth is somewhere in between these two extremes, but we’ll go for the 24 bytes as, for these simple kernels, it is probably much more realistic.</p>
+<p>It is now time to do some elementary school mathematics. For the Jacobi kernel, the arithmetic intensity is</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0A%5Ctext%7BAI%7D%20=%20%5Cdfrac%7B6~%5Ctext%7Bflops%7D%7D%7B24~%5Ctext%7Bbytes%20moved%7D%7D%20=%200.25%0A"></p>
+<p>Not a very big number if you ask me, but it is what it is. It basically means that, for every arithmetic operation the kernel does, it needs to read or write 4 bytes from memory. For reference, had we considered the pessimistic upper bound, we would get an arithmetic intensity of 0.125 (so 8 bytes needed for every arithmetic operation).</p>
+<p><strong>Gauss-Seidel.</strong> Time to move on with the Gauss-Seidel kernel</p>
+<div class="sourceCode" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode numberSource fortran number-lines code-with-copy"><code class="sourceCode fortranfixed"><span id="cb3-1">u(i, j) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.25_dp</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span> (b(i, j)<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span>dx2 <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> u(i<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, j) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> u(i<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, j) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">&amp;</span></span>
+<span id="cb3-2">                                 <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> u(i, j<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> u(i, j<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>))</span></code></pre></div>
+<p>As far as flops go, the story is exactly the same: 4 additions and 2 multiplications, for a grand total of 6 flops. And it is the same for the memory traffic. Even though Gauss-Seidel uses only two buffers, it still needs to at least read the two arrays <code>b</code> and <code>u</code>, and to write the updated array <code>u</code> once. For the pessimistic case though, the bytes count is 48 bytes (5 loads and 1 write). And for the optimistic case, same as Jacobi again: 24 bytes (2 loads and 1 write). This leads to a lower bound of 24 bytes per grid point per sweep. Again, the actual truth is in-between, but we’ll use the optimistic bound again. This gives us the arithmetic intensity</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0A%5Ctext%7BAI%7D%20=%20%5Cdfrac%7B6~%5Ctext%7Bflops%7D%7D%7B24~%5Ctext%7Bbytes%7D%7D%20=%200.25,%0A"></p>
+<p>the same as Jacobi.</p>
+<p><strong>How much work is a sweep?</strong> For a standard roofline analysis, we could stop right there and proceed with the analysis itself. But because we’ve characterized everything so far in this series in terms of number of sweeps per second rather than raw Gflops/s, we need to account for that. This is precisely what the function <img src="https://latex.codecogs.com/png.latex?f(n)"> introduced earlier does. It is the number of flops per sweep, and it is the same for both Jacobi and Gauss-Seidel. Since <img src="https://latex.codecogs.com/png.latex?n"> is the number of points per direction (including the boundary ones), and both kernels require 6 flops per grid point, the total number of flops per sweep thus is</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0Af(n)%20=%206%20%5Ccdot%20(n-2)%5E2.%0A"></p>
+<p>For our two test grids, this works out to <img src="https://latex.codecogs.com/png.latex?f(512)"> = 1 560 600 flops/sweep, and <img src="https://latex.codecogs.com/png.latex?f(2048)"> = 25 116 696 flops/sweep. This is roughly the 16<img src="https://latex.codecogs.com/png.latex?%5Ctimes"> jump you’d expect when quadrupling the resolution along each direction (so 16 times as many points).</p>
+</section>
+<section id="roofline-analysis-predicts-memory-bandwidth-is-the-binding-constraint." class="level3">
+<h3 class="anchored" data-anchor-id="roofline-analysis-predicts-memory-bandwidth-is-the-binding-constraint.">Roofline analysis predicts memory bandwidth is the binding constraint.</h3>
+<p>Alright, let’s move on with predicting the number of sweeps per second for each kernel. Note that we don’t actually need a solver for the linear program. You can easily convince yourself that the solution is given by</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0AS%20=%20%5Cmin%20%5Cleft(%20%5Cdfrac%7BP_%5Cmax%7D%7Bf(n)%7D,%20%5Cdfrac%7BBW(n)%20%5Ctimes%20AI%7D%7Bf(n)%7D%20%5Cright).%0A"></p>
+<p>Modulo the <img src="https://latex.codecogs.com/png.latex?1%20/%20f(n)"> scaling to transform Gflops/s into sweeps/s, this is exactly the expression you’d find if you look up <em>roofline analysis</em> on the internet. So let’s put some numbers in. We’ll assume for now that we use all 8 threads so that the <code>likwid</code> estimates for <img src="https://latex.codecogs.com/png.latex?P_%7B%5Cmax%7D"> and <img src="https://latex.codecogs.com/png.latex?BW(n)"> are</p>
+<ul>
+<li><img src="https://latex.codecogs.com/png.latex?P_%5Cmax%20=%20483"> Gflops/s</li>
+<li><img src="https://latex.codecogs.com/png.latex?BW(n)%20=%20417"> Gbytes/s if the problem fits entirely in the L3 cache, or <img src="https://latex.codecogs.com/png.latex?BW(n)%20=%2028.5"> Gbytes/s otherwise.</li>
+</ul>
+<p>Plugging-in the expression for <img src="https://latex.codecogs.com/png.latex?f(n)"> and the arithmetic intensities of the two kernels, we get the following for the 2048² grid.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;">Kernel</th>
+<th style="text-align: center;">Maximum number of sweeps per second</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">Jacobi</td>
+<td style="text-align: center;">279</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">Gauss-Seidel</td>
+<td style="text-align: center;">279</td>
+</tr>
+</tbody>
+</table>
+<p>Let’s use the actual roofline plot to make sense of these.</p>
+<div id="3c0a8aaa" class="cell" data-execution_count="5">
+<div class="cell-output cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://loiseaujc.github.io/posts/blog-title/roofline_analysis_files/figure-html/cell-6-output-1.png" width="757" height="371" class="figure-img"></p>
+<figcaption>Theoretical roofline analysis for the two kernels. Peak performance and DRAM bandwidth estimates have been obtained using <code>likwid</code>, while the number of grid points in the problem is 2048².</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>The two kernels sit very comfortably along the slanted line, corresponding to the memory-bound region. For the 2048² grid, DRAM bandwidth is thus the limiting factor here for both. The picture would have essentially been the same had we consider the 512², with the DRAM bandwidth simply replaced by that of the L3 cache. But are these predictions any good?</p>
+</section>
+<section id="lets-put-that-to-the-test." class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="lets-put-that-to-the-test.">Let’s put that to the test.</h3>
+<section id="do-the-predictions-match-the-effective-number-of-sweepss-measured-numerically" class="level4 page-columns page-full">
+<h4 class="anchored" data-anchor-id="do-the-predictions-match-the-effective-number-of-sweepss-measured-numerically">Do the predictions match the effective number of sweeps/s measured numerically?</h4>
+<p>Let us consider only the 2048² case for now. The experimental setup is as follows: both kernels are compiled with <code>gfortran -O3 -mtune=native -march=native -fopenmp -ftree-loop-vectorize=8</code> to enable vectorization and full multithreading over the 8 physical cores of my laptop. We run both kernels 10 000 times, measure how long it takes, and extract the number of sweeps per second. Simple enough, right? So here are the results.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: center;">Kernel</th>
+<th style="text-align: center;">Predicted number of sweeps per second</th>
+<th style="text-align: center;">Measured number of sweeps per second</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">Jacobi</td>
+<td style="text-align: center;">279</td>
+<td style="text-align: center;">272</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">Gauss-Seidel</td>
+<td style="text-align: center;">279</td>
+<td style="text-align: center;">219</td>
+</tr>
+</tbody>
+</table>
+<p>And look at those numbers for Jacobi! The model predicts 279 sweeps per second, the actual experiment reports 272. Despite how simple our model is, it nails it. But the agreement for Gauss-Seidel ain’t that good though. We’re off by 20% or so. So what is going on here?</p>
+<p>To partially explain this observation, we need to go back to the full kernel. So here it is.</p>
+<div class="sourceCode" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode numberSource fortran number-lines code-with-copy"><code class="sourceCode fortranfixed"><span id="cb4-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">do</span> k <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span></span>
+<span id="cb4-2">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">do</span> j <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>, n<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span></span>
+<span id="cb4-3">        istart <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">mod</span>(k<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span>j, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>)</span>
+<span id="cb4-4">        <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">do</span> i <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> istart, n<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span></span>
+<span id="cb4-5">            u(i, j) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.25_dp</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span> (b(i, j)<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">*</span>dx2 <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> u(i<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, j) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> u(i<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, j) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">&amp;</span></span>
+<span id="cb4-6">                                             <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> u(i, j<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>) <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">+</span> u(i, j<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>))</span>
+<span id="cb4-7">        <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">end do</span></span>
+<span id="cb4-8">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">end do</span></span>
+<span id="cb4-9"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">end do</span></span></code></pre></div>
+<div class="page-columns page-full"><p>See what’s happening here? We’re looping over the whole arrays twice, but that is not the issue. What really matters is that we read and write only every other point. I’m not an expert on CPU but, apparently, when a CPU writes to a cache line that isn’t already resident, it normally has to first read the full 64-byte line from memory before it can modify the 8 bytes you actually wanted to change. It can’t write a partial line without knowing what the rest of it contains. This is the write-allocate / read-for-ownership cost (RFO), and it’s a real, extra 8 bytes on top of the write itself. So the effective number of bytes moved is not 24 but 32.  And consequently, the corresponding arithmetic intensity decreases from 0.25 (our initial estimate) down to 0.1875 – worse than Jacobi. If you redo the math with this new AI, you would find a theoretical maximum of 209 sweeps per second so… our model nailed it again (after we’ve accounted for the read-for-ownership extra bytes)!</p><div class="no-row-height column-margin column-container"><span class="margin-aside">Is this the whole story? I don’t know, but it certainly seems like a very plausible explanation.</span></div></div>
+</section>
+<section id="extending-our-model-to-include-the-number-of-threads" class="level4 page-columns page-full">
+<h4 class="anchored" data-anchor-id="extending-our-model-to-include-the-number-of-threads">Extending our model to include the number of threads</h4>
+<div class="page-columns page-full"><p>So our model works remarkably well for the 8 threads computations and predicts that, for the 2048² grid, both kernels are memory-bound. But does it correctly predict the number of sweeps per second if we keep the grid constant but vary the number of threads used from 1 to 8? Let’s find out! The only modification we need to make is that the peak performance <img src="https://latex.codecogs.com/png.latex?P_%7B%5Cmax%7D"> and bandwidths <img src="https://latex.codecogs.com/png.latex?BW"> now depend on the number <img src="https://latex.codecogs.com/png.latex?T"> of threads.  So here are the results.</p><div class="no-row-height column-margin column-container"><span class="margin-aside">Plugging in the measured Triad bandwidth curve directly here (which declines past 2-3 threads, as we saw earlier) makes the model <em>under</em>-predict at high thread counts. Measured throughput ends up exceeding the predicted ceiling by up to 25%, which shouldn’t happen for what’s meant to be an upper bound. Holding DRAM bandwidth flat at roughly its 2-3-thread peak (~28.5 GBytes/s) instead of letting it decline fixes this for both kernels at once, which is a stronger signal than it might look: it suggests the standalone Triad benchmark’s falling bandwidth at 6-8 threads isn’t representative of what these stencil kernels actually sustain. One possible explanation is that Triad’s back-to-back streaming loads leave the memory controller no compute-induced gaps to work with, unlike a kernel doing 6 flops of dependent arithmetic per point. The rigorous way to settle this would be measuring DRAM traffic directly during the Jacobi/GS runs themselves (e.g.&nbsp;with <code>likwid-perfctr</code>’s memory group) rather than borrowing the number from Triad – on the list for a follow-up.</span></div></div>
+<div id="2dad8edb" class="cell" data-execution_count="6">
+<div class="cell-output cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://loiseaujc.github.io/posts/blog-title/roofline_analysis_files/figure-html/cell-7-output-1.png" width="758" height="371" class="figure-img"></p>
+<figcaption>Number of sweeps per second as a function of the number of threads being used for two different grids. (a) For a 512² grid, all the data fit comfortably in the L3 cache. (b) For a 2048², the data exceeds the L3 cache and data movement mostly come from DRAM.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>And there you have it! It looks very much like the very first figure in this post, but now we can come up with an explanation. The two kernels are memory-bound for both grid resolutions. For the smaller grid though, all the data fit comfortably inside the L3 cache. As a consequence, the almost linear speed-up observed as we crank up the number of threads is directly related to the increasing L3 bandwidth obtained with increasing threads count already observed when benchmarking the hardware with <code>likwid</code>. To be completely honest, this holds up well for Jacobi throughout, but the fit for Gauss-Seidel visibly worsens as thread count grows. The predicted and measured sweep rates diverge by close to 50% at 7-8 threads, suggesting the simple read-for-ownership correction that worked so well for the DRAM-bound case does not transfer cleanly to the L3-bound regime. Very likely, the details of L3 traffic are more complicated than what can be accounted for with our ridiculously simple model. Nonetheless, the predictions are still in the correct ballpark, which is good enough in my opinion given how simple our model is.</p>
+<p>For the larger grid, the working set no longer fits in L3, so DRAM becomes the dominant memory level. But again, the jump observed when moving from 1 to 2 threads can be entirely explained by the increase in DRAM bandwidth reported with <code>likwid</code>. For larger thread counts, this DRAM bandwidth however saturates. And since the two kernels are memory-bound anyway, the increased peak performance observed for increased thread counts cannot kick in. The number of sweeps per second thus saturates also to roughly 270 sweeps/s for Jacobi and 210 sweeps/s for the red/black Gauss-Seidel kernel. Mystery solved.</p>
+</section>
+</section>
+</section>
+</section>
+<section id="where-does-that-leave-us" class="level1 page-columns page-full">
+<h1>Where does that leave us?</h1>
+<p>I told you: oversimplify we will, and oversimply we have! I’ll be the first to admit: our model of the hardware is ridiculously simple. Yet, I am still amazed at how good its predictions are (most notably for the larger grid size). The main take-away however is that <strong>both kernels run essentially as fast as they possibly can on my hardware</strong>. So, have we finally reached the end of the road?</p>
+<div class="page-columns page-full"><p>Well… not quite yet. But we’re getting there, trust me (I’m a Doctor). Going back to Gflops/s, Gauss-Seidel and Jacobi achieve something like 5 and 7 Gflops/s on my laptop. This is 70 to 90 times less than what my CPU can deliver. That is an enormous amount of idle compute capacity just sitting there, unused precisely because we’re memory-bound. The next lever for increased performance isn’t however the one people usually reach for first. The instinct here is often “try loop tiling,” but ordinary spatial tiling can’t fundamentally help: it works by improving cache reuse within a sweep, but we already achieve near-ideal reuse for Jacobi. There’s no further reuse to extract from a single pass over the grid. For Gauss-Seidel, measured throughput is likely close to its floor too, but the read-for-ownership story suggests there may be a few percent left on the table from smarter store handling (outside the scope of what a bytes-moved model alone can settle). The opening isn’t spatial, it’s temporal. But we won’t be going down this road, so look for diamond tiling, trapezoidal decompositions, and wavefront schedules if you want to know more. </p><div class="no-row-height column-margin column-container"><span class="margin-aside">It is fascinating, but I have no idea how to introduce such complex techniques in a short blog post. If you do, please get started, I’ll be the first to read it!</span></div></div>
+<p>So where does that leave us? Well, since we can’t easily increase the number of sweeps per second for these kernels, how about finding out some way to reduce the number of sweeps needed to solve the problem in the first place? This is what will be coming next. And it’s called SOR…</p>
+<!--Include social share buttons-->
+<!-- 
+AddToAny check more: https://www.addtoany.com/buttons/for/website 
+Using includes will make edits easier, will only need to add or remove button here if needed.
+https://quarto.org/docs/authoring/includes.html
+-->
+<div class="a2a_kit a2a_kit_size_32 a2a_default_style">
+<p><a class="a2a_dd" href="https://www.addtoany.com/share"></a> <a class="a2a_button_linkedin"></a> <a class="a2a_button_bluesky"></a> <a class="a2a_button_facebook"></a> <a class="a2a_button_copy_link"></a> <a class="a2a_button_email"></a></p>
+</div>
+<script async="" src="https://static.addtoany.com/menu/page.js"></script>
+<hr>
+<p><strong>If you want to read more of my stuff</strong></p>
+<ul>
+<li><a href="https://loiseaujc.github.io/posts/blog-title/redblack_gauss_seidel.html">Red or Black?</a></li>
+<li><a href="https://loiseaujc.github.io/posts/blog-title/make_gauss_seidel_great_again.html">Make Gauss-Seidel great again!</a></li>
+<li><a href="https://loiseaujc.github.io/posts/blog-title/gauss_seidel_experiments.html">Gauss-Seidel is faster than Jacobi. Or is it?</a></li>
+</ul>
+
+
+</section>
+
+ ]]></description>
+  <category>blog</category>
+  <guid>https://loiseaujc.github.io/posts/blog-title/roofline_analysis.html</guid>
+  <pubDate>Mon, 21 Sep 2026 22:00:00 GMT</pubDate>
+  <media:content url="https://loiseaujc.github.io/posts/blog-title/roofline.png" medium="image" type="image/png" height="72" width="144"/>
+</item>
 <item>
   <title>Red or Black?</title>
   <dc:creator>Jean-Christophe Loiseau</dc:creator>
