@@ -2,7 +2,7 @@
 title: "The roof, the roof, the roof is on fire!"
 subtitle: "A short introduction to performance engineering"
 author: "Jean-Christophe Loiseau"
-date: "2026-09-22"
+date: "2026-09-29"
 categories: [blog]
 image : "./roofline.png"
 #css: /custom.css

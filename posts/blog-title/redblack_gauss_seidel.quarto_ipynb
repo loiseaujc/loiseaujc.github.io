@@ -129,7 +129,7 @@
         "Both kernels are compiled with `gfortran -O3 -march=native -mtune=native -ftree-parallelize-loops=n` where `n` is the number of threads we want to use.\n",
         "Hereafter, we'll let `n` vary between 1 (serial) and 8 (the maximum number of threads on my laptop)."
       ],
-      "id": "4f16e9c0"
+      "id": "b7b1b82c"
     },
     {
       "cell_type": "code",
@@ -175,7 +175,7 @@
         "\n",
         "plt.show()"
       ],
-      "id": "f4ea140e",
+      "id": "b3039b99",
       "execution_count": null,
       "outputs": []
     },
@@ -226,7 +226,7 @@
         "These two kernels correspond to slightly different *ordering* of the unknowns.\n",
         "The traversal path associated to each is illustrated below."
       ],
-      "id": "b9e3a74d"
+      "id": "41858f56"
     },
     {
       "cell_type": "code",
@@ -285,7 +285,7 @@
         "\n",
         "plot_traversal_path(grid_size=5)"
       ],
-      "id": "7c685617",
+      "id": "06a5931d",
       "execution_count": null,
       "outputs": []
     },
@@ -322,7 +322,7 @@
         "This is a very simple update rule, so how the hell can we find a more hardware-friendly ordering?\n",
         "To get some intuition, let's look at the figure below.\n"
       ],
-      "id": "5f59cc25"
+      "id": "0c5ad74d"
     },
     {
       "cell_type": "code",
@@ -408,7 +408,7 @@
         "\n",
         "plot_red_black_grid(grid_size=5)"
       ],
-      "id": "5891c1c1",
+      "id": "6b5c2458",
       "execution_count": null,
       "outputs": []
     },
@@ -638,7 +638,7 @@
         "Same setup as experiment n°3, but now enable multithreading and vary the number of threads from 1 to 8.\n",
         "And TADA!"
       ],
-      "id": "ceb33dda"
+      "id": "427cf208"
     },
     {
       "cell_type": "code",
@@ -669,7 +669,7 @@
         "\n",
         "plt.show()"
       ],
-      "id": "3cdb1608",
+      "id": "54fd5318",
       "execution_count": null,
       "outputs": []
     },
@@ -691,7 +691,7 @@
         "\n",
         "First, let's replot the data from the last figure to see the actual speed-up as we increase the number of threads."
       ],
-      "id": "f8773e80"
+      "id": "a174d7d4"
     },
     {
       "cell_type": "code",
@@ -725,7 +725,7 @@
         "\n",
         "plt.show()"
       ],
-      "id": "ce28092f",
+      "id": "7fe75c9b",
       "execution_count": null,
       "outputs": []
     },
@@ -770,7 +770,7 @@
         "- [Gauss-Seidel is faster than Jacobi. Or is it?](https://loiseaujc.github.io/posts/blog-title/gauss_seidel_experiments.html)\n",
         "- [Jacobi method: From a naïve implementation to a modern Fortran multithreaded one](https://loiseaujc.github.io/posts/blog-title/jacobi_experiments.html)"
       ],
-      "id": "08d59f3d"
+      "id": "cf8df197"
     }
   ],
   "metadata": {

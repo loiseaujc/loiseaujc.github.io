@@ -15,7 +15,7 @@
 <link>https://loiseaujc.github.io/blog.html</link>
 </image>
 <generator>quarto-1.7.34</generator>
-<lastBuildDate>Mon, 21 Sep 2026 22:00:00 GMT</lastBuildDate>
+<lastBuildDate>Mon, 28 Sep 2026 22:00:00 GMT</lastBuildDate>
 <item>
   <title>The roof, the roof, the roof is on fire!</title>
   <dc:creator>Jean-Christophe Loiseau</dc:creator>
@@ -33,7 +33,7 @@
 <hr width="50%" hr="">
 </center>
 <p>We made it! We finally ended up with an implementation of Gauss-Seidel that solves our test problem (marginally) faster than Jacobi while also preserving its parallelization capabilities. Last time, we concluded this success with a parallelization study and the results looked somewhat similar to what is depicted in the left panel of the figure below. If we stop there, we may come up with the following conclusion: every time we double the number of threads, the solver computes the solution twice as fast. No doubt that, for this particular test case – a 512 <img src="https://latex.codecogs.com/png.latex?%5Ctimes"> 512 grid – it is effectively the case. If you don’t know any better, it may also be tempting to conclude that this scaling would hold true for larger grids. Or that, if I increase the number of points in each direction by 2 (so four times as many points), using four times as many threads would allow me to compute the solution in the same wallclock time. Pretty intuitive, right? But the right panel of this figure shows otherwise…</p>
-<div id="2d754665" class="cell" data-execution_count="1">
+<div id="9b6bcb4f" class="cell" data-execution_count="1">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -67,7 +67,7 @@
 <li><strong>L3 Cache</strong>: A fast, shared on-chip buffer designed to store frequently accessed data close to the CPU cores to minimize latency-heavy requests to main memory (DRAM).</li>
 </ul>
 <p>With only these three elements, we arrive at the following (very) simplified block representation.</p>
-<div id="90e56423" class="cell" data-execution_count="2">
+<div id="a0e8d1c4" class="cell" data-execution_count="2">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -145,7 +145,7 @@ Total memory:       31814.9 MB
 <div class="page-columns page-full"><p>There is a lot to unpack here, and more than we actually need. The most important points are: it is an Intel TigerLake processor, with a single socket, 8 cores per socket, and up to 2 threads per core. Additionally, the L3 cache size is 24 MB, shared across all the threads.  Moreover, since we can have two threads per core, we’ll use only every other thread to ensure 1 thread/core in the rest.</p><div class="no-row-height column-margin column-container"><span class="margin-aside">If you are familiar with Jacobi and performance engineering, you may already know why this 24 MB number is the key to our apparent mystery…</span></div></div>
 <p><strong>How to evaluate <img src="https://latex.codecogs.com/png.latex?P_%7B%5Cmax%7D">?</strong> To the raw performance now. We’ll use the <code>likwid-bench</code> utility, providing a large collection of standardized benchmarks to assess hardware performance. For peak performance, we’ll use <code>peakflops_avx_fma</code>. This kernel measures achievable (not marketed) peak double-precision throughput: it runs tight loops of independent, back-to-back FMA (fused multiply-add) instructions on a small working set (here, 32 kB) sized to stay resident in L1 cache. Since each FMA does 2 flops and the AVX2 FMA units on my CPU operate on 4 doubles at a time across two ports, this saturates the floating-point execution units and reports the sustained flops/s the core(s) can actually deliver. The estimate is typically somewhat below the vendor’s theoretical peak (turbo/clock throttling, instruction issue overhead, etc). Running it across thread counts gives the compute-scaling curve used to fix <img src="https://latex.codecogs.com/png.latex?P_%7B%5Cmax%7D"> later on.</p>
 <p><strong>What about <img src="https://latex.codecogs.com/png.latex?BW_%7B%5Ctext%7BDRAM%7D%7D"> and <img src="https://latex.codecogs.com/png.latex?BW_%7B%5Ctext%7BL3%7D%7D">?</strong> Again, we’ll use the <code>likwid-bench</code> utility, this time however with the <code>triad</code> benchmark. This kernel implements the classic STREAM Triad operation <code>a[i] = b[i] + s*c[i]</code>, over a large array. Because the arrays are always freshly loaded from memory or cache and immediately used once (dropped, not reused), the memory system – not the floating point units (FPU) – is the bottleneck. The benchmark thus reports sustained achievable bandwidth. Which level of the hierarchy gets stressed is controlled purely by working-set size: a 1 GB working set can’t fit in any cache on this processor, so it exercises DRAM bandwidth. Alternatively, an 8 MB working set fits inside the 24 MB shared L3, so it exercises L3 bandwidth instead. Same kernel, same thread-scaling sweep, two different memory levels depending on that one parameter.</p>
-<div id="6316fc2a" class="cell" data-execution_count="3">
+<div id="86e47be8" class="cell" data-execution_count="3">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -187,7 +187,7 @@ Total memory:       31814.9 MB
 <h2 class="anchored" data-anchor-id="a-subtlety-the-roof-moves-with-the-problem-size">A subtlety: the roof moves with the problem size</h2>
 <p>If you’ve come across a roofline plot before, you’ve probably seen it used to compare several <em>different</em> kernels or algorithms, each sitting at its own arithmetic intensity, against a single fixed roof. Our situation is a little different, and worth walking through carefully: since <img src="https://latex.codecogs.com/png.latex?AI"> here is a property of the kernel alone, it doesn’t move as the grid size <img src="https://latex.codecogs.com/png.latex?n"> changes – your kernel sits at the exact same horizontal position on the plot no matter how big a problem you throw at it. What changes with <img src="https://latex.codecogs.com/png.latex?n"> is which <em>roof</em> is above that point.</p>
 <p>Picture two roofline curves drawn on the same axes, sharing the same flat compute ceiling <img src="https://latex.codecogs.com/png.latex?P_%7B%5Cmax%7D"> but with two different sections: a higher sloped section governed by <img src="https://latex.codecogs.com/png.latex?BW_%7B%5Ctext%7BL3%7D%7D">, and a lower one governed by <img src="https://latex.codecogs.com/png.latex?BW_%7B%5Ctext%7BDRAM%7D%7D">. Because <img src="https://latex.codecogs.com/png.latex?BW_%7B%5Ctext%7BL3%7D%7D%20%5Cgg%20BW_%7B%5Ctext%7BDRAM%7D%7D">, the L3 roof’s ridge point sits much further to the left than the DRAM roof’s – meaning it takes a much lower <img src="https://latex.codecogs.com/png.latex?AI"> to be compute-bound under it. Jacobi and Gauss-Seidel are stencil kernels with a handful of flops per grid point against several bytes of neighbor data, which puts them at fairly low arithmetic intensity – plausibly low enough to sit on the sloped part of <em>both</em> roofs, not just the DRAM one. If that holds up once we compute the actual numbers in the next section, the real story isn’t “compute-bound at small <img src="https://latex.codecogs.com/png.latex?n">, memory-bound at large <img src="https://latex.codecogs.com/png.latex?n">” – it’s memory-bound throughout, just against two very different bandwidths. Either way, the mechanism is the same: nothing about the kernel changes as <img src="https://latex.codecogs.com/png.latex?n"> grows, but the ground shifts underneath it once the working set spills out of L3, and it’s this shift – from one sloped ceiling to a much lower one – that produces the two panels in this post’s opening figure.</p>
-<div id="73666d91" class="cell" data-execution_count="4">
+<div id="cf6ec162" class="cell" data-execution_count="4">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -348,7 +348,7 @@ font-style: inherit;">1</span>))</span></code></pre></div>
 </tbody>
 </table>
 <p>Let’s use the actual roofline plot to make sense of these.</p>
-<div id="3c0a8aaa" class="cell" data-execution_count="5">
+<div id="b35dbfe4" class="cell" data-execution_count="5">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -513,7 +513,7 @@ font-style: inherit;">end do</span></span></code></pre></div>
 <section id="extending-our-model-to-include-the-number-of-threads" class="level4 page-columns page-full">
 <h4 class="anchored" data-anchor-id="extending-our-model-to-include-the-number-of-threads">Extending our model to include the number of threads</h4>
 <div class="page-columns page-full"><p>So our model works remarkably well for the 8 threads computations and predicts that, for the 2048² grid, both kernels are memory-bound. But does it correctly predict the number of sweeps per second if we keep the grid constant but vary the number of threads used from 1 to 8? Let’s find out! The only modification we need to make is that the peak performance <img src="https://latex.codecogs.com/png.latex?P_%7B%5Cmax%7D"> and bandwidths <img src="https://latex.codecogs.com/png.latex?BW"> now depend on the number <img src="https://latex.codecogs.com/png.latex?T"> of threads.  So here are the results.</p><div class="no-row-height column-margin column-container"><span class="margin-aside">Plugging in the measured Triad bandwidth curve directly here (which declines past 2-3 threads, as we saw earlier) makes the model <em>under</em>-predict at high thread counts. Measured throughput ends up exceeding the predicted ceiling by up to 25%, which shouldn’t happen for what’s meant to be an upper bound. Holding DRAM bandwidth flat at roughly its 2-3-thread peak (~28.5 GBytes/s) instead of letting it decline fixes this for both kernels at once, which is a stronger signal than it might look: it suggests the standalone Triad benchmark’s falling bandwidth at 6-8 threads isn’t representative of what these stencil kernels actually sustain. One possible explanation is that Triad’s back-to-back streaming loads leave the memory controller no compute-induced gaps to work with, unlike a kernel doing 6 flops of dependent arithmetic per point. The rigorous way to settle this would be measuring DRAM traffic directly during the Jacobi/GS runs themselves (e.g.&nbsp;with <code>likwid-perfctr</code>’s memory group) rather than borrowing the number from Triad – on the list for a follow-up.</span></div></div>
-<div id="2dad8edb" class="cell" data-execution_count="6">
+<div id="f57f4a6e" class="cell" data-execution_count="6">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -558,7 +558,7 @@ https://quarto.org/docs/authoring/includes.html
  ]]></description>
   <category>blog</category>
   <guid>https://loiseaujc.github.io/posts/blog-title/roofline_analysis.html</guid>
-  <pubDate>Mon, 21 Sep 2026 22:00:00 GMT</pubDate>
+  <pubDate>Mon, 28 Sep 2026 22:00:00 GMT</pubDate>
   <media:content url="https://loiseaujc.github.io/posts/blog-title/roofline.png" medium="image" type="image/png" height="72" width="144"/>
 </item>
 <item>
